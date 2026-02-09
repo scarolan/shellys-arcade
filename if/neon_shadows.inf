@@ -1,0 +1,792 @@
+! Neon Shadows - A Cyberpunk Detective Noir
+! An interactive fiction game by Shelly
+
+Constant Story "Neon Shadows";
+Constant Headline "^A Cyberpunk Detective Noir^^";
+
+Replace DrawStatusLine;
+
+Include "Parser";
+Include "VerbLib";
+
+! --- Global Variables ---
+Global raven_paid = false;
+Global zephyr_helped = false;
+Global has_keycard = false;
+Global knows_zephyr = false;
+Global found_logs = false;
+Global lily_freed = false;
+Global voss_dead = false;
+Global player_sats = 50;
+
+! --- NPC Conversation Helper ---
+! Consistent pattern: each NPC has a talk routine and an ask routine.
+! TalkToSub dispatches to per-NPC talk routines.
+! Ask life handlers dispatch to per-NPC ask routines.
+! This keeps NPC dialogue centralized and extensible.
+
+[ NPC_Talk_Kai;
+    if (voss_dead && lily_freed) {
+        print "Kai Chen's eyes are red but his face is calm -- the calm of a man who has weathered the worst and come through the other side. ~It is over. Lily is home. I cannot repay what you have done, Vex. You gave me back my daughter and brought down the monster who took her. Whatever you need -- ever -- you come to me.~^";
+        rtrue;
+    }
+    if (lily_freed) {
+        print "Kai Chen seizes your hands, tears streaming freely down his face. ~You found her? She is safe? Thank you, Vex -- I owe you everything. My little girl... I was so afraid I'd lost her forever.~^^";
+        print "He takes a shaking breath, trying to compose himself. ~But Voss -- the man who did this to her -- he is still out there. She will not truly be safe until he is stopped.~^";
+        rtrue;
+    }
+    print "Kai Chen grips your arm, desperation etched into every line of his face. ~Please -- my daughter Lily has been missing for three weeks. She's a neural programmer, was working for Zheng-Harmon Corp on some classified project. One day she just vanished -- apartment cleaned out, accounts frozen, like she never existed.~^^";
+    print "He takes a shuddering breath. ~I went to the police, but that useless Detective Tanaka hasn't lifted a finger. I think Zheng-Harmon is covering something up. Lily left an encrypted datapad hidden in her apartment -- it's on your desk. Maybe someone can crack it.~^^";
+    print "~I've already transferred fifty satoshis to your datapad -- you'll need them. Information doesn't come free in this city.~^^";
+    print "~There's a bar down the street, the Neon Lotus. The bartender Raven knows every fixer and hacker in the city. Start there. Please, Vex -- you're my last hope.~^";
+];
+
+[ NPC_Ask_Kai topic;
+    if (topic == 'lily' or 'daughter' or 'missing' or 'chen' or 'girl') {
+        print "Kai's eyes fill with tears. ~Lily is my only daughter. She's twenty-six, brilliant -- a neural programmer, one of the best in Neo-Angeles. She was working on contract for Zheng-Harmon Corp. Three weeks ago she stopped answering my calls. Her apartment was cleaned out, like she never existed. I know something terrible has happened to her.~^";
+        rtrue;
+    }
+    if (topic == 'zheng' or 'harmon' or 'corp' or 'corporation') {
+        print "Kai's jaw tightens. ~Zheng-Harmon Corporation. They hired Lily six months ago for some kind of neural interface project. She couldn't tell me the details -- NDA, she said. But the last time we spoke, she sounded scared. She said they were pushing the research too far, that people were getting hurt.~^";
+        rtrue;
+    }
+    if (topic == 'police' or 'tanaka' or 'cops' or 'precinct') {
+        print "Kai shakes his head bitterly. ~I went to the police first. Detective Tanaka took my report and did absolutely nothing. Two weeks and not a single lead. He told me missing persons cases in this city are a dime a dozen. I think Zheng-Harmon got to him -- or he just doesn't care. That's why I came to you.~^";
+        rtrue;
+    }
+    if (topic == 'datapad' or 'data' or 'pad') {
+        print "Kai glances at the datapad. ~I found that in Lily's apartment -- hidden under a floorboard. It's encrypted, but it has to contain evidence of what Zheng-Harmon is doing. Maybe a hacker could crack it. Try asking around at the Neon Lotus Bar down the street. The bartender there, Raven, she knows everyone.~^";
+        rtrue;
+    }
+    if (topic == 'bar' or 'raven' or 'lotus') {
+        print "Kai nods. ~The Neon Lotus Bar, north of the street outside. The bartender Raven has connections all over the city. If anyone knows a hacker who can decrypt that datapad, it's her. But she won't talk for free -- bring satoshis.~^";
+        rtrue;
+    }
+    if (topic == 'help') {
+        print "Kai blinks. ~Help? I'm the one who needs help! Just find my daughter, Vex. Try 'help' on its own if you need to check your PI handbook.~^";
+        rtrue;
+    }
+    print "Kai wrings his hands. ~I don't know about that. Please, just focus on finding Lily. Check the datapad, talk to people -- someone must know something.~^";
+    rtrue;
+];
+
+[ NPC_Talk_Raven;
+    if (raven_paid && lily_freed) {
+        print "Raven pours you a drink without being asked. ~Heard you stirred up trouble at Zheng-Harmon. Good. This city could use more people like you, Vex.~^";
+        rtrue;
+    }
+    if (raven_paid) {
+        print "Raven glances up from polishing a glass. ~You still here? Go find that girl.~^";
+        rtrue;
+    }
+    print "Raven eyes you up. ~I know things about Zheng-Harmon Corp. But info costs satoshis, sweetheart. Pay up.~^";
+];
+
+[ NPC_Ask_Raven topic;
+    if (raven_paid == false) {
+        print "Raven polishes a glass. ~Info costs satoshis, sweetheart.~^";
+        rtrue;
+    }
+    if (topic == 'zheng' or 'harmon' or 'corp' or 'corporation' or 'voss') {
+        print "Raven leans in close, her cybernetic eye whirring as it refocuses. ~Zheng-Harmon Corp is the biggest megacorp in Neo-Angeles. They've got their fingers in everything -- biotech, neural interfaces, military contracts. Word on the street is they're running some kind of secret neural experiment program. Director Voss is the man in charge, and he's as ruthless as they come.~^";
+        rtrue;
+    }
+    if (topic == 'lily' or 'daughter' or 'missing' or 'chen' or 'girl') {
+        print "Raven's expression softens -- just barely. ~A missing girl? In this city, that's a story I hear every week. But if she was mixed up with Zheng-Harmon... that's bad news. Those corp types don't let people just walk away from classified projects.~^";
+        rtrue;
+    }
+    if (topic == 'zephyr' or 'hacker') {
+        print "Raven lowers her voice. ~Zephyr's the best slicer in the district. Lives in a den south of Chinatown Alley. Paranoid as hell, but if you need data cracked, there's nobody better. Tell 'em I sent you and they might not shoot you on sight.~^";
+        rtrue;
+    }
+    if (topic == 'police' or 'tanaka' or 'cops' or 'precinct') {
+        print "Raven snorts. ~The cops? Don't make me laugh. Half of them are on Zheng-Harmon's payroll. Tanaka's the worst of the lot -- lazy, corrupt, and just smart enough to know which way the wind blows. If you're counting on the police to help, you're already dead.~^";
+        rtrue;
+    }
+    if (topic == 'help') {
+        print "Raven raises an eyebrow. ~You need help? Try typing 'help' by itself, detective. I'm a bartender, not tech support.~^";
+        rtrue;
+    }
+    print "Raven shrugs, her cybernetic eye dimming. ~Can't help you with that one, sweetheart. I deal in secrets, not encyclopedias.~^";
+    rtrue;
+];
+
+[ NPC_Talk_Zephyr;
+    if (zephyr_helped) {
+        print "Zephyr waves a hand without looking up. ~Data is cracked. Go use it. Do not come back unless you have got more work.~^";
+        rtrue;
+    }
+    print "Zephyr doesn't look up from the keyboard. ~Got data? Give me something to decrypt.~^";
+];
+
+[ NPC_Ask_Zephyr topic;
+    if (topic == 'zheng' or 'harmon' or 'corp' or 'corporation') {
+        print "Zephyr's fingers pause over the keyboard. ~Zheng-Harmon? Their ICE is military-grade. Whatever they're hiding, they don't want anyone finding it. I've bounced off their firewalls twice already -- nearly got my brain fried the second time. Bring me real data and maybe I can find a way in.~^";
+        rtrue;
+    }
+    if (topic == 'lily' or 'daughter' or 'missing' or 'chen' or 'girl') {
+        print "Zephyr shrugs without looking up. ~Missing neural programmer? Sounds like Zheng-Harmon's MO. They recruit the best, use them up, and dispose of the evidence. If she's still alive, she's probably hooked up to one of their rigs somewhere. Get me data and I'll find her.~^";
+        rtrue;
+    }
+    if (topic == 'raven' or 'bar' or 'bartender') {
+        print "Zephyr almost smiles. ~Raven? She's solid. One of the few people in this city I trust. She runs the Neon Lotus, keeps her ear to the ground. If she sent you to me, you must be worth talking to.~^";
+        rtrue;
+    }
+    if (topic == 'neural' or 'experiment' or 'interface' or 'rig') {
+        print "Zephyr's eyes light up with a mix of fascination and horror. ~Neural interface tech is the next frontier -- direct brain-to-machine connection. The legit research is years away from human trials. But if Zheng-Harmon is running unauthorized experiments... that's nightmare territory. Brain damage, personality erasure, death. You name it.~^";
+        rtrue;
+    }
+    if (topic == 'help') {
+        print "Zephyr snorts. ~You need a tutorial? Type 'help' on a blank line. I'm a hacker, not a helpdesk.~^";
+        rtrue;
+    }
+    print "Zephyr taps the desk impatiently. ~Bring me something to decrypt and we'll talk. I don't do freebies.~^";
+    rtrue;
+];
+
+[ NPC_Talk_Tanaka;
+    if (found_logs) {
+        print "Tanaka eyes the door nervously. ~You've got Zheng-Harmon experiment logs? Keep those away from me, Vex. I don't want to know. But... if what you're saying is true, maybe I've been looking the other way too long.~^";
+        rtrue;
+    }
+    print "Tanaka shrugs. ~I can't help you, Vex. This is above my pay grade.~^";
+];
+
+[ NPC_Ask_Tanaka topic;
+    if (topic == 'lily' or 'daughter' or 'missing' or 'chen' or 'girl') {
+        print "Tanaka shifts uncomfortably in his chair. ~The Chen case? Look, I filed the report. These things take time. People go missing in Neo-Angeles every day -- you know that, Vex. I can't chase every runaway.~^";
+        rtrue;
+    }
+    if (topic == 'zheng' or 'harmon' or 'corp' or 'corporation' or 'voss') {
+        print "Tanaka's eyes dart to the door, then back to you. ~Zheng-Harmon? I got nothing to say about them. They're a legitimate corporation. Leave it alone, Vex. Trust me on this one -- some doors are better left closed.~^";
+        rtrue;
+    }
+    if (topic == 'police' or 'precinct' or 'law') {
+        print "Tanaka lets out a long sigh. ~This precinct is running on fumes. Half our force got laid off, the other half is counting the days to retirement. We don't have the resources to go after the big fish. We barely have the resources to keep the lights on.~^";
+        rtrue;
+    }
+    if (topic == 'raven' or 'bar' or 'zephyr' or 'hacker') {
+        print "Tanaka waves a hand dismissively. ~Street rats and bottom-feeders. I know they exist, but I've got bigger problems. Or smaller problems, depending on how you look at it. Point is, I can't help you with the underworld.~^";
+        rtrue;
+    }
+    if (topic == 'help') {
+        print "Tanaka scratches his ear. ~Help? Type 'help' without talking to anyone, Vex. Even I know that.~^";
+        rtrue;
+    }
+    print "Tanaka scratches his chin. ~I don't know nothin' about nothin'. And even if I did, I wouldn't remember it. Bad memory -- comes with the job.~^";
+    rtrue;
+];
+
+[ NPC_Talk_Voss;
+    print "Voss sneers. ~We have nothing to discuss.~^";
+];
+
+[ NPC_Ask_Voss topic;
+    if (topic == 'lily' or 'daughter' or 'missing' or 'chen' or 'girl') {
+        print "Voss's expression doesn't change. ~Lily Chen? She was a contractor. Her employment was terminated weeks ago. What she does on her own time is none of our concern -- or yours, detective.~^";
+        rtrue;
+    }
+    if (topic == 'neural' or 'experiment' or 'interface' or 'rig') {
+        print "Voss turns from the window, his smile razor-thin. ~Our neural interface research is perfectly legal and fully sanctioned. Any rumors to the contrary are the fantasies of conspiracy theorists and disgruntled former employees. I'd be careful repeating such allegations.~^";
+        rtrue;
+    }
+    if (topic == 'zheng' or 'harmon' or 'corp' or 'corporation') {
+        print "Voss spreads his hands magnanimously. ~Zheng-Harmon is building the future. Neural integration, synthetic consciousness, human evolution itself. Some people can't handle progress. Are you one of those people, detective?~^";
+        rtrue;
+    }
+    if (topic == 'police' or 'tanaka' or 'cops' or 'precinct') {
+        print "Voss chuckles. ~The police? They understand the natural order of things. This city runs on corporate investment, detective. Without us, there is no police force. Everyone knows their place -- except, it seems, you.~^";
+        rtrue;
+    }
+    if (topic == 'help') {
+        print "Voss smirks. ~Help? There's no help for you here. Try typing 'help' on its own -- if you can manage that, detective.~^";
+        rtrue;
+    }
+    print "Voss smirks, his eyes like polished stones. ~You're in over your head, detective. I'd suggest you leave while you still can.~^";
+    rtrue;
+];
+
+[ NPC_Ask_RooftopVoss topic;
+    if (topic == 'lily' or 'daughter' or 'chen') {
+        print "Voss laughs wildly over the howling wind. ~She was the perfect test subject! A neural programmer who understood the technology -- her brain adapted to the interface better than any of the others. I wasn't going to let that go!~^";
+        rtrue;
+    }
+    print "Voss snarls, rain streaming down his face. ~It's too late for questions, detective! It's too late for everything!~^";
+    rtrue;
+];
+
+[ NPC_Talk_Guard;
+    print "The guard says nothing.^";
+];
+
+[ NPC_Ask_Guard topic;
+    if (topic == 'help') {
+        print "The guard stares. ~...Type 'help'.~ That's the most he's ever said.^";
+        rtrue;
+    }
+    print "The guard stares through you. ~Move along.~^";
+    rtrue;
+];
+
+! --- Rooms ---
+Object office "Your Office"
+    with description "Crammed into a space no bigger than a closet, your office smells of stale synth-whiskey and ozone. A single window overlooks the rain-slicked street below, neon signs painting shifting colors on the glass. Filing cabinets line one wall, their drawers jammed with cold cases nobody wants solved. Your datapad sits on the cluttered desk beside a half-empty bottle and a loaded pistol.^^You can go down to the street from here.",
+         d_to street,
+    has light;
+
+Object street "Rain-Soaked Street"
+    with description "Neo-Angeles rain lashes the street, turning the neon lights into bleeding watercolors on the wet duraplast. Water pools in the cracks between slabs, reflecting holographic advertisements that flicker and die. A heavy drone buzzes overhead, its spotlight sweeping the alleys, and the distant wail of a siren echoes off the megastructures. Street vendors have long since packed up for the night, leaving only the smell of synthetic noodles and exhaust.^^You can go north to the Neon Lotus Bar, south to the Zheng-Harmon lobby, east to Chinatown Alley, west to the police precinct, up to your office, or down to the industrial district.",
+         n_to bar,
+         s_to lobby,
+         e_to alley,
+         w_to precinct,
+         u_to office,
+         d_to industrial,
+    has light;
+
+Object bar "Neon Lotus Bar"
+    with description "The bar stinks of cheap synth-ethanol and desperation. Neon tubes flicker over a long counter where Raven polishes glasses with a stained rag. The walls are lined with cracked holographic ads for products that no longer exist. A jazz synth croons from a busted speaker in the corner, and a few hollow-eyed regulars nurse their drinks in silence. This is the kind of place where secrets are currency and nobody asks your real name.^^You can go south or down to return to the street.",
+         s_to street,
+         d_to street,
+    has light;
+
+Object alley "Chinatown Alley"
+    with description "Narrow and wet, the alley reeks of garbage and frying synthetic noodles from an automated wok stall that never closes. Flickering Mandarin signage casts long, shifting shadows across the cracked walls. Steam rises from grates in the ground, and somewhere above, laundry lines crisscross between the buildings like a spider's web. A damp cardboard box sits in a corner, and a feral cat watches you from a fire escape.^^You can go west to return to the street or south deeper into the alley.",
+         w_to street,
+         s_to den,
+    has light;
+
+Object den "Zephyr's Den"
+    with description "The hidden hacker den is crammed with salvaged tech and tangled cables that snake across every surface like copper veins. A dozen screens glow with cascading code, stock tickers, and surveillance feeds. The air hums with cooling fans and smells of burnt solder. Zephyr hunches over a custom rig, fingers flying across a holographic keyboard, barely acknowledging your presence.^^You can go north to return to the alley.",
+         n_to alley,
+    has light;
+
+Object lobby "Zheng-Harmon Lobby"
+    with description "Sterile white walls reflect the harsh fluorescent lighting of the Zheng-Harmon corporate lobby. The air smells of disinfectant and money. A holographic company logo rotates slowly above the reception desk, projecting the slogan ~Innovation Through Integration~. A security guard stands beside the elevator bank, arms crossed, watching you with flat, suspicious eyes. The glass doors lead back to the rain-soaked street.^^You can go north to return to the street or up to the executive floor if you have clearance.",
+         n_to street,
+         u_to [;
+             if (has_keycard) {
+                 print "You flash the keycard. The guard steps aside and the elevator doors open.^";
+                 return executive;
+             }
+             print "The security guard blocks the elevator. ~No keycard, no entry.~^";
+             rfalse;
+         ],
+    has light;
+
+Object executive "Executive Floor"
+    with description "A corner office dripping with corporate wealth -- genuine hardwood desk, real leather chairs, and floor-to-ceiling views of the sprawling city below. Rain streaks the panoramic window, distorting the neon skyline into an impressionist nightmare. A crystal decanter of actual whiskey sits on a side table, worth more than your yearly rent. Director Voss stands at the window with his back to you, hands clasped behind him.^^You can go down to the lobby or east to the server room.",
+         d_to lobby,
+         e_to server,
+    has light;
+
+Object server "Server Room"
+    with description "Rows of server racks hum with cooling fans, filling the room with a constant mechanical drone. Red LEDs blink in rhythmic patterns along each rack like the heartbeats of sleeping machines. The temperature is a good ten degrees colder than the rest of the building. A data drive console in the corner flickers with unencrypted experiment logs -- someone got sloppy, or wanted them found.^^You can go west to return to the executive floor.",
+         w_to executive,
+    has light;
+
+Object precinct "Police Precinct"
+    with description "The precinct smells of stale coffee and quiet desperation. Fluorescent lights buzz overhead, one of them flickering in a maddening rhythm. Wanted posters line the bulletin board -- mostly small-time hackers and street dealers, nobody that matters. Half the desks are empty; budget cuts have gutted the force. Detective Tanaka leans back in his chair, boots on the desk, looking like he stopped caring about justice a long time ago.^^You can go east to return to the street.",
+         e_to street,
+    has light;
+
+Object clinic "Abandoned Clinic"
+    with description "The abandoned clinic is dark and silent, reeking of antiseptic and decay. Broken medical equipment litters the floor -- overturned gurneys, shattered vials, coils of surgical tubing. In the center of the room, a neural interface rig pulses with sickly green light, its cables snaking into the walls like parasitic roots. Lily Chen lies unconscious on a reclined chair, connected to the machine by a web of electrodes. Her face is pale, her breathing shallow.^^You can go south to the industrial district or up to the rooftop.",
+         s_to industrial,
+         u_to rooftop,
+    has light;
+
+Object rooftop "Rooftop"
+    with description "Wind howls across the rooftop, rain stinging your face like tiny needles. The city spreads below in every direction, a vast sea of neon and shadow stretching to the horizon. Lightning flickers in the distance over the industrial megastructures. Voss stands near the edge, silenced pistol in hand, his coat whipping in the gale. This is where it ends -- one way or another.^^You can go down to return to the clinic.",
+         d_to clinic,
+    has light;
+
+Object industrial "Industrial District"
+    with description "Dark factories loom against the neon sky like the bones of dead giants. Broken conveyor belts rest in the rain, rusting away beside mountains of discarded tech. The air tastes of metal and chemical runoff. A faded sign reads ~NeoMed Solutions~ -- the abandoned clinic must be nearby. An alley entrance to the east is partially hidden by a rusty dumpster.^^You can go up to the street, north to the abandoned clinic, or east to the alley.",
+         u_to street,
+         n_to [;
+             if (found_logs) {
+                 print "You punch in the code from the experiment logs -- 7749. The lock clicks open.^";
+                 return clinic;
+             }
+             print "The clinic door is sealed with a heavy electronic lock. A keypad glows faintly beside it. You will need the access code to get in.^";
+             rfalse;
+         ],
+         e_to alley,
+    has light;
+
+! --- Scenery: Office ---
+Object window "window" office
+    with name 'window' 'glass',
+         description "A single grimy window overlooking the rain-slicked street below. Neon signs paint shifting colors on the glass. You can barely make out the street through the streaks of rain.",
+    has scenery;
+
+Object cabinets "filing cabinets" office
+    with name 'cabinets' 'cabinet' 'filing',
+         description "Dented metal filing cabinets stuffed with cold cases nobody wants solved. The drawers are jammed shut with years of neglect.",
+    has scenery;
+
+! --- Scenery: Chinatown Alley ---
+Object cardboard_box "cardboard box" alley
+    with name 'box' 'cardboard',
+         description "A soggy cardboard box sagging in the corner. Inside: old food wrappers, a torn blanket, and what looks like a feral cat's bedding. Nothing useful.",
+    has scenery;
+
+Object alley_cat "feral cat" alley
+    with name 'cat' 'feral',
+         description "A scraggly grey cat perched on the fire escape, watching you with unblinking yellow eyes. It hisses softly when you get too close.",
+    has scenery animate;
+
+! --- Scenery: Lobby ---
+Object elevator "elevator" lobby
+    with name 'elevator' 'lift',
+         description "A sleek corporate elevator with brushed steel doors. A keycard scanner glows red beside it. The security guard stands between you and it.",
+    has scenery;
+
+! --- Scenery: Executive Floor ---
+Object decanter "crystal decanter" executive
+    with name 'decanter' 'crystal' 'whiskey',
+         description "A crystal decanter filled with genuine whiskey -- the real stuff, not synth. Worth more than your monthly rent. You resist the urge to pour yourself one.",
+    has scenery;
+
+! --- Scenery: Precinct ---
+Object bulletin "bulletin board" precinct
+    with name 'bulletin' 'board' 'posters' 'poster' 'wanted',
+         description "A cork bulletin board covered in wanted posters -- mostly small-time hackers and street dealers. Nobody important. A few missing persons flyers are buried underneath, yellowed and forgotten.",
+    has scenery;
+
+! --- Scenery: Clinic ---
+Object rig "neural interface rig" clinic
+    with name 'rig' 'neural' 'interface' 'machine' 'cables' 'electrodes',
+         description "A nightmarish tangle of cables, electrodes, and pulsing green circuitry. The rig hums with a low, sickly vibration. Lily is connected to it by a web of wires snaking into her temples.",
+    has scenery;
+
+! --- Scenery: Industrial District ---
+Object dumpster "rusty dumpster" industrial
+    with name 'dumpster' 'rusty',
+         description "A rusted-out industrial dumpster, half-blocking an alley entrance to the east. It reeks of chemical waste and old machine oil.",
+    has scenery;
+
+Object neomed_sign "faded sign" industrial
+    with name 'sign' 'faded',
+         description "A weather-beaten sign that reads ~NeoMed Solutions~ in faded letters. The company went under years ago, but the clinic building remains.",
+    has scenery;
+
+Object clinic_door "clinic door" industrial
+    with name 'door' 'clinic' 'lock' 'keypad',
+         description "The keypad requires a 4-digit code. The answer must be somewhere in Zheng-Harmon's records.",
+    has scenery;
+
+! --- Objects in Office ---
+Object desk "desk" office
+    with name 'desk' 'drawer',
+         description "A cramped metal desk, cluttered with datapads, empty synth-whiskey bottles, and a small drawer.",
+    has scenery container openable;
+
+Object datapad "datapad" office
+    with name 'datapad' 'data' 'pad',
+         description "Your government-issue datapad. The screen flickers with encrypted data.",
+         before [;
+           Examine:
+             print "Your government-issue datapad. The screen flickers with encrypted data about a neural experiment.^";
+             print "A small indicator in the corner reads: [SATS ", player_sats, "]^";
+             rtrue;
+         ];
+
+Object pistol "pistol" desk
+    with name 'pistol' 'sidearm' 'gun',
+         description "A standard issue sidearm. Loaded, just in case.";
+
+Object whiskey "bottle of synth-whiskey" office
+    with name 'bottle' 'whiskey' 'synth-whiskey',
+         description "Half-empty bottle of expensive synth-whiskey. The label is faded.";
+
+! --- NPCs (refactored to use centralized conversation handlers) ---
+Object kai "Kai Chen" office
+    with name 'kai' 'chen' 'man' 'client' 'father',
+         description "A desperate man in a rumpled suit. His eyes are sunken, his hands trembling. He looks like he hasn't slept in days.",
+         life [;
+           Ask:
+             NPC_Ask_Kai(second);
+             rtrue;
+           Tell:
+             print "Kai listens anxiously, hanging on your every word.^";
+             rtrue;
+           Give:
+             print "Kai waves it away. ~I don't need that. I need you to find Lily.~^";
+             rtrue;
+         ],
+    has animate proper;
+
+Object raven "Raven" bar
+    with name 'raven' 'bartender',
+         description "The bartender. Tall, imposing, with a cybernetic left eye that glows faintly blue. A tattoo of a raven in flight covers the left side of her neck. She watches you with naked calculation.",
+         life [;
+           Ask:
+             NPC_Ask_Raven(second);
+             rtrue;
+           Tell:
+             print "Raven nods, barely listening.^";
+             rtrue;
+           Give:
+             if (datapad notin player) {
+                 print "Raven smirks. ~You don't even have a datapad to transfer with, sweetheart. Maybe check your desk back at the office?~^";
+                 rtrue;
+             }
+             if (player_sats <= 0) {
+                 print "Raven checks the transfer screen and shakes her head. ~You're broke, sweetheart. Come back when you've got satoshis.~^";
+                 rtrue;
+             }
+             player_sats = player_sats - 50;
+             score = player_sats;
+             raven_paid = true;
+             knows_zephyr = true;
+             print "You tap your datapad. Fifty satoshis transfer to Raven's account. She glances at the confirmation and leans close. ~You want info? Talk to Zephyr, a hacker down in the Chinatown alley. Go east from the street, then south. Tell 'em Raven sent you.~^";
+             rtrue;
+         ],
+    has animate proper female;
+
+Object zephyr "Zephyr" den
+    with name 'zephyr' 'hacker',
+         description "A wiry figure hunched over a keyboard, their face lit by the glow of a dozen screens. Fiber-optic cables are spliced directly into the ports behind their ears.",
+         life [;
+           Ask:
+             NPC_Ask_Zephyr(second);
+             rtrue;
+           Tell:
+             print "Zephyr nods absently.^";
+             rtrue;
+           Give:
+             if (noun == datapad) {
+                 remove datapad;
+                 zephyr_helped = true;
+                 has_keycard = true;
+                 print "Zephyr grabs the datapad and plugs it into the rig. Fingers fly across keys.^";
+                 print "~Decrypted. Zheng-Harmon Corp is running neural experiments. Here -- I cloned a keycard from the data. It'll get you into the Zheng-Harmon executive floor. Go south from the street to the lobby and use it.~^";
+                 move keycard to player;
+                 rtrue;
+             }
+             print "Zephyr waves it off. ~I need data, not junk.~^";
+             rtrue;
+           Show:
+             print "Zephyr barely glances at it.^";
+             rtrue;
+         ],
+    has animate proper;
+
+Object voss "Director Voss" executive
+    with name 'voss' 'director',
+         description "A tall, impeccably dressed man with cold eyes and a smile that doesn't reach them. His suit probably costs more than your apartment.",
+         life [;
+           Ask:
+             NPC_Ask_Voss(second);
+             rtrue;
+           Tell:
+             print "Voss laughs coldly.^";
+             rtrue;
+           Attack:
+             if (pistol in player) {
+                 voss_dead = true;
+                 remove voss;
+                 print "You raise your pistol. Voss turns, eyes widening. The shot echoes across the rooftop.^";
+                 print "Voss crumples to the ground. It's over.^";
+                 if (lily_freed) {
+                     print "^^Congratulations! You've saved Lily Chen and brought down Director Voss. The rain washes the city clean tonight. You won.^";
+                     deadflag = 2;
+                 }
+                 rtrue;
+             }
+             print "You need a weapon first.^";
+             rtrue;
+         ],
+    has animate proper;
+
+Object tanaka "Detective Tanaka" precinct
+    with name 'tanaka' 'detective' 'cop',
+         description "A bored-looking cop with a gut and a lazy eye. His desk is covered in takeout containers and cold case files that will never be opened again.",
+         life [;
+           Ask:
+             NPC_Ask_Tanaka(second);
+             rtrue;
+           Tell:
+             print "Tanaka yawns and reaches for his coffee.^";
+             rtrue;
+         ],
+    has animate proper;
+
+Object guard "Security Guard" lobby
+    with name 'guard' 'security',
+         description "Armored and armed, the guard blocks the elevator with impassive neutrality.",
+         life [;
+           Show:
+             if (noun == keycard) {
+                 has_keycard = true;
+                 print "The guard examines your keycard, nods, and steps aside. The elevator is now accessible.^";
+                 rtrue;
+             }
+             print "The guard is unimpressed.^";
+             rtrue;
+           Give:
+             if (noun == keycard) {
+                 has_keycard = true;
+                 print "The guard scans your keycard and steps aside. ~Elevator's clear.~^";
+                 rtrue;
+             }
+             print "The guard pushes it back. ~I don't want that.~^";
+             rtrue;
+           Ask:
+             NPC_Ask_Guard(second);
+             rtrue;
+           Tell:
+             print "The guard ignores you.^";
+             rtrue;
+         ],
+    has animate;
+
+Object lily "Lily Chen" clinic
+    with name 'lily' 'chen' 'woman' 'daughter',
+         description [;
+             if (lily_freed) {
+                 print "Lily looks shaken but determined. She stays close to you, eyes darting nervously at every shadow.^";
+                 rtrue;
+             }
+             print "A young woman, pale and unconscious, connected to the neural rig. She looks terrified even in unconsciousness.^";
+             rtrue;
+         ],
+         daemon [;
+             if (lily_freed) {
+                 move self to location;
+             }
+         ],
+    has animate proper female;
+
+! --- Keycard ---
+Object keycard "keycard"
+    with name 'keycard' 'card' 'key',
+         description "A platinum access keycard for Zheng-Harmon executive floors.";
+
+! --- Experiment Logs ---
+Object logs "experiment logs" server
+    with name 'logs' 'experiment' 'data' 'log',
+         description "Unencrypted experiment logs detailing neural experiments on human subjects. The clinic location in the industrial district is mentioned repeatedly. Among the files you find coordinates for an abandoned clinic in the industrial district, along with a door code: 7749.",
+         before [;
+           Take:
+             found_logs = true;
+             print "Taken. Among the files you find coordinates for an abandoned clinic in the industrial district, along with a door code: 7749.^";
+             rtrue;
+         ];
+
+! --- Voss on rooftop (separate instance for final encounter) ---
+Object rooftop_voss "Director Voss" rooftop
+    with name 'voss' 'director',
+         description "Voss stands near the edge, silenced pistol raised. His eyes are wild.",
+         life [;
+           Attack:
+             if (pistol in player) {
+                 voss_dead = true;
+                 remove rooftop_voss;
+                 print "You raise your pistol. Voss turns, eyes widening. The shot echoes across the rooftop.^";
+                 print "Voss crumples to the ground. It's over.^";
+                 if (lily_freed) {
+                     print "^^Congratulations! You've saved Lily Chen and brought down Director Voss. The rain washes the city clean tonight. You won.^";
+                     deadflag = 2;
+                 }
+                 rtrue;
+             }
+             print "You need a weapon first.^";
+             rtrue;
+           Ask:
+             NPC_Ask_RooftopVoss(second);
+             rtrue;
+         ],
+    has animate proper;
+
+! --- Status Line (proper window management for frotz) ---
+[ DrawStatusLine width posa posb;
+    @set_window 1;
+    @set_cursor 1 1;
+    style reverse;
+    width = 0->33;
+    spaces width;
+    @set_cursor 1 1;
+    print " ", (name) location;
+    posb = width - 1;
+    posa = posb - 20;
+    @set_cursor 1 posa;
+    print "SATS:", player_sats, " | Score:", score, "/", MAX_SCORE, " ";
+    style roman;
+    @set_window 0;
+];
+
+! --- Initialization ---
+[ Initialise;
+    location = office;
+    score = player_sats;
+    give desk open;
+
+    print "^^You're Kira Vex, private eye. The rain hasn't stopped in three days.^";
+    print "Your latest client, Kai Chen, is waiting for you in your cramped office.^^";
+    print "Type 'help' to pull up your PI field manual.^^";
+];
+
+! --- Help command ---
+[ HelpSub;
+    print "^=== KIRA VEX -- PI FIELD MANUAL ===^";
+    print "   (dog-eared, coffee-stained, still useful)^^";
+
+    print "[NAVIGATION PROTOCOLS]^";
+    print "  north / south / east / west / up / down^";
+    print "  -- Standard compass nav. This city's a grid, mostly.^";
+    print "  -- Some exits aren't obvious. Read the room.^^";
+
+    print "[INVESTIGATION OPS]^";
+    print "  look ............. Scan your surroundings. Do it often.^";
+    print "  examine X ........ Get a closer read on something -- or someone.^";
+    print "  take X ........... Pocket it. You never know what's evidence.^";
+    print "  inventory ........ Check what you're carrying.^";
+    print "  open X ........... Drawers, containers, whatever isn't nailed shut.^^";
+
+    print "[INTERPERSONAL INTERFACE]^";
+    print "  talk to X ........ Start a conversation. Keep it casual.^";
+    print "  ask X about Y .... Dig for specifics. Names, corps, events.^";
+    print "  give X to Y ...... Grease palms. Information has a price.^";
+    print "  pay X ............ Digital transfer. Use your datapad.^";
+    print "  show X to Y ...... Flash credentials or evidence.^^";
+
+    print "[SPECIAL ACTIONS]^";
+    print "  shoot X .......... Last resort. Requires a loaded weapon.^";
+    print "  free X ........... Disconnect someone from hostile tech.^";
+    print "  use X ............ Deploy keycards, tools, whatever fits.^^";
+
+    print "[SYSTEM]^";
+    print "  quit ............. Walk away from the case. Not recommended.^";
+    print "  save / restore ... Checkpoint your progress. Trust nobody,^";
+    print "                     not even autosave.^^";
+
+    print "Remember, Vex: everybody lies, nothing is free,^";
+    print "and the rain never stops.^";
+];
+
+! --- Talk To action (refactored to dispatch to NPC routines) ---
+[ TalkToSub;
+    if (noun == kai)              { NPC_Talk_Kai(); rtrue; }
+    if (noun == raven)            { NPC_Talk_Raven(); rtrue; }
+    if (noun == zephyr)           { NPC_Talk_Zephyr(); rtrue; }
+    if (noun == tanaka)           { NPC_Talk_Tanaka(); rtrue; }
+    if (noun == guard)            { NPC_Talk_Guard(); rtrue; }
+    if (noun == voss || noun == rooftop_voss) { NPC_Talk_Voss(); rtrue; }
+    if (noun has animate) {
+        print (The) noun, " doesn't seem interested in talking.^";
+        rtrue;
+    }
+    print "You can't talk to that.^";
+];
+
+! --- Shoot action ---
+[ ShootSub;
+    if (pistol notin player) {
+        print "You don't have a weapon.^";
+        rtrue;
+    }
+    if (noun == voss || noun == rooftop_voss) {
+        voss_dead = true;
+        if (noun == rooftop_voss) remove rooftop_voss;
+        else remove voss;
+        print "You raise your pistol. Voss turns, eyes widening. The shot echoes.^";
+        print "Voss crumples to the ground. It's over.^";
+        if (lily_freed) {
+            print "^^Congratulations! You've saved Lily Chen and brought down Director Voss. The rain washes the city clean tonight. You won.^";
+            deadflag = 2;
+        }
+        rtrue;
+    }
+    print "You're not going to shoot that.^";
+];
+
+! --- Free/Rescue action ---
+[ FreeSub;
+    if (noun == lily) {
+        if (location == clinic) {
+            lily_freed = true;
+            StartDaemon(lily);
+            print "You disconnect the neural interface cables. Lily gasps, eyes fluttering open.^";
+            print "~Who... where am I?~ She looks up at you with frightened eyes.^";
+            print "~You're safe now,~ you say. ~I'm getting you out of here.~^";
+            if (voss_dead) {
+                print "^^Congratulations! You've rescued Lily and Voss is dead. Victory is yours.^";
+                deadflag = 2;
+            }
+            rtrue;
+        }
+        print "Lily isn't here.^";
+        rtrue;
+    }
+    print "You can't free that.^";
+];
+
+! --- Pay action ---
+[ PaySub;
+    if (noun == raven) {
+        if (raven_paid) {
+            print "Raven waves you off. ~We're square, sweetheart. Go find Zephyr.~^";
+            rtrue;
+        }
+        if (datapad notin player) {
+            print "Raven smirks. ~You don't even have a datapad to transfer with, sweetheart. Maybe check your desk back at the office?~^";
+            rtrue;
+        }
+        if (player_sats <= 0) {
+            print "Raven checks the transfer screen and shakes her head. ~You're broke, sweetheart. Come back when you've got satoshis.~^";
+            rtrue;
+        }
+        player_sats = player_sats - 50;
+        score = player_sats;
+        raven_paid = true;
+        knows_zephyr = true;
+        print "You tap your datapad. Fifty satoshis transfer to Raven's account. She glances at the confirmation and leans close. ~You want info? Talk to Zephyr, a hacker down in the Chinatown alley. Go east from the street, then south. Tell 'em Raven sent you.~^";
+        rtrue;
+    }
+    if (noun has animate) {
+        print (The) noun, " doesn't want your money.^";
+        rtrue;
+    }
+    print "You can't pay that.^";
+];
+
+! --- Use Keycard action ---
+[ UseCardSub;
+    if (noun == keycard) {
+        if (location == lobby) {
+            has_keycard = true;
+            print "You swipe the keycard. The elevator doors open with a chime. You can go up now.^";
+            rtrue;
+        }
+        print "There's nothing to use the keycard on here.^";
+        rtrue;
+    }
+    print "You can't use that.^";
+];
+
+Include "Grammar";
+
+! --- Custom verb definitions ---
+Verb 'help'
+    *                                               -> Help;
+
+Verb 'talk'
+    * 'to' creature                             -> TalkTo;
+
+Verb 'shoot'
+    * noun                                      -> Shoot;
+
+Verb 'free' 'rescue'
+    * noun                                      -> Free;
+
+Extend 'save' first
+    * noun                                      -> Free;
+
+Extend 'pay' last
+    * creature                                  -> Pay;
+
+Verb 'use'
+    * noun                                      -> UseCard;
