@@ -35,6 +35,7 @@ GLYPH_GUARD = "\uf132"         # shield
 GLYPH_TURRET = "\uf05b"        # crosshairs
 GLYPH_NETRUNNER = "\uf120"     # terminal
 GLYPH_BOSS = "\U000f0680"     # nf-md-skull_crossbones
+GLYPH_LILY = "\uf120"         # terminal (netrunner companion)
 
 GLYPH_MEDKIT = "\uf0fa"        # medkit
 GLYPH_CREDITS = "\uf155"       # dollar
@@ -53,6 +54,7 @@ GLYPH_STAR = "\uf005"          # star
 GLYPH_EYE = "\uf06e"           # eye
 GLYPH_BOMB = "\uf1e2"          # bomb
 GLYPH_STIM = "\uf0e7"          # bolt (reuse for stim)
+GLYPH_ICE_BARRIER = "\uf023"  # lock (neural ICE barrier)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Box-drawing characters
@@ -106,6 +108,7 @@ TILE_CORRIDOR = 5
 TILE_TERMINAL = 6
 TILE_SHOP_TILE = 7
 TILE_DOOR_OPEN = 8
+TILE_ICE_BARRIER = 9
 
 TILE_CHARS = {
     TILE_WALL: "█",
@@ -117,13 +120,14 @@ TILE_CHARS = {
     TILE_TERMINAL: GLYPH_TERMINAL,
     TILE_SHOP_TILE: GLYPH_SHOP,
     TILE_DOOR_OPEN: "·",
+    TILE_ICE_BARRIER: GLYPH_ICE_BARRIER,
 }
 
 # Tiles that block movement
-BLOCKING_TILES = {TILE_WALL, TILE_DOOR, TILE_DOOR_LOCKED}
+BLOCKING_TILES = {TILE_WALL, TILE_DOOR, TILE_DOOR_LOCKED, TILE_ICE_BARRIER}
 
 # Tiles that block line of sight / FOV
-OPAQUE_TILES = {TILE_WALL, TILE_DOOR, TILE_DOOR_LOCKED}
+OPAQUE_TILES = {TILE_WALL, TILE_DOOR, TILE_DOOR_LOCKED, TILE_ICE_BARRIER}
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Level themes
@@ -592,6 +596,60 @@ class Item:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# Companion system
+# ═══════════════════════════════════════════════════════════════════════════════
+
+LILY_DIALOGUE = [
+    "Lily: 'Watch your back. Koroshi's ICE is everywhere.'",
+    "Lily: 'I can feel the neural grid humming... we're getting close.'",
+    "Lily: 'These corpo drones are running old firmware. Easy pickings.'",
+    "Lily: 'Koroshi thought they could bury what they did to me. Wrong.'",
+    "Lily: 'Stay sharp. The deeper we go, the nastier the ICE gets.'",
+]
+
+
+class Companion:
+    """A companion NPC that follows the player."""
+
+    def __init__(self, name, x, y, glyph, color):
+        self.name = name
+        self.x = x
+        self.y = y
+        self.glyph = glyph
+        self.color = color
+        self.dialogue_index = 0
+
+    def follow(self, player, game_map, enemies):
+        """Move one step toward the player using simple chase logic."""
+        dist = abs(self.x - player.x) + abs(self.y - player.y)
+        if dist <= 1:
+            return  # Already adjacent
+        dx = 0 if player.x == self.x else (1 if player.x > self.x else -1)
+        dy = 0 if player.y == self.y else (1 if player.y > self.y else -1)
+        # Prefer axis with greater distance
+        if abs(player.x - self.x) >= abs(player.y - self.y):
+            moves = [(dx, 0), (0, dy)]
+        else:
+            moves = [(0, dy), (dx, 0)]
+        for mdx, mdy in moves:
+            if mdx == 0 and mdy == 0:
+                continue
+            nx, ny = self.x + mdx, self.y + mdy
+            if (0 <= ny < len(game_map) and 0 <= nx < len(game_map[0]) and
+                    game_map[ny][nx] not in BLOCKING_TILES and
+                    not any(e.alive and e.x == nx and e.y == ny for e in enemies)):
+                self.x = nx
+                self.y = ny
+                return
+
+    def get_dialogue(self):
+        """Return the next dialogue line from this companion."""
+        line = LILY_DIALOGUE[self.dialogue_index % len(LILY_DIALOGUE)]
+        self.dialogue_index += 1
+        return line
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # Procedural Level Generation
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -651,7 +709,8 @@ def _can_reach(game_map, start, goal):
 def generate_level(level_num):
     """Generate a procedural level with rooms, corridors, doors, and entities.
 
-    Returns (game_map, rooms, player_start, stairs_pos, enemies, items, terminals).
+    Returns (game_map, rooms, player_start, stairs_pos, enemies, items, terminals,
+             lily_spawn, ice_barrier_pos).
     """
     game_map = [[TILE_WALL for _ in range(MAP_W)] for _ in range(MAP_H)]
     rooms = []
@@ -719,7 +778,34 @@ def generate_level(level_num):
     # Place items — ensure keycards are reachable without locked doors
     items = place_items(game_map, rooms, level_num, player_start)
 
-    return game_map, rooms, player_start, stairs_pos, enemies, items, terminals
+    # Spawn Lily NPC on floor 4 (Synth Den Tunnels)
+    lily_spawn = None
+    if level_num == 4 and len(rooms) >= 3:
+        lily_room = rooms[len(rooms) // 2]  # Mid-level room
+        lx, ly = lily_room.center
+        # Offset slightly from center so she doesn't overlap other entities
+        for ddx, ddy in [(1, 0), (-1, 0), (0, 1), (0, -1), (0, 0)]:
+            nx, ny = lx + ddx, ly + ddy
+            if (0 <= ny < MAP_H and 0 <= nx < MAP_W and
+                    game_map[ny][nx] in (TILE_FLOOR, TILE_CORRIDOR)):
+                lily_spawn = (nx, ny)
+                break
+
+    # Place ICE barrier on floor 7 (Koroshi Tower - Server Core) blocking stairs
+    ice_barrier_pos = None
+    if level_num == 7:
+        sx, sy = stairs_pos
+        # Place barrier adjacent to stairs — find a walkable tile next to stairs
+        for ddx, ddy in [(0, -1), (0, 1), (-1, 0), (1, 0)]:
+            bx, by = sx + ddx, sy + ddy
+            if (0 <= by < MAP_H and 0 <= bx < MAP_W and
+                    game_map[by][bx] in (TILE_FLOOR, TILE_CORRIDOR, TILE_DOOR_OPEN)):
+                game_map[by][bx] = TILE_ICE_BARRIER
+                ice_barrier_pos = (bx, by)
+                break
+
+    return (game_map, rooms, player_start, stairs_pos, enemies, items, terminals,
+            lily_spawn, ice_barrier_pos)
 
 
 def place_room(game_map, room):
@@ -1127,6 +1213,8 @@ def _tile_char_and_attr(game_map, mx, my):
             return ch, curses.color_pair(C_YELLOW)
         elif tile == TILE_DOOR_LOCKED:
             return ch, curses.color_pair(C_RED)
+        elif tile == TILE_ICE_BARRIER:
+            return ch, curses.color_pair(C_MAGENTA) | curses.A_BOLD
         elif tile == TILE_SHOP_TILE:
             return ch, curses.color_pair(C_YELLOW) | curses.A_BOLD
         else:
@@ -1135,7 +1223,8 @@ def _tile_char_and_attr(game_map, mx, my):
 
 
 def draw_map(win, game_map, visible, explored, player, enemies, items,
-             cam_x, cam_y, view_w, view_h, map_y_off, map_x_off):
+             cam_x, cam_y, view_w, view_h, map_y_off, map_x_off,
+             companion=None, lily_npc=None):
     """Render the visible portion of the game map."""
     for sy in range(view_h):
         my = cam_y + sy
@@ -1156,6 +1245,18 @@ def draw_map(win, game_map, visible, explored, player, enemies, items,
                     safe_addstr(win, screen_y, screen_x, GLYPH_PLAYER,
                                 curses.color_pair(C_PLAYER) | curses.A_BOLD)
                     drawn = True
+                # Companion (recruited Lily)
+                if not drawn and companion is not None:
+                    if companion.x == mx and companion.y == my:
+                        safe_addstr(win, screen_y, screen_x, companion.glyph,
+                                    curses.color_pair(companion.color) | curses.A_BOLD)
+                        drawn = True
+                # Lily NPC (not yet recruited)
+                if not drawn and lily_npc is not None:
+                    if lily_npc[0] == mx and lily_npc[1] == my:
+                        safe_addstr(win, screen_y, screen_x, GLYPH_LILY,
+                                    curses.color_pair(C_CYAN) | curses.A_BOLD)
+                        drawn = True
                 # Enemies
                 if not drawn:
                     for e in enemies:
@@ -1206,6 +1307,9 @@ def draw_map(win, game_map, visible, explored, player, enemies, items,
                     elif tile == TILE_DOOR_LOCKED:
                         safe_addstr(win, screen_y, screen_x, ch,
                                     curses.color_pair(C_RED))
+                    elif tile == TILE_ICE_BARRIER:
+                        safe_addstr(win, screen_y, screen_x, ch,
+                                    curses.color_pair(C_MAGENTA) | curses.A_BOLD)
                     elif tile == TILE_DOOR_OPEN:
                         safe_addstr(win, screen_y, screen_x, ch,
                                     curses.color_pair(C_FLOOR))
@@ -1259,10 +1363,12 @@ def draw_minimap(win, game_map, explored, player, y_off, x_off, mw=15, mh=10):
                 safe_addstr(win, screen_y, screen_x, " ")
 
 
-def draw_status_panel(win, player, level_num, y_off, x_off, panel_w=20):
+def draw_status_panel(win, player, level_num, y_off, x_off, panel_w=20,
+                      companion=None):
     """Draw the status/HUD panel on the right side."""
     theme = LEVEL_THEMES[level_num - 1] if level_num <= len(LEVEL_THEMES) else LEVEL_THEMES[-1]
-    draw_box(win, y_off, x_off, 14, panel_w, "STATUS", C_CYAN)
+    box_h = 15 if companion else 14
+    draw_box(win, y_off, x_off, box_h, panel_w, "STATUS", C_CYAN)
 
     row = y_off + 1
     # HP bar
@@ -1307,6 +1413,10 @@ def draw_status_panel(win, player, level_num, y_off, x_off, panel_w=20):
     if player.stim_turns > 0:
         safe_addstr(win, row, x_off + 1, f"{GLYPH_BOLT} Stim: {player.stim_turns}t",
                     curses.color_pair(C_MAGENTA) | curses.A_BOLD)
+        row += 1
+    if companion:
+        safe_addstr(win, row, x_off + 1, f"{GLYPH_LILY} Lily",
+                    curses.color_pair(C_CYAN) | curses.A_BOLD)
 
 
 def draw_boss_hp_bar(win, enemies, y_off, x_off, bar_w):
@@ -1648,9 +1758,12 @@ def main(stdscr):
     player = Player(char_class)
     level_num = 1
     messages = [f"Welcome to Neo-Shibuya, {char_class}.", "Find the stairs to descend deeper."]
+    companion = None  # Lily companion once recruited
+    lily_npc = None   # (x, y) position of Lily NPC before recruitment
 
     # Generate first level
-    game_map, rooms, start, stairs, enemies, items, terminals = generate_level(level_num)
+    (game_map, rooms, start, stairs, enemies, items, terminals,
+     lily_spawn, ice_barrier_pos) = generate_level(level_num)
     player.x, player.y = start
     explored = set()
 
@@ -1680,7 +1793,8 @@ def main(stdscr):
         map_y_off = 1
         map_x_off = 1
         draw_map(stdscr, game_map, visible, explored, player, enemies, items,
-                 cam_x, cam_y, view_w, view_h, map_y_off, map_x_off)
+                 cam_x, cam_y, view_w, view_h, map_y_off, map_x_off,
+                 companion=companion, lily_npc=lily_npc)
 
         # Bottom border of map
         bot_border = BOX_BL + BOX_H * view_w + BOX_BR
@@ -1689,7 +1803,8 @@ def main(stdscr):
 
         # Status panel (right side)
         panel_x = view_w + 3
-        draw_status_panel(stdscr, player, level_num, 0, panel_x, panel_w=min(20, w - panel_x - 1))
+        draw_status_panel(stdscr, player, level_num, 0, panel_x,
+                          panel_w=min(20, w - panel_x - 1), companion=companion)
 
         # Minimap
         mini_y = 15
@@ -1801,12 +1916,37 @@ def main(stdscr):
                 if it.x == player.x and it.y == player.y:
                     _pickup_item(player, it, items, messages)
                     pickup = True
-            # Open adjacent doors
+            # Recruit Lily NPC if adjacent
+            if not pickup and lily_npc is not None and companion is None:
+                if (abs(player.x - lily_npc[0]) <= 1 and
+                        abs(player.y - lily_npc[1]) <= 1):
+                    companion = Companion("Lily", lily_npc[0], lily_npc[1],
+                                          GLYPH_LILY, C_CYAN)
+                    messages.append("Lily: 'You're going after Koroshi? "
+                                    "I'm in. I have a score to settle.'")
+                    lily_npc = None
+                    pickup = True
+            # Open adjacent doors / interact with ICE barrier
             if not pickup:
                 for ddx, ddy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                     tx, ty = player.x + ddx, player.y + ddy
                     if 0 <= ty < MAP_H and 0 <= tx < MAP_W:
-                        if game_map[ty][tx] == TILE_DOOR:
+                        if game_map[ty][tx] == TILE_ICE_BARRIER:
+                            if companion is not None:
+                                game_map[ty][tx] = TILE_DOOR_OPEN
+                                messages.append(
+                                    "Lily jacks in... 'I'm through. "
+                                    "The server core is open.'")
+                            else:
+                                messages.append(
+                                    "NEURAL ICE BARRIER — requires a "
+                                    "netrunner with Neural Bypass.")
+                                messages.append(
+                                    "You need a netrunner to bypass "
+                                    "this ICE.")
+                            pickup = True
+                            break
+                        elif game_map[ty][tx] == TILE_DOOR:
                             game_map[ty][tx] = TILE_DOOR_OPEN
                             messages.append("Opened door.")
                             pickup = True
@@ -1861,6 +2001,19 @@ def main(stdscr):
                     else:
                         messages.append("Door locked! Need a keycard or hack.")
 
+                elif tile == TILE_ICE_BARRIER:
+                    if companion is not None:
+                        game_map[ny][nx] = TILE_DOOR_OPEN
+                        player.x = nx
+                        player.y = ny
+                        messages.append(
+                            "Lily jacks in... 'I'm through. "
+                            "The server core is open.'")
+                    else:
+                        messages.append(
+                            "NEURAL ICE BARRIER — requires a "
+                            "netrunner with Neural Bypass.")
+
                 elif tile in (TILE_FLOOR, TILE_CORRIDOR, TILE_DOOR_OPEN,
                               TILE_STAIRS, TILE_TERMINAL, TILE_SHOP_TILE):
                     player.x = nx
@@ -1884,12 +2037,20 @@ def main(stdscr):
                             # Shop between levels
                             shop_screen(stdscr, player, level_num)
                             level_num += 1
-                            game_map, rooms, start, stairs, enemies, items, terminals = generate_level(level_num)
+                            (game_map, rooms, start, stairs, enemies, items,
+                             terminals, lily_spawn, ice_barrier_pos) = generate_level(level_num)
                             player.x, player.y = start
                             explored = set()
+                            # Carry companion to new level
+                            if companion is not None:
+                                companion.x, companion.y = start
+                            # Set lily_npc if this is her spawn floor and not yet recruited
+                            lily_npc = lily_spawn if companion is None else None
                             messages.append(f"Descended to Level {level_num}...")
                             theme = LEVEL_THEMES[level_num - 1] if level_num <= len(LEVEL_THEMES) else LEVEL_THEMES[-1]
                             messages.append(f"Entering: {theme['level_name']}")
+                            if lily_npc is not None:
+                                messages.append("You spot a figure near a terminal...")
                             continue
 
                 # Wall or other blocking tile — can't move
@@ -1911,6 +2072,13 @@ def main(stdscr):
                         dmg = max(1, e.ranged_attack + random.randint(-3, 3))
                         actual = player.take_damage(dmg)
                         messages.append(f"{e.name} fires an energy blast for {actual} damage!")
+
+        # Companion follows player
+        if companion is not None:
+            companion.follow(player, game_map, enemies)
+            # Occasional dialogue
+            if player.turns_taken % 25 == 0 and player.turns_taken > 0:
+                messages.append(companion.get_dialogue())
 
         # Chrome Medic passive heal
         if player.char_class == CLASS_MEDIC and player.heal_power > 0:
