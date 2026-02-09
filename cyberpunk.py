@@ -109,6 +109,7 @@ TILE_TERMINAL = 6
 TILE_SHOP_TILE = 7
 TILE_DOOR_OPEN = 8
 TILE_ICE_BARRIER = 9
+TILE_COVER = 10
 
 TILE_CHARS = {
     TILE_WALL: "█",
@@ -121,13 +122,14 @@ TILE_CHARS = {
     TILE_SHOP_TILE: GLYPH_SHOP,
     TILE_DOOR_OPEN: "·",
     TILE_ICE_BARRIER: GLYPH_ICE_BARRIER,
+    TILE_COVER: GLYPH_SHIELD,
 }
 
 # Tiles that block movement
-BLOCKING_TILES = {TILE_WALL, TILE_DOOR, TILE_DOOR_LOCKED, TILE_ICE_BARRIER}
+BLOCKING_TILES = {TILE_WALL, TILE_DOOR, TILE_DOOR_LOCKED, TILE_ICE_BARRIER, TILE_COVER}
 
 # Tiles that block line of sight / FOV
-OPAQUE_TILES = {TILE_WALL, TILE_DOOR, TILE_DOOR_LOCKED, TILE_ICE_BARRIER}
+OPAQUE_TILES = {TILE_WALL, TILE_DOOR, TILE_DOOR_LOCKED, TILE_ICE_BARRIER, TILE_COVER}
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Level themes
@@ -394,10 +396,16 @@ class Enemy:
             self.hp = template["hp"]
             self.max_hp = self.hp
             self.attack = template["attack"]
+            self.base_attack = self.attack
             self.defense = template["defense"]
             self.credits = template["credits"]
             self.ranged_attack = template.get("ranged_attack", 0)
+            self.base_ranged_attack = self.ranged_attack
             self.ranged_range = template.get("ranged_range", 0)
+            # Boss phase tracking
+            self.boss_turn_counter = 0
+            self.shield_turns = 0       # Turns remaining on shield (50% dmg reduction)
+            self.enraged = False         # Enrage below 30% HP
         else:
             # Scale with level_num for increasing difficulty
             scale = 1.0 + (level_num - 1) * 0.15
@@ -435,6 +443,9 @@ class Enemy:
 
     def take_damage(self, dmg):
         actual = max(1, dmg - self.defense)
+        # Boss shield reduces damage by 50%
+        if self.is_boss and self.shield_turns > 0:
+            actual = max(1, actual // 2)
         self.hp -= actual
         if self.hp < 0:
             self.hp = 0
@@ -457,6 +468,33 @@ class Enemy:
         if self.behavior == "boss":
             # Boss: always alert, uses ranged attack at distance, melee when adjacent
             self.alert = True
+            self.boss_turn_counter += 1
+
+            # --- Enrage check: below 30% HP ---
+            if not self.enraged and self.hp <= self.max_hp * 0.3:
+                self.enraged = True
+                self.attack = int(self.base_attack * 1.5)
+                self.ranged_attack = int(self.base_ranged_attack * 1.5)
+                return ("boss_enrage", None)
+
+            # --- Shield phase: raise shield every 12 turns for 3 turns ---
+            if self.shield_turns > 0:
+                self.shield_turns -= 1
+            if self.boss_turn_counter % 12 == 0:
+                self.shield_turns = 3
+                return ("boss_shield", None)
+
+            # --- Nano-repair: heal 10 HP every 5 turns ---
+            if self.boss_turn_counter % 5 == 0 and self.hp < self.max_hp:
+                heal_amt = min(10, self.max_hp - self.hp)
+                self.hp += heal_amt
+                return ("boss_heal", heal_amt)
+
+            # --- Summon reinforcements every 8 turns ---
+            if self.boss_turn_counter % 8 == 0:
+                return ("boss_summon", None)
+
+            # --- Combat ---
             if dist == 1:
                 # Melee slam — high damage
                 dmg = max(1, self.attack + random.randint(-2, 4))
@@ -717,6 +755,14 @@ def generate_level(level_num):
 
     num_rooms = min(MAX_ROOMS, 5 + level_num)
 
+    # On the final floor, reserve space for a large boss arena as the last room
+    boss_arena = None
+    if level_num >= MAX_LEVELS:
+        arena_w, arena_h = 16, 12
+        arena_x = MAP_W - arena_w - 2
+        arena_y = (MAP_H - arena_h) // 2
+        boss_arena = Room(arena_x, arena_y, arena_w, arena_h)
+
     attempts = 0
     while len(rooms) < num_rooms and attempts < 200:
         attempts += 1
@@ -725,11 +771,30 @@ def generate_level(level_num):
         x = random.randint(1, MAP_W - w - 1)
         y = random.randint(1, MAP_H - h - 1)
         new_room = Room(x, y, w, h)
+        # Don't overlap with boss arena reservation
+        if boss_arena is not None and new_room.intersects(boss_arena):
+            continue
         if any(new_room.intersects(r) for r in rooms):
             continue
         # Carve room
         place_room(game_map, new_room)
         rooms.append(new_room)
+
+    # Place the boss arena as the last room on the final floor
+    if boss_arena is not None:
+        place_room(game_map, boss_arena)
+        rooms.append(boss_arena)
+        # Add cover objects inside the arena for tactical play
+        cx, cy = boss_arena.center
+        cover_offsets = [
+            (-4, -3), (4, -3), (-4, 3), (4, 3),  # corners
+            (0, -3), (0, 3),                        # top/bottom center
+        ]
+        for ox, oy in cover_offsets:
+            px, py = cx + ox, cy + oy
+            if (boss_arena.x + 1 <= px <= boss_arena.x + boss_arena.w - 2 and
+                    boss_arena.y + 1 <= py <= boss_arena.y + boss_arena.h - 2):
+                game_map[py][px] = TILE_COVER
 
     # Connect rooms with corridors
     for i in range(1, len(rooms)):
@@ -1217,6 +1282,8 @@ def _tile_char_and_attr(game_map, mx, my):
             return ch, curses.color_pair(C_MAGENTA) | curses.A_BOLD
         elif tile == TILE_SHOP_TILE:
             return ch, curses.color_pair(C_YELLOW) | curses.A_BOLD
+        elif tile == TILE_COVER:
+            return ch, curses.color_pair(C_GRAY) | curses.A_BOLD
         else:
             return ch, curses.color_pair(C_FLOOR)
     return " ", curses.color_pair(C_FLOOR)
@@ -1262,7 +1329,12 @@ def draw_map(win, game_map, visible, explored, player, enemies, items,
                     for e in enemies:
                         if e.alive and e.x == mx and e.y == my:
                             glyph = e.state_glyph
-                            e_color = C_BOSS if e.is_boss else C_ENEMY
+                            if e.is_boss and e.enraged:
+                                e_color = C_RED
+                            elif e.is_boss:
+                                e_color = C_BOSS
+                            else:
+                                e_color = C_ENEMY
                             safe_addstr(win, screen_y, screen_x, glyph,
                                         curses.color_pair(e_color) | curses.A_BOLD)
                             # Fix wide glyph color bleed: redraw next cell
@@ -1316,6 +1388,9 @@ def draw_map(win, game_map, visible, explored, player, enemies, items,
                     elif tile == TILE_SHOP_TILE:
                         safe_addstr(win, screen_y, screen_x, ch,
                                     curses.color_pair(C_YELLOW) | curses.A_BOLD)
+                    elif tile == TILE_COVER:
+                        safe_addstr(win, screen_y, screen_x, ch,
+                                    curses.color_pair(C_GRAY) | curses.A_BOLD)
                     else:
                         safe_addstr(win, screen_y, screen_x, ch,
                                     curses.color_pair(C_FLOOR))
@@ -1431,10 +1506,16 @@ def draw_boss_hp_bar(win, enemies, y_off, x_off, bar_w):
     hp_pct = boss.hp / max(1, boss.max_hp)
     pct_int = int(hp_pct * 100)
     hp_color = C_RED if hp_pct <= 0.3 else (C_YELLOW if hp_pct <= 0.6 else C_MAGENTA)
-    # Boss name
+    # Boss name with status indicators
+    status = ""
+    if boss.enraged:
+        status += " [ENRAGED]"
+    if boss.shield_turns > 0:
+        status += f" [SHIELD {boss.shield_turns}t]"
+    name_color = C_RED if boss.enraged else C_BOSS
     safe_addstr(win, y_off, x_off,
-                f"{GLYPH_BOSS} {boss.name}",
-                curses.color_pair(C_BOSS) | curses.A_BOLD)
+                f"{GLYPH_BOSS} {boss.name}{status}",
+                curses.color_pair(name_color) | curses.A_BOLD)
     # HP bar
     inner_w = bar_w - 2
     filled = int(hp_pct * inner_w)
@@ -2072,6 +2153,30 @@ def main(stdscr):
                         dmg = max(1, e.ranged_attack + random.randint(-3, 3))
                         actual = player.take_damage(dmg)
                         messages.append(f"{e.name} fires an energy blast for {actual} damage!")
+                    elif result[0] == "boss_enrage":
+                        messages.append(f"{e.name} enters a RAGE! Damage increased!")
+                    elif result[0] == "boss_shield":
+                        messages.append(f"{e.name} raises a nano-shield! Damage reduced for 3 turns.")
+                    elif result[0] == "boss_heal":
+                        messages.append(f"{e.name} nano-repair: +{result[1]} HP")
+                    elif result[0] == "boss_summon":
+                        # Spawn 1-2 guard drones near the boss
+                        num_spawns = random.randint(1, 2)
+                        spawned = 0
+                        for ddx, ddy in [(-2, 0), (2, 0), (0, -2), (0, 2),
+                                         (-1, -1), (1, 1), (-1, 1), (1, -1)]:
+                            if spawned >= num_spawns:
+                                break
+                            sx, sy = e.x + ddx, e.y + ddy
+                            if (0 <= sy < MAP_H and 0 <= sx < MAP_W and
+                                    game_map[sy][sx] in (TILE_FLOOR, TILE_CORRIDOR) and
+                                    not any(oe.alive and oe.x == sx and oe.y == sy for oe in enemies)):
+                                drone = Enemy("Security Drone", sx, sy, level_num)
+                                drone.alert = True
+                                enemies.append(drone)
+                                spawned += 1
+                        if spawned > 0:
+                            messages.append(f"{e.name} summons {spawned} guard drone{'s' if spawned > 1 else ''}!")
 
         # Companion follows player
         if companion is not None:
