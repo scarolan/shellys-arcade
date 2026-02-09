@@ -34,6 +34,7 @@ GLYPH_GANG = "\U0000ee15"      # nf-fa-skull
 GLYPH_GUARD = "\uf132"         # shield
 GLYPH_TURRET = "\uf05b"        # crosshairs
 GLYPH_NETRUNNER = "\uf120"     # terminal
+GLYPH_BOSS = "\U000f0680"     # nf-md-skull_crossbones
 
 GLYPH_MEDKIT = "\uf0fa"        # medkit
 GLYPH_CREDITS = "\uf155"       # dollar
@@ -90,6 +91,7 @@ C_FLOOR = 13
 C_FOG = 14
 C_TITLE = 15
 C_SHOP_BG = 16
+C_BOSS = 17
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Tile types
@@ -232,6 +234,12 @@ ENEMY_TYPES = {
         "glyph": GLYPH_NETRUNNER, "hp": 20, "attack": 6, "defense": 1,
         "behavior": "wander", "xp": 8, "credits": 10,
         "desc": "Rogue neural ICE. Wanders erratically.",
+    },
+    "Director Koroshi": {
+        "glyph": GLYPH_BOSS, "hp": 250, "attack": 22, "defense": 10,
+        "behavior": "boss", "xp": 200, "credits": 500,
+        "desc": "Apex Overseer. Master of the Megacity Spire.",
+        "is_boss": True, "ranged_attack": 18, "ranged_range": 6,
     },
 }
 
@@ -376,15 +384,28 @@ class Enemy:
         self.x = x
         self.y = y
         self.glyph = template["glyph"]
-        # Scale with level_num for increasing difficulty
-        scale = 1.0 + (level_num - 1) * 0.15
-        self.hp = int(template["hp"] * scale)
-        self.max_hp = self.hp
-        self.attack = int(template["attack"] * scale)
-        self.defense = int(template["defense"] * scale)
+        self.is_boss = template.get("is_boss", False)
+        # Boss enemies don't scale — they use their raw high stats
+        if self.is_boss:
+            self.hp = template["hp"]
+            self.max_hp = self.hp
+            self.attack = template["attack"]
+            self.defense = template["defense"]
+            self.credits = template["credits"]
+            self.ranged_attack = template.get("ranged_attack", 0)
+            self.ranged_range = template.get("ranged_range", 0)
+        else:
+            # Scale with level_num for increasing difficulty
+            scale = 1.0 + (level_num - 1) * 0.15
+            self.hp = int(template["hp"] * scale)
+            self.max_hp = self.hp
+            self.attack = int(template["attack"] * scale)
+            self.defense = int(template["defense"] * scale)
+            self.credits = int(template["credits"] * scale)
+            self.ranged_attack = 0
+            self.ranged_range = 0
         self.behavior = template["behavior"]
         self.xp = template["xp"]
-        self.credits = int(template["credits"] * scale)
         self.alert = False
         self.patrol_dir = random.choice([(0, 1), (0, -1), (1, 0), (-1, 0)])
         self.disabled = False
@@ -428,6 +449,28 @@ class Enemy:
             if dist <= 5 and self._has_line_of_sight(game_map, player.x, player.y):
                 return ("shoot", player)
             return None
+
+        if self.behavior == "boss":
+            # Boss: always alert, uses ranged attack at distance, melee when adjacent
+            self.alert = True
+            if dist == 1:
+                # Melee slam — high damage
+                dmg = max(1, self.attack + random.randint(-2, 4))
+                actual = player.take_damage(dmg)
+                return ("attack", actual)
+            elif dist <= self.ranged_range and self._has_line_of_sight(game_map, player.x, player.y):
+                # Ranged energy blast
+                return ("boss_ranged", player)
+            else:
+                # Chase the player
+                dx, dy = self._chase(player)
+                nx, ny = self.x + dx, self.y + dy
+                if (0 <= ny < len(game_map) and 0 <= nx < len(game_map[0]) and
+                        game_map[ny][nx] not in BLOCKING_TILES and
+                        not self._enemy_at(nx, ny, enemies)):
+                    self.x = nx
+                    self.y = ny
+                return None
 
         if self.behavior == "aggressive" or (self.alert and dist <= 8):
             # Chase the player directly
@@ -782,8 +825,22 @@ def place_enemies(game_map, rooms, level_num, player_start):
     """Scatter enemies across rooms, scaling with level_num."""
     enemies = []
     enemy_count = 3 + level_num * 2
-    # Weight enemy types by zone/level
-    available = list(ENEMY_TYPES.keys())
+    # Weight enemy types by zone/level (exclude boss from random spawns)
+    available = [k for k in ENEMY_TYPES.keys() if not ENEMY_TYPES[k].get("is_boss")]
+
+    # On the final floor, spawn the boss in the last room (near stairs)
+    if level_num >= MAX_LEVELS and len(rooms) >= 2:
+        boss_room = rooms[-1]
+        bx, by = boss_room.center
+        # Offset boss slightly from stairs so they don't overlap
+        for ddx, ddy in [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1)]:
+            nx, ny = bx + ddx, by + ddy
+            if (0 <= ny < MAP_H and 0 <= nx < MAP_W and
+                    game_map[ny][nx] in (TILE_FLOOR, TILE_CORRIDOR)):
+                bx, by = nx, ny
+                break
+        enemies.append(Enemy("Director Koroshi", bx, by, level_num))
+
     for room in rooms[1:]:
         if len(enemies) >= enemy_count:
             break
@@ -1024,6 +1081,7 @@ def init_colors():
     curses.init_pair(C_FOG, curses.COLOR_WHITE, -1)
     curses.init_pair(C_TITLE, curses.COLOR_MAGENTA, -1)
     curses.init_pair(C_SHOP_BG, curses.COLOR_YELLOW, -1)
+    curses.init_pair(C_BOSS, curses.COLOR_MAGENTA, -1)
 
 
 def safe_addstr(win, y, x, text, attr=0):
@@ -1103,8 +1161,9 @@ def draw_map(win, game_map, visible, explored, player, enemies, items,
                     for e in enemies:
                         if e.alive and e.x == mx and e.y == my:
                             glyph = e.state_glyph
+                            e_color = C_BOSS if e.is_boss else C_ENEMY
                             safe_addstr(win, screen_y, screen_x, glyph,
-                                        curses.color_pair(C_ENEMY) | curses.A_BOLD)
+                                        curses.color_pair(e_color) | curses.A_BOLD)
                             # Fix wide glyph color bleed: redraw next cell
                             # with the correct background tile
                             if screen_x + 1 < view_w + map_x_off:
@@ -1248,6 +1307,31 @@ def draw_status_panel(win, player, level_num, y_off, x_off, panel_w=20):
     if player.stim_turns > 0:
         safe_addstr(win, row, x_off + 1, f"{GLYPH_BOLT} Stim: {player.stim_turns}t",
                     curses.color_pair(C_MAGENTA) | curses.A_BOLD)
+
+
+def draw_boss_hp_bar(win, enemies, y_off, x_off, bar_w):
+    """Draw the boss HP bar if a living boss exists on the level."""
+    boss = None
+    for e in enemies:
+        if e.is_boss and e.alive:
+            boss = e
+            break
+    if boss is None:
+        return
+    hp_pct = boss.hp / max(1, boss.max_hp)
+    pct_int = int(hp_pct * 100)
+    hp_color = C_RED if hp_pct <= 0.3 else (C_YELLOW if hp_pct <= 0.6 else C_MAGENTA)
+    # Boss name
+    safe_addstr(win, y_off, x_off,
+                f"{GLYPH_BOSS} {boss.name}",
+                curses.color_pair(C_BOSS) | curses.A_BOLD)
+    # HP bar
+    inner_w = bar_w - 2
+    filled = int(hp_pct * inner_w)
+    bar = "█" * filled + "░" * (inner_w - filled)
+    safe_addstr(win, y_off + 1, x_off,
+                f"[{bar}] {pct_int}%  ({boss.hp}/{boss.max_hp})",
+                curses.color_pair(hp_color) | curses.A_BOLD)
 
 
 def draw_message_log(win, messages, y_off, x_off, log_w, log_h=4):
@@ -1611,8 +1695,12 @@ def main(stdscr):
         mini_y = 15
         draw_minimap(stdscr, game_map, explored, player, mini_y, panel_x)
 
-        # Message log (below map)
-        log_y = map_y_off + view_h + 1
+        # Boss HP bar (above message log when a boss is present)
+        draw_boss_hp_bar(stdscr, enemies, map_y_off + view_h + 1, 1, view_w)
+
+        # Message log (below map, shifted down if boss bar is shown)
+        has_boss = any(e.is_boss and e.alive for e in enemies)
+        log_y = map_y_off + view_h + 1 + (3 if has_boss else 0)
         draw_message_log(stdscr, messages, log_y, 0, view_w + 2, min(4, h - log_y - 3))
 
         # Help line
@@ -1819,6 +1907,10 @@ def main(stdscr):
                         dmg = max(1, e.attack + random.randint(-2, 2))
                         actual = player.take_damage(dmg)
                         messages.append(f"{e.name} shoots you for {actual} damage!")
+                    elif result[0] == "boss_ranged":
+                        dmg = max(1, e.ranged_attack + random.randint(-3, 3))
+                        actual = player.take_damage(dmg)
+                        messages.append(f"{e.name} fires an energy blast for {actual} damage!")
 
         # Chrome Medic passive heal
         if player.char_class == CLASS_MEDIC and player.heal_power > 0:
