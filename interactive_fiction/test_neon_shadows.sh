@@ -132,6 +132,31 @@ run_test "Can reach data vault after hacking ICE" "take datapad\nopen desk\ntake
 run_test "Can extract data and return to server room" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nlook\nquit\ny" "server room|server racks"
 run_test "Disconnect returns to server room" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\ndisconnect\nlook\nquit\ny" "server room|server racks"
 
+# --- POST-RESCUE NPC DIALOGUE ---
+echo ""
+echo "--- Post-Rescue NPC Dialogue ---"
+
+# Full path to free Lily, then backtrack to ask Kai about lily
+run_test "Ask Kai about lily after rescue shows new dialogue" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nsouth\nup\nup\nask kai about lily\nquit\ny" \
+    "brought my daughter home|She's safe"
+
+run_test "Ask Kai about lily after rescue does not show pre-rescue text" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nsouth\nup\nup\nask kai about lily\nquit\ny" \
+    "stopped answering my calls" "true"
+
+run_test "Ask Raven about lily after rescue shows new dialogue" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nsouth\nup\nnorth\nask raven about lily\nquit\ny" \
+    "pulled the Chen girl out"
+
+run_test "Ask Zephyr about lily after rescue shows new dialogue" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nsouth\nup\neast\nsouth\nask zephyr about lily\nquit\ny" \
+    "You got her out|breathing free air"
+
+run_test "Ask Tanaka about lily after rescue shows new dialogue" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nsouth\nup\nwest\nask tanaka about lily\nquit\ny" \
+    "found the Chen girl|pushed harder"
+
 # --- GAME COMPLETION ---
 echo ""
 echo "--- Game Completion ---"

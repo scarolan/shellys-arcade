@@ -47,6 +47,10 @@ Global jacked_in = false;
 
 [ NPC_Ask_Kai topic;
     if (topic == 'lily' or 'daughter' or 'missing' or 'chen' or 'girl') {
+        if (lily_freed) {
+            print "Kai's face breaks into a smile so wide it looks almost painful, tears streaming down his cheeks. ~She's safe. My Lily is safe. I can't -- I don't have the words, Vex. You brought my daughter home. Whatever happens next, I will never forget what you've done for us.~^";
+            rtrue;
+        }
         print "Kai's eyes fill with tears. ~Lily is my only daughter. She's twenty-six, brilliant -- a neural programmer, one of the best in Neo-Angeles. She was working on contract for Zheng-Harmon Corp. Three weeks ago she stopped answering my calls. Her apartment was cleaned out, like she never existed. I know something terrible has happened to her.~^";
         rtrue;
     }
@@ -96,6 +100,10 @@ Global jacked_in = false;
         rtrue;
     }
     if (topic == 'lily' or 'daughter' or 'missing' or 'chen' or 'girl') {
+        if (lily_freed) {
+            print "Raven pours a drink and slides it across the bar. ~Heard you pulled the Chen girl out of that corp hellhole. Not many people would've gone that far. She's lucky you took the case, Vex.~^";
+            rtrue;
+        }
         print "Raven's expression softens -- just barely. ~A missing girl? In this city, that's a story I hear every week. But if she was mixed up with Zheng-Harmon... that's bad news. Those corp types don't let people just walk away from classified projects.~^";
         rtrue;
     }
@@ -129,6 +137,10 @@ Global jacked_in = false;
         rtrue;
     }
     if (topic == 'lily' or 'daughter' or 'missing' or 'chen' or 'girl') {
+        if (lily_freed) {
+            print "Zephyr actually looks up from the keyboard -- a rare event. ~You got her out? Good. Zheng-Harmon's neural rigs are brain-scramblers. She's going to need time to recover, but at least she's breathing free air again.~^";
+            rtrue;
+        }
         print "Zephyr shrugs without looking up. ~Missing neural programmer? Sounds like Zheng-Harmon's MO. They recruit the best, use them up, and dispose of the evidence. If she's still alive, she's probably hooked up to one of their rigs somewhere. Get me data and I'll find her.~^";
         rtrue;
     }
@@ -158,6 +170,10 @@ Global jacked_in = false;
 
 [ NPC_Ask_Tanaka topic;
     if (topic == 'lily' or 'daughter' or 'missing' or 'chen' or 'girl') {
+        if (lily_freed) {
+            print "Tanaka loosens his collar, not meeting your eyes. ~Yeah, I heard you found the Chen girl. Got her out of some Zheng-Harmon black site. Maybe I should've pushed harder on that case.~ He stares at his cold coffee. ~Maybe I should've pushed harder on a lot of cases.~^";
+            rtrue;
+        }
         print "Tanaka shifts uncomfortably in his chair. ~The Chen case? Look, I filed the report. These things take time. People go missing in Neo-Angeles every day -- you know that, Vex. I can't chase every runaway.~^";
         rtrue;
     }
