@@ -658,7 +658,7 @@ Object den_keyboard "holographic keyboard" den
     has scenery;
 
 Object bolt "Bolt" den
-    with name 'bolt' 'robot' 'bot' 'droid',
+    with name 'bolt' 'robot' 'bot' 'droid' 'zb' '7',
          initial "A squat, battered robot labeled ~ZB-7~ in faded stencil crouches in the corner, sorting patch cables with mechanical precision and obvious resentment.",
          description "A squat, dented robot assembled from mismatched salvage parts. One optical sensor glows amber; the other is a cracked camera lens held on with electrical tape. ~ZB-7~ is stenciled on its chest plate in fading white paint, but someone -- probably itself -- has scratched ~BOLT~ underneath in crude letters. It radiates an aura of put-upon suffering.",
          life [;
