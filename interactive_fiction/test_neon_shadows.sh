@@ -786,19 +786,26 @@ run_test "Drink whiskey bottle gives library default (pending issue #68)" \
     "take bottle\ndrink bottle\nquit\ny" \
     "nothing suitable to drink"
 
-# --- RAVEN GIVE BUG (Issue #70) ---
+# --- RAVEN GIVE BUG (Issue #70) - FIXED ---
 echo ""
-echo "--- Raven Give Bug ---"
+echo "--- Raven Give Bug (Fixed) ---"
 
-# Note: This documents the current BUGGY behavior. Issue #70 tracks the fix.
-# After fix, giving non-datapad items to Raven should NOT trigger payment.
-run_test "Give bottle to Raven triggers payment (known bug #70)" \
+# Fixed: giving items to Raven now rejects with flavour text, no payment triggered.
+run_test "Give bottle to Raven rejects with flavour text (fix #70)" \
     "take datapad\ntake bottle\ndown\nnorth\ngive bottle to raven\nquit\ny" \
-    "satoshis transfer"
+    "deal in satoshis"
 
-run_test "Give pistol to Raven triggers payment (known bug #70)" \
+run_test "Give pistol to Raven rejects with flavour text (fix #70)" \
     "take datapad\nopen desk\ntake pistol\ndown\nnorth\ngive pistol to raven\nquit\ny" \
-    "satoshis transfer"
+    "deal in satoshis"
+
+run_test "Give bottle to Raven does not trigger payment (fix #70)" \
+    "take datapad\ntake bottle\ndown\nnorth\ngive bottle to raven\nquit\ny" \
+    "satoshis transfer" "true"
+
+run_test "Give pistol to Raven does not trigger payment (fix #70)" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\ngive pistol to raven\nquit\ny" \
+    "satoshis transfer" "true"
 
 # --- MISSING SCENERY: KNOWN BUGS ---
 echo ""

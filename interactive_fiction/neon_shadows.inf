@@ -1047,8 +1047,7 @@ Object raven "Raven" bar
              print "Raven nods, barely listening.^";
              rtrue;
            Give:
-             noun = raven;
-             PaySub();
+             print "Raven pushes it back. ~I don't want your junk, sweetheart. I deal in satoshis.~^";
              rtrue;
          ],
     has animate proper female;
