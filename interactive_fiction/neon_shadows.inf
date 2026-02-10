@@ -1113,6 +1113,10 @@ Object rooftop_voss "Director Voss" rooftop
 ! --- Free/Rescue action ---
 [ FreeSub;
     if (noun == lily) {
+        if (lily_freed) {
+            print "You've already freed Lily.^";
+            rtrue;
+        }
         if (location == clinic) {
             lily_freed = true;
             score = score + 20;
