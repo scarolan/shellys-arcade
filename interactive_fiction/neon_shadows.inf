@@ -705,6 +705,11 @@ Object alley_steam "steam" alley
          description "Steam rises from grates in the ground, carrying the smell of overheated machinery and chemical runoff from somewhere deep beneath the city.",
     has scenery;
 
+Object alley_laundry "laundry lines" alley
+    with name 'laundry' 'lines' 'washing' 'clothes',
+         description "Laundry lines crisscross between the buildings overhead, sagging under the weight of damp clothes. Faded shirts and patched trousers drip rainwater into the alley below.",
+    has scenery pluralname;
+
 ! --- Scenery: Lobby ---
 Object elevator "elevator" lobby
     with name 'elevator' 'lift',

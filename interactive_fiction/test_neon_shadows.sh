@@ -830,9 +830,9 @@ run_test "Street: examine sign describes noodle sign" \
     "down\nexamine sign\nquit\ny" \
     "Hiro's Noodles"
 
-run_test "Alley: examine laundry shows cant see (known bug #65)" \
+run_test "Alley: examine laundry returns description (fix #65)" \
     "down\neast\nexamine laundry\nquit\ny" \
-    "can't see any such thing"
+    "sagging under the weight"
 
 run_test "Precinct: examine lights returns description (fix #66)" \
     "down\nwest\nexamine lights\nquit\ny" \
