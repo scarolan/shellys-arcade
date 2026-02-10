@@ -781,10 +781,23 @@ run_test "Ask Bolt about itself gives snarky response" \
 echo ""
 echo "--- Drink Verb ---"
 
-# Note: These test the CURRENT behavior. Issue #68 tracks adding thematic responses.
-run_test "Drink whiskey bottle gives library default (pending issue #68)" \
+run_test "Drink whiskey bottle gives thematic response" \
     "take bottle\ndrink bottle\nquit\ny" \
-    "nothing suitable to drink"
+    "Deckard's Reserve"
+
+run_test "Drink whiskey bottle does not give library default" \
+    "take bottle\ndrink bottle\nquit\ny" \
+    "nothing suitable to drink" \
+    true
+
+run_test "Drink decanter on executive floor gives thematic response" \
+    "take datapad\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\ndrink decanter\nquit\ny" \
+    "whiskey|liquor cabinet|case can't"
+
+run_test "Drink decanter does not give library default" \
+    "take datapad\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\ndrink decanter\nquit\ny" \
+    "nothing suitable to drink" \
+    true
 
 # --- RAVEN GIVE BUG (Issue #70) - FIXED ---
 echo ""

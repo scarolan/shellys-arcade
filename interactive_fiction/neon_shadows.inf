@@ -725,6 +725,11 @@ Object lobby_reception "reception desk" lobby
 Object decanter "crystal decanter" executive
     with name 'decanter' 'crystal' 'whiskey',
          description "A crystal decanter filled with genuine whiskey -- the real stuff, not synth. Worth more than your monthly rent. You resist the urge to pour yourself one.",
+         before [;
+           Drink:
+             print "You eye the genuine whiskey in the crystal decanter. Tempting. But you didn't come to Voss's floor to sample his liquor cabinet -- you came for answers. The whiskey can wait. The case can't.^";
+             rtrue;
+         ],
     has scenery;
 
 Object exec_desk "hardwood desk" executive
@@ -1002,7 +1007,12 @@ Object pistol "pistol" desk
 
 Object whiskey "bottle of synth-whiskey" office
     with name 'bottle' 'whiskey' 'synth-whiskey',
-         description "Half-empty bottle of expensive synth-whiskey. The label reads ~Deckard's Reserve~ in peeling gold foil.";
+         description "Half-empty bottle of expensive synth-whiskey. The label reads ~Deckard's Reserve~ in peeling gold foil.",
+         before [;
+           Drink:
+             print "You take a long pull of Deckard's Reserve. It burns going down -- cheap synth pretending to be top shelf. But tonight, it tastes like the truth: bitter and necessary.^";
+             rtrue;
+         ];
 
 ! --- Pistol Reminder Daemon ---
 Object pistol_reminder
