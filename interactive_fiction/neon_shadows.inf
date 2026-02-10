@@ -1078,7 +1078,10 @@ Object rooftop_voss "Director Voss" rooftop
     if (noun == lily)             { NPC_Talk_Lily(); rtrue; }
     if (noun == rooftop_voss) { NPC_Talk_RooftopVoss(); rtrue; }
     if (noun has animate) {
-        print (The) noun, " doesn't seem interested in talking.^";
+        if (noun has pluralname)
+            print (The) noun, " don't seem interested in talking.^";
+        else
+            print (The) noun, " doesn't seem interested in talking.^";
         rtrue;
     }
     print "You can't talk to that.^";
