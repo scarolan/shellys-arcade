@@ -366,6 +366,8 @@ Object server "Server Room"
             print "Rows of server racks hum with cooling fans, filling the room with a constant mechanical drone. Red LEDs blink in rhythmic patterns along each rack like the heartbeats of sleeping machines. The temperature is a good ten degrees colder than the rest of the building. A neural jack point protrudes from the main server console, its chrome port gleaming under the cold lights. ";
             if (found_logs) {
                 print "The neural jack point sits idle -- you've already extracted what you came for.";
+            } else if (ice_bypassed) {
+                print "You've breached the ICE -- jack in to access the data vault.";
             } else {
                 print "The data you need is locked behind military-grade ICE -- you will need to jack in to get it.";
             }
