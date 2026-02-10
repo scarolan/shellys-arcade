@@ -1,8 +1,8 @@
 name: "Kanban to Shelly Label Sync"
 
 on:
-  projects_v2_item:
-    types: [edited]
+  schedule:
+    - cron: "0 * * * *"
   workflow_dispatch:
 
 jobs:
