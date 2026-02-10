@@ -261,7 +261,13 @@ Object bar "Neon Lotus Bar"
 Object alley "Chinatown Alley"
     with description "Narrow and wet, the alley reeks of garbage and frying synthetic noodles from an automated wok stall that never closes. Flickering Mandarin signage casts long, shifting shadows across the cracked walls. Steam rises from grates in the ground, and somewhere above, laundry lines crisscross between the buildings like a spider's web. A damp cardboard box sits in a corner, and a feral cat watches you from a fire escape.^^You can go west to return to the street or south deeper into the alley.",
          w_to street,
-         s_to den,
+         s_to [;
+             if (knows_zephyr) {
+                 return den;
+             }
+             print "You see nothing but a dead end of crumbling brick wall. There's nothing of interest to the south.^";
+             rfalse;
+         ],
     has light;
 
 Object den "Zephyr's Den"
