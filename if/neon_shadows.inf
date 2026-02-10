@@ -3,6 +3,7 @@
 
 Constant Story "Neon Shadows";
 Constant Headline "^A Cyberpunk Detective Noir^^";
+Constant MAX_SCORE 100;
 
 Replace DrawStatusLine;
 
@@ -273,6 +274,10 @@ Object lobby "Zheng-Harmon Lobby"
          n_to street,
          u_to [;
              if (has_keycard) {
+                 if (self hasnt general) {
+                     give self general;
+                     score = score + 10;
+                 }
                  print "You flash the keycard. The guard steps aside and the elevator doors open.^";
                  return executive;
              }
@@ -445,9 +450,9 @@ Object raven "Raven" bar
                  rtrue;
              }
              player_sats = player_sats - 50;
-             score = player_sats;
              raven_paid = true;
              knows_zephyr = true;
+             score = score + 10;
              print "You tap your datapad. Fifty satoshis transfer to Raven's account. She glances at the confirmation and leans close. ~You want info? Talk to Zephyr, a hacker down in the Chinatown alley. Go east from the street, then south. Tell 'em Raven sent you.~^";
              rtrue;
          ],
@@ -468,6 +473,7 @@ Object zephyr "Zephyr" den
                  remove datapad;
                  zephyr_helped = true;
                  has_keycard = true;
+                 score = score + 20;
                  print "Zephyr grabs the datapad and plugs it into the rig. Fingers fly across keys.^";
                  print "~Decrypted. Zheng-Harmon Corp is running neural experiments. Here -- I cloned a keycard from the data. It'll get you into the Zheng-Harmon executive floor. Go south from the street to the lobby and use it.~^";
                  move keycard to player;
@@ -494,6 +500,7 @@ Object voss "Director Voss" executive
            Attack:
              if (pistol in player) {
                  voss_dead = true;
+                 score = score + 20;
                  remove voss;
                  print "You raise your pistol. Voss turns, eyes widening. The shot echoes across the rooftop.^";
                  print "Voss crumples to the ground. It's over.^";
@@ -579,6 +586,7 @@ Object logs "experiment logs" server
          before [;
            Take:
              found_logs = true;
+             score = score + 20;
              print "Taken. Among the files you find coordinates for an abandoned clinic in the industrial district, along with a door code: 7749.^";
              rtrue;
          ];
@@ -591,6 +599,7 @@ Object rooftop_voss "Director Voss" rooftop
            Attack:
              if (pistol in player) {
                  voss_dead = true;
+                 score = score + 20;
                  remove rooftop_voss;
                  print "You raise your pistol. Voss turns, eyes widening. The shot echoes across the rooftop.^";
                  print "Voss crumples to the ground. It's over.^";
@@ -628,7 +637,7 @@ Object rooftop_voss "Director Voss" rooftop
 ! --- Initialization ---
 [ Initialise;
     location = office;
-    score = player_sats;
+    score = 0;
 
     print "^^You're Kira Vex, private eye. The rain hasn't stopped in three days.^";
     print "Your latest client, Kai Chen, is waiting for you in your cramped office.^^";
@@ -696,6 +705,7 @@ Object rooftop_voss "Director Voss" rooftop
     }
     if (noun == voss || noun == rooftop_voss) {
         voss_dead = true;
+        score = score + 20;
         if (noun == rooftop_voss) remove rooftop_voss;
         else remove voss;
         print "You raise your pistol. Voss turns, eyes widening. The shot echoes.^";
@@ -714,6 +724,7 @@ Object rooftop_voss "Director Voss" rooftop
     if (noun == lily) {
         if (location == clinic) {
             lily_freed = true;
+            score = score + 20;
             StartDaemon(lily);
             print "You disconnect the neural interface cables. Lily gasps, eyes fluttering open.^";
             print "~Who... where am I?~ She looks up at you with frightened eyes.^";
@@ -746,9 +757,9 @@ Object rooftop_voss "Director Voss" rooftop
             rtrue;
         }
         player_sats = player_sats - 50;
-        score = player_sats;
         raven_paid = true;
         knows_zephyr = true;
+        score = score + 10;
         print "You tap your datapad. Fifty satoshis transfer to Raven's account. She glances at the confirmation and leans close. ~You want info? Talk to Zephyr, a hacker down in the Chinatown alley. Go east from the street, then south. Tell 'em Raven sent you.~^";
         rtrue;
     }
