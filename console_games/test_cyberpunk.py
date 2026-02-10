@@ -493,7 +493,7 @@ class TestItemsAndEquipment(unittest.TestCase):
         """Must have a currency/credits system."""
         has_credits = any(kw in self.source_lower for kw in
                           ["credit", "money", "gold", "currency",
-                           "cash", "cred", "nuyen"])
+                           "cash", "cred", "nuyen", "satoshi"])
         self.assertTrue(has_credits, "No credits/currency found")
 
     def test_has_inventory(self):

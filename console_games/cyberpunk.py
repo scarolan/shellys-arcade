@@ -38,7 +38,7 @@ GLYPH_TURRET = "\uf05b"        # crosshairs
 GLYPH_NETRUNNER = "\uf120"     # terminal
 
 GLYPH_MEDKIT = "\uf0fa"        # medkit
-GLYPH_CREDITS = "\uf155"       # dollar
+GLYPH_CREDITS = "\uf15a"       # bitcoin
 GLYPH_WEAPON = "\uf05b"        # crosshairs
 GLYPH_KEY = "\uf084"           # key
 GLYPH_CHIP = "\uf2db"          # microchip
@@ -217,7 +217,7 @@ RAVEN_DIALOGUE = [
     "Raven polishes a glass. 'Heard the corps are hiring new muscle upstairs.'",
     "Raven leans in. 'Watch yourself out there. The ICE is getting thicker.'",
     "Raven nods. 'You look like you've seen some things. Browse my stock.'",
-    "Raven grins. 'Credits talk, runner. Let's do business.'",
+    "Raven grins. 'Sats talk, runner. Let's do business.'",
     "Raven eyes you over the counter. 'The Neon Lotus never closes.'",
     "Raven stares past you. 'Knew a mnemonic courier once. Carried half a gig in his skull. Corp flatlined him for it.'",
     "Raven wipes the bar slowly. 'Old fixer called the Finn used to say — data wants to be free. So do runners.'",
@@ -857,14 +857,14 @@ def place_items(game_map, rooms, level_num, player_start):
         if game_map[iy][ix] in (TILE_FLOOR, TILE_CORRIDOR):
             items.append(Item("Medkit", ix, iy, "consumable", heal=30))
 
-    # Credit pickups
+    # Satoshi pickups
     for _ in range(3 + level_num):
         room = random.choice(rooms)
         ix = random.randint(room.x + 1, room.x + room.w - 2)
         iy = random.randint(room.y + 1, room.y + room.h - 2)
         if game_map[iy][ix] in (TILE_FLOOR, TILE_CORRIDOR):
             amt = random.randint(10, 30) + level_num * 5
-            items.append(Item(f"{amt} Credits", ix, iy, "credits", amount=amt))
+            items.append(Item(f"{amt} Sats", ix, iy, "credits", amount=amt))
 
     # Data chips
     for _ in range(1 + level_num // 3):
@@ -1148,11 +1148,11 @@ def hack_terminal_effects(player, game_map, enemies, tx, ty,
                     game_map[ny][nx] = TILE_DOOR_OPEN
                     effects_applied.append("Unlocked door")
 
-    # Download data for credits
+    # Download data for sats
     bonus = random.randint(20, 60)
     player.credits += bonus
     player.total_credits += bonus
-    effects_applied.append(f"Downloaded data (+{bonus} credits)")
+    effects_applied.append(f"Downloaded data (+{bonus} sats)")
 
     if effects_applied:
         return "Hack successful! " + ", ".join(effects_applied)
@@ -1432,7 +1432,7 @@ def draw_status_panel(win, player, level_num, y_off, x_off, panel_w=20):
     safe_addstr(win, row, x_off + 2, bar, curses.color_pair(hp_color))
 
     row += 1
-    safe_addstr(win, row, x_off + 1, f"{GLYPH_CREDITS} CRD: {player.credits}",
+    safe_addstr(win, row, x_off + 1, f"{GLYPH_CREDITS} SAT: {player.credits}",
                 curses.color_pair(C_YELLOW))
     row += 1
     safe_addstr(win, row, x_off + 1, f"{GLYPH_WEAPON} WPN: {player.weapon}",
@@ -1474,7 +1474,7 @@ def draw_message_log(win, messages, y_off, x_off, log_w, log_h=4):
             color = C_RED
         elif "hack" in msg.lower():
             color = C_MAGENTA
-        elif "pick" in msg.lower() or "credit" in msg.lower() or "found" in msg.lower():
+        elif "pick" in msg.lower() or "sat" in msg.lower() or "found" in msg.lower():
             color = C_YELLOW
         elif "heal" in msg.lower() or "medkit" in msg.lower():
             color = C_GREEN
@@ -1547,7 +1547,7 @@ def select_class(stdscr):
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def shop_screen(stdscr, player, level_num):
-    """Display shop between levels. Player can buy items with credits."""
+    """Display shop between levels. Player can buy items with satoshis."""
     stock = get_shop_stock(level_num)
     selected = 0
     messages = []
@@ -1559,7 +1559,7 @@ def shop_screen(stdscr, player, level_num):
         cx = max(0, w // 2 - len(title) // 2)
 
         safe_addstr(stdscr, 1, cx, title, curses.color_pair(C_MAGENTA) | curses.A_BOLD)
-        safe_addstr(stdscr, 2, cx, f"  {GLYPH_CREDITS} Credits: {player.credits}",
+        safe_addstr(stdscr, 2, cx, f"  {GLYPH_CREDITS} Satoshis: {player.credits}",
                     curses.color_pair(C_YELLOW) | curses.A_BOLD)
         safe_addstr(stdscr, 3, cx, "  Buy gear for the next floor.", curses.color_pair(C_WHITE))
         safe_addstr(stdscr, 4, cx, BOX_H * len(title), curses.color_pair(C_MAGENTA))
@@ -1573,7 +1573,7 @@ def shop_screen(stdscr, player, level_num):
             else:
                 marker = "  "
                 attr = curses.color_pair(C_WHITE if afford else C_GRAY)
-            price_str = f"  ${item['price']}"
+            price_str = f"  ₿{item['price']}"
             safe_addstr(stdscr, y, cx, f"{marker}{item.get('glyph', GLYPH_STAR)} {item['name']}{price_str}", attr)
 
         foot_y = 6 + len(stock) * 2 + 1
@@ -1697,7 +1697,7 @@ def game_over_screen(stdscr, player, level_num, won=False):
         f"  Class: {player.char_class}",
         f"  Levels Cleared: {player.levels_cleared}",
         f"  Enemies Killed: {player.enemies_killed}",
-        f"  Total Credits Earned: {player.total_credits}",
+        f"  Total Satoshis Earned: {player.total_credits}",
         f"  Data Chips Found: {player.data_chips}",
         f"  Damage Dealt: {player.damage_dealt}",
         f"  Damage Taken: {player.damage_taken}",
@@ -1747,7 +1747,7 @@ def _pickup_item(player, item, items, messages):
         val = item.props.get("value", 50)
         player.credits += val
         player.total_credits += val
-        messages.append(f"Found Data Chip! +{val} credits")
+        messages.append(f"Found Data Chip! +{val} sats")
     elif item.item_type == "weapon":
         player.weapon = item.name
         player.weapon_type = item.props.get("weapon_type", "melee")
@@ -1973,7 +1973,7 @@ def main(stdscr):
                         player.enemies_killed += 1
                         player.credits += target.credits
                         player.total_credits += target.credits
-                        messages.append(f"{target.name} destroyed! +{target.credits} credits")
+                        messages.append(f"{target.name} destroyed! +{target.credits} sats")
                 else:
                     messages.append("No target in range!")
 
@@ -2052,7 +2052,7 @@ def main(stdscr):
                         player.enemies_killed += 1
                         player.credits += target_enemy.credits
                         player.total_credits += target_enemy.credits
-                        messages.append(f"{target_enemy.name} destroyed! +{target_enemy.credits} credits")
+                        messages.append(f"{target_enemy.name} destroyed! +{target_enemy.credits} sats")
 
                 elif tile == TILE_DOOR:
                     # Bump to open unlocked doors — door disappears
