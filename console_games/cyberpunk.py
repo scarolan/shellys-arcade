@@ -136,12 +136,12 @@ LEVEL_THEMES = [
     {"level_name": "Neon Street District", "zone": "street"},
     {"level_name": "Kabuki Market Underground", "zone": "underground"},
     {"level_name": "Koroshi Tower - Lower Floors", "zone": "corporate"},
-    {"level_name": "Synth Den Tunnels", "zone": "underground"},
+    {"level_name": "Sprawl Underworks", "zone": "underground"},
     {"level_name": "Koroshi Tower - Executive Suite", "zone": "corporate"},
     {"level_name": "Chrome Alley - Gang Territory", "zone": "street"},
     {"level_name": "Koroshi Tower - Server Core", "zone": "corporate"},
     {"level_name": "Neural Nexus - Deep Underground", "zone": "underground"},
-    {"level_name": "Megacity Spire - Apex", "zone": "corporate"},
+    {"level_name": "Tessier-Ashpool Spire - Apex", "zone": "corporate"},
 ]
 
 MAX_LEVELS = 9
@@ -159,7 +159,7 @@ CLASS_STATS = {
         "hp": 120, "max_hp": 120, "attack": 14, "defense": 6,
         "hack_skill": 15, "melee_bonus": 8, "ranged_bonus": 2,
         "vision": 6, "heal_power": 0,
-        "desc": "High melee damage and armor. Katana specialist.",
+        "desc": "High melee damage and armor. Trained in the Kusanagi style.",
         "weapon": "Katana", "weapon_type": "melee", "weapon_dmg": 14,
         "armor": "Leather Jacket", "armor_def": 3,
     },
@@ -167,7 +167,7 @@ CLASS_STATS = {
         "hp": 80, "max_hp": 80, "attack": 8, "defense": 2,
         "hack_skill": 85, "melee_bonus": 0, "ranged_bonus": 4,
         "vision": 8, "heal_power": 0,
-        "desc": "Master hacker. Disable drones, breach terminals.",
+        "desc": "Console cowboy. Disable drones, breach terminals.",
         "weapon": "Pistol", "weapon_type": "ranged", "weapon_dmg": 10,
         "armor": "Synth Coat", "armor_def": 1,
     },
@@ -188,17 +188,17 @@ CLASS_STATS = {
 WEAPONS = {
     "Katana": {"type": "melee", "damage": 14, "price": 0},
     "Stun Baton": {"type": "melee", "damage": 10, "price": 60},
-    "Blade": {"type": "melee", "damage": 18, "price": 200},
+    "Kusanagi Blade": {"type": "melee", "damage": 18, "price": 200},
     "Pistol": {"type": "ranged", "damage": 10, "range": 6, "price": 80},
     "SMG": {"type": "ranged", "damage": 15, "range": 5, "price": 180},
-    "EMP Gun": {"type": "ranged", "damage": 20, "range": 4, "price": 300},
+    "Ono-Sendai Zapper": {"type": "ranged", "damage": 20, "range": 4, "price": 300},
 }
 
 ARMORS = {
     "Leather Jacket": {"defense": 3, "price": 0},
     "Synth Coat": {"defense": 1, "price": 0},
     "Kevlar Vest": {"defense": 4, "price": 100},
-    "Corporate Body Armor": {"defense": 8, "price": 300},
+    "Kiroshi Body Armor": {"defense": 8, "price": 300},
     "Chrome Plating": {"defense": 12, "price": 500},
 }
 
@@ -219,6 +219,9 @@ RAVEN_DIALOGUE = [
     "Raven nods. 'You look like you've seen some things. Browse my stock.'",
     "Raven grins. 'Credits talk, runner. Let's do business.'",
     "Raven eyes you over the counter. 'The Neon Lotus never closes.'",
+    "Raven stares past you. 'Knew a mnemonic courier once. Carried half a gig in his skull. Corp flatlined him for it.'",
+    "Raven wipes the bar slowly. 'Old fixer called the Finn used to say — data wants to be free. So do runners.'",
+    "Raven pours two fingers of synth-whiskey. 'Some replicant down in Kabuki swears he saw tears in the rain last night. Poetic for a skin-job.'",
 ]
 
 
@@ -230,7 +233,7 @@ ENEMY_TYPES = {
     "Security Drone": {
         "glyph": GLYPH_DRONE, "hp": 25, "attack": 8, "defense": 2,
         "behavior": "patrol", "xp": 10, "credits": 15,
-        "desc": "Autonomous drone. Patrols fixed paths, alerts others.",
+        "desc": "Nexus-series drone. Patrols fixed paths, alerts others.",
     },
     "Gang Member": {
         "glyph": GLYPH_GANG, "hp": 30, "attack": 10, "defense": 1,
@@ -250,7 +253,7 @@ ENEMY_TYPES = {
     "Netrunner ICE": {
         "glyph": GLYPH_NETRUNNER, "hp": 20, "attack": 6, "defense": 1,
         "behavior": "wander", "xp": 8, "credits": 10,
-        "desc": "Rogue neural ICE. Wanders erratically.",
+        "desc": "Puppet-master ICE. Wanders erratically, hijacks neural links.",
     },
 }
 
@@ -275,12 +278,12 @@ def get_shop_stock(level_num):
         stock.append({"name": "EMP Grenade", "type": "consumable", "price": 80 + level_num * 5,
                       "emp_damage": 40, "glyph": GLYPH_BOMB})
     if level_num >= 5:
-        stock.append({"name": "Corporate Body Armor", "type": "armor", "price": 300,
+        stock.append({"name": "Kiroshi Body Armor", "type": "armor", "price": 300,
                       "armor_def": 8, "glyph": GLYPH_SHIELD})
     if level_num >= 6:
-        stock.append({"name": "Blade", "type": "weapon", "price": 200,
+        stock.append({"name": "Kusanagi Blade", "type": "weapon", "price": 200,
                       "damage": 18, "weapon_type": "melee", "glyph": GLYPH_WEAPON})
-        stock.append({"name": "EMP Gun", "type": "weapon", "price": 300,
+        stock.append({"name": "Ono-Sendai Zapper", "type": "weapon", "price": 300,
                       "damage": 20, "weapon_type": "ranged", "range": 4, "glyph": GLYPH_WEAPON})
     return stock
 
@@ -1548,7 +1551,7 @@ def shop_screen(stdscr, player, level_num):
     while True:
         stdscr.clear()
         h, w = stdscr.getmaxyx()
-        title = f"╔══ NEON MARKET — Level {level_num} Complete ══╗"
+        title = f"╔══ THE FINN'S MARKET — Level {level_num} Complete ══╗"
         cx = max(0, w // 2 - len(title) // 2)
 
         safe_addstr(stdscr, 1, cx, title, curses.color_pair(C_MAGENTA) | curses.A_BOLD)
@@ -1773,7 +1776,7 @@ def show_jack_in(stdscr, char_class):
         (f"  Operator class: {char_class}", C_YELLOW),
         ("  Establishing uplink to Neo-Shibuya net...", C_CYAN),
         ("  ██████████████████████████ 100%", C_GREEN),
-        ("  Reality dissolves into cascading neon...", C_MAGENTA),
+        ("  The sky is the color of a dead channel...", C_MAGENTA),
         (f"  {GLYPH_JACK_IN}  CONNECTION ESTABLISHED", C_GREEN),
     ]
 
@@ -1808,7 +1811,7 @@ def show_jack_out(stdscr, row, cx, won=False):
             (f"  {GLYPH_JACK_IN}  WARNING: Biometrics critical", C_RED),
             ("  Neural link destabilizing...", C_YELLOW),
             ("  Emergency disconnect triggered.", C_RED),
-            ("  The neon bleeds to static.", C_MAGENTA),
+            ("  All those moments — lost, like tears in rain.", C_MAGENTA),
             (f"  {GLYPH_JACK_IN}  SIGNAL LOST", C_RED),
         ]
 
