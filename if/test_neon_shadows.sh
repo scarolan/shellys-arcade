@@ -106,7 +106,7 @@ run_test "Tanaka is at precinct" "down\nwest\nlook\nquit\ny" "tanaka|detective"
 # --- PUZZLE PROGRESSION ---
 echo ""
 echo "--- Puzzle Progression ---"
-run_test "Can pay Raven for information" "take datapad\ndown\nnorth\npay raven\nquit\ny" "zephyr|hacker|chinatown|alley"
+run_test "Can pay Raven for information" "take datapad\ndown\nnorth\npay raven\nquit\ny" "satoshis transfer"
 run_test "Can give datapad to Zephyr" "take datapad\ndown\neast\nsouth\ngive datapad to zephyr\nquit\ny" "decrypt|keycard|zheng|harmon"
 run_test "Keycard grants access to Zheng-Harmon" "take datapad\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nshow keycard to guard\nuse keycard\nquit\ny" "elevator|lobby|executive|floor"
 run_test "Can find experiment logs" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\neast\ntake logs\nexamine logs\nquit\ny" "experiment|neural|clinic|log"

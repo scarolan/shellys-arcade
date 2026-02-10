@@ -441,19 +441,8 @@ Object raven "Raven" bar
              print "Raven nods, barely listening.^";
              rtrue;
            Give:
-             if (datapad notin player) {
-                 print "Raven smirks. ~You don't even have a datapad to transfer with, sweetheart. Maybe check your desk back at the office?~^";
-                 rtrue;
-             }
-             if (player_sats <= 0) {
-                 print "Raven checks the transfer screen and shakes her head. ~You're broke, sweetheart. Come back when you've got satoshis.~^";
-                 rtrue;
-             }
-             player_sats = player_sats - 50;
-             raven_paid = true;
-             knows_zephyr = true;
-             score = score + 10;
-             print "You tap your datapad. Fifty satoshis transfer to Raven's account. She glances at the confirmation and leans close. ~You want info? Talk to Zephyr, a hacker down in the Chinatown alley. Go east from the street, then south. Tell 'em Raven sent you.~^";
+             noun = raven;
+             PaySub();
              rtrue;
          ],
     has animate proper female;
@@ -634,6 +623,23 @@ Object rooftop_voss "Director Voss" rooftop
     @set_window 0;
 ];
 
+! --- BeforeParsing: rewrite "pay" to "zpy" before the parser sees it ---
+! 'pay' is a synonym of 'give' in Grammar.h and Extend 'pay' replace
+! cannot detach it.  Rewriting to 'zpy' routes through Verb 'zpy'
+! which maps cleanly to PaySub with no implicit-take issues.
+[ BeforeParsing i w;
+    wn = 1;
+    w = NextWord();
+    if (w == 'pay') {
+        i = WordAddress(1);
+        i->0 = 'z';
+        i->1 = 'p';
+        i->2 = 'y';
+        Tokenise__(buffer, parse);
+    }
+    rfalse;
+];
+
 ! --- Initialization ---
 [ Initialise;
     location = office;
@@ -802,7 +808,7 @@ Verb 'free' 'rescue'
 Extend 'save' first
     * noun                                      -> Free;
 
-Extend 'pay' replace
+Verb 'zpy'
     * creature                                  -> Pay;
 
 Extend 'give' first
