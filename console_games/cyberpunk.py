@@ -457,21 +457,21 @@ class Enemy:
 
         if self.behavior == "aggressive" or (self.alert and dist <= 8):
             # Chase the player directly
-            dx, dy = self._chase(player)
+            dx, dy = self._chase(player, game_map, enemies)
         elif self.behavior == "patrol":
             # Patrol until player spotted, then chase
             if dist <= 5 and self._has_line_of_sight(game_map, player.x, player.y):
                 self.alert = True
-                dx, dy = self._chase(player)
+                dx, dy = self._chase(player, game_map, enemies)
             else:
                 dx, dy = self.patrol_dir
         elif self.behavior == "methodical":
             # Methodical guards: approach carefully
             if dist <= 6 and self._has_line_of_sight(game_map, player.x, player.y):
                 self.alert = True
-                dx, dy = self._chase(player)
+                dx, dy = self._chase(player, game_map, enemies)
             elif self.alert:
-                dx, dy = self._chase(player)
+                dx, dy = self._chase(player, game_map, enemies)
             else:
                 dx, dy = random.choice([(0, 1), (0, -1), (1, 0), (-1, 0)])
         elif self.behavior == "wander":
@@ -500,11 +500,49 @@ class Enemy:
 
         return None
 
-    def _chase(self, player):
-        dx = 0 if player.x == self.x else (1 if player.x > self.x else -1)
-        dy = 0 if player.y == self.y else (1 if player.y > self.y else -1)
-        # Prefer axis with greater distance
-        if abs(player.x - self.x) >= abs(player.y - self.y):
+    def _chase(self, player, game_map, enemies):
+        from collections import deque
+        sx, sy = self.x, self.y
+        gx, gy = player.x, player.y
+        max_radius = 20
+        # Build set of tiles occupied by other living enemies
+        enemy_positions = set()
+        for e in enemies:
+            if e is not self and e.alive:
+                enemy_positions.add((e.x, e.y))
+        visited = {(sx, sy): None}
+        queue = deque([(sx, sy)])
+        found = False
+        while queue:
+            x, y = queue.popleft()
+            if x == gx and y == gy:
+                found = True
+                break
+            if abs(x - sx) + abs(y - sy) >= max_radius:
+                continue
+            for ddx, ddy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                nx, ny = x + ddx, y + ddy
+                if (nx, ny) in visited:
+                    continue
+                if not (0 <= ny < len(game_map) and 0 <= nx < len(game_map[0])):
+                    continue
+                if game_map[ny][nx] in BLOCKING_TILES:
+                    continue
+                # Allow moving onto the player's tile (goal) but not onto other enemies
+                if (nx, ny) != (gx, gy) and (nx, ny) in enemy_positions:
+                    continue
+                visited[(nx, ny)] = (x, y)
+                queue.append((nx, ny))
+        if found:
+            # Trace back from goal to find first step
+            step = (gx, gy)
+            while visited[step] != (sx, sy):
+                step = visited[step]
+            return (step[0] - sx, step[1] - sy)
+        # Fallback: greedy move
+        dx = 0 if gx == sx else (1 if gx > sx else -1)
+        dy = 0 if gy == sy else (1 if gy > sy else -1)
+        if abs(gx - sx) >= abs(gy - sy):
             return (dx, 0)
         return (0, dy)
 
