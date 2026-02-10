@@ -404,7 +404,7 @@ Object neural_jack "neural jack point" server
     has scenery;
 
 Object data_console "data console" server
-    with name 'console' 'data' 'logs' 'drive' 'server',
+    with name 'console' 'data' 'drive' 'server',
          description "The main server console hums with activity. A neural jack point protrudes from its surface -- the only way to access the data locked behind Zheng-Harmon's military-grade ICE.",
          before [;
            Take:
