@@ -225,7 +225,7 @@ Global jacked_in = false;
 
 ! --- Rooms ---
 Object office "Your Office"
-    with description "Crammed into a space no bigger than a closet, your office smells of stale synth-whiskey and ozone. A single window overlooks the rain-slicked street below, neon signs painting shifting colors on the glass. Filing cabinets line one wall, their drawers jammed with cold cases nobody wants solved. Your datapad sits on the cluttered desk beside a half-empty bottle.^^You can go down to the street from here.",
+    with description "Crammed into a space no bigger than a closet, your office smells of stale synth-whiskey and ozone. A single window overlooks the rain-slicked street below, neon signs painting shifting colors on the glass. Filing cabinets line one wall, their drawers jammed with cold cases nobody wants solved. A datapad sits on the cluttered desk beside a half-empty bottle.^^You can go down to the street from here.",
          d_to street,
          before [;
            Go:
@@ -506,10 +506,10 @@ Object desk "desk" office
 
 Object datapad "datapad" office
     with name 'datapad' 'data' 'pad',
-         description "Your government-issue datapad. The screen flickers with encrypted data.",
+         description "Lily Chen's encrypted datapad. The screen flickers with data about a neural experiment.",
          before [;
            Examine:
-             print "Your government-issue datapad. The screen flickers with encrypted data about a neural experiment.^";
+             print "Lily Chen's encrypted datapad. The screen flickers with data about a neural experiment.^";
              print "A small indicator in the corner reads: [SATS ", player_sats, "]^";
              rtrue;
          ];
