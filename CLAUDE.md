@@ -21,10 +21,10 @@ A collection of terminal games and interactive fiction.
 
 ```bash
 # All Python game tests
-python3 -m pytest console_games/test_*.py -v
+python3 -m pytest console_games/ -v
 
 # Single Python game
-python3 -m pytest console_games/test_cyberpunk.py -v
+python3 -m pytest console_games/cyberpunk/test_cyberpunk.py -v
 
 # Neon Shadows IF tests (compiles then runs dfrotz scenarios)
 cd interactive_fiction && bash test_neon_shadows.sh
@@ -52,7 +52,7 @@ This repo is serviced by **Shelly**, an autonomous agent dispatcher running on `
 2. **Poller daemon** (systemd, every 5 min) — detects new `shelly`-labeled issues
 3. **Tidy** — Claude rewrites the issue into a structured spec (Summary, Technical notes, Acceptance criteria)
 4. **Delegate** — Claude implements the fix in the working directory
-5. **Test** — runs `python3 -m pytest console_games/test_*.py -v` (Note: IF tests not yet wired into pipeline — see issue #16)
+5. **Test** — runs `python3 -m pytest console_games/ -v` (Note: IF tests not yet wired into pipeline — see issue #16)
 6. **Retry** — up to 3 retries if tests fail
 7. **Commit & push** — `git add -A && git commit && git push`
 8. **Notify** — Slack message + GitHub comment with commit hash
