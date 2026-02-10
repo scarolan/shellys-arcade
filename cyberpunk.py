@@ -138,11 +138,11 @@ OPAQUE_TILES = {TILE_WALL, TILE_DOOR, TILE_DOOR_LOCKED, TILE_ICE_BARRIER, TILE_C
 LEVEL_THEMES = [
     {"level_name": "Neon Street District", "zone": "street"},
     {"level_name": "Kabuki Market Underground", "zone": "underground"},
-    {"level_name": "Koroshi Tower - Lower Floors", "zone": "corporate"},
+    {"level_name": "Voss Tower - Lower Floors", "zone": "corporate"},
     {"level_name": "Synth Den Tunnels", "zone": "underground"},
-    {"level_name": "Koroshi Tower - Executive Suite", "zone": "corporate"},
+    {"level_name": "Voss Tower - Executive Suite", "zone": "corporate"},
     {"level_name": "Chrome Alley - Gang Territory", "zone": "street"},
-    {"level_name": "Koroshi Tower - Server Core", "zone": "corporate"},
+    {"level_name": "Voss Tower - Server Core", "zone": "corporate"},
     {"level_name": "Neural Nexus - Deep Underground", "zone": "underground"},
     {"level_name": "Megacity Spire - Apex", "zone": "corporate"},
 ]
@@ -241,7 +241,7 @@ ENEMY_TYPES = {
         "behavior": "wander", "xp": 8, "credits": 10,
         "desc": "Rogue neural ICE. Wanders erratically.",
     },
-    "Director Koroshi": {
+    "Voss": {
         "glyph": GLYPH_BOSS, "hp": 250, "attack": 22, "defense": 10,
         "behavior": "boss", "xp": 200, "credits": 500,
         "desc": "Apex Overseer. Master of the Megacity Spire.",
@@ -638,10 +638,10 @@ class Item:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 LILY_DIALOGUE = [
-    "Lily: 'Watch your back. Koroshi's ICE is everywhere.'",
+    "Lily: 'Watch your back. Voss's ICE is everywhere.'",
     "Lily: 'I can feel the neural grid humming... we're getting close.'",
     "Lily: 'These corpo drones are running old firmware. Easy pickings.'",
-    "Lily: 'Koroshi thought they could bury what they did to me. Wrong.'",
+    "Lily: 'Voss thought they could bury what they did to me. Wrong.'",
     "Lily: 'Stay sharp. The deeper we go, the nastier the ICE gets.'",
 ]
 
@@ -856,7 +856,7 @@ def generate_level(level_num):
                 lily_spawn = (nx, ny)
                 break
 
-    # Place ICE barrier on floor 7 (Koroshi Tower - Server Core) blocking stairs
+    # Place ICE barrier on floor 7 (Voss Tower - Server Core) blocking stairs
     ice_barrier_pos = None
     if level_num == 7:
         sx, sy = stairs_pos
@@ -990,7 +990,7 @@ def place_enemies(game_map, rooms, level_num, player_start):
                     game_map[ny][nx] in (TILE_FLOOR, TILE_CORRIDOR)):
                 bx, by = nx, ny
                 break
-        enemies.append(Enemy("Director Koroshi", bx, by, level_num))
+        enemies.append(Enemy("Voss", bx, by, level_num))
 
     for room in rooms[1:]:
         if len(enemies) >= enemy_count:
@@ -1738,7 +1738,7 @@ def game_over_screen(stdscr, player, level_num, won=False):
 
     if won:
         title = "╔══ MISSION COMPLETE ══╗"
-        subtitle = "You escaped the megacity!"
+        subtitle = "Voss is dead. The spire falls silent. Neo-Shibuya is free."
         color = C_GREEN
     else:
         title = "╔══ GAME OVER ══╗"
@@ -1972,7 +1972,14 @@ def main(stdscr):
                         player.enemies_killed += 1
                         player.credits += target.credits
                         player.total_credits += target.credits
-                        messages.append(f"{target.name} destroyed! +{target.credits} credits")
+                        if target.is_boss:
+                            messages.append("Voss collapses. The spire shudders as the Overseer's grip fades.")
+                            if companion is not None:
+                                messages.append("Lily: 'It's over... the megacity is free. Let's get out of here.'")
+                            else:
+                                messages.append("The neural grid goes silent. The way to the stairs is open.")
+                        else:
+                            messages.append(f"{target.name} destroyed! +{target.credits} credits")
                 else:
                     messages.append("No target in range!")
 
@@ -2003,7 +2010,7 @@ def main(stdscr):
                         abs(player.y - lily_npc[1]) <= 1):
                     companion = Companion("Lily", lily_npc[0], lily_npc[1],
                                           GLYPH_LILY, C_CYAN)
-                    messages.append("Lily: 'You're going after Koroshi? "
+                    messages.append("Lily: 'You're going after Voss? "
                                     "I'm in. I have a score to settle.'")
                     lily_npc = None
                     pickup = True
@@ -2018,13 +2025,18 @@ def main(stdscr):
                                 messages.append(
                                     "Lily jacks in... 'I'm through. "
                                     "The server core is open.'")
+                            elif player.hack_skill >= 60:
+                                game_map[ty][tx] = TILE_DOOR_OPEN
+                                messages.append(
+                                    "You brute-force the neural ICE. "
+                                    "The barrier shatters.")
                             else:
                                 messages.append(
-                                    "NEURAL ICE BARRIER — requires a "
-                                    "netrunner with Neural Bypass.")
+                                    "NEURAL ICE BARRIER — your hack skill "
+                                    "isn't strong enough to breach it alone.")
                                 messages.append(
-                                    "You need a netrunner to bypass "
-                                    "this ICE.")
+                                    "A netrunner companion could bypass "
+                                    "this, or higher hack skill (60+).")
                             pickup = True
                             break
                         elif game_map[ty][tx] == TILE_DOOR:
@@ -2062,7 +2074,14 @@ def main(stdscr):
                         player.enemies_killed += 1
                         player.credits += target_enemy.credits
                         player.total_credits += target_enemy.credits
-                        messages.append(f"{target_enemy.name} destroyed! +{target_enemy.credits} credits")
+                        if target_enemy.is_boss:
+                            messages.append("Voss collapses. The spire shudders as the Overseer's grip fades.")
+                            if companion is not None:
+                                messages.append("Lily: 'It's over... the megacity is free. Let's get out of here.'")
+                            else:
+                                messages.append("The neural grid goes silent. The way to the stairs is open.")
+                        else:
+                            messages.append(f"{target_enemy.name} destroyed! +{target_enemy.credits} credits")
 
                 elif tile == TILE_DOOR:
                     # Bump to open unlocked doors — door disappears
@@ -2090,10 +2109,17 @@ def main(stdscr):
                         messages.append(
                             "Lily jacks in... 'I'm through. "
                             "The server core is open.'")
+                    elif player.hack_skill >= 60:
+                        game_map[ny][nx] = TILE_DOOR_OPEN
+                        player.x = nx
+                        player.y = ny
+                        messages.append(
+                            "You brute-force the neural ICE. "
+                            "The barrier shatters.")
                     else:
                         messages.append(
-                            "NEURAL ICE BARRIER — requires a "
-                            "netrunner with Neural Bypass.")
+                            "NEURAL ICE BARRIER — your hack skill "
+                            "isn't strong enough to breach it alone.")
 
                 elif tile in (TILE_FLOOR, TILE_CORRIDOR, TILE_DOOR_OPEN,
                               TILE_STAIRS, TILE_TERMINAL, TILE_SHOP_TILE):
@@ -2108,13 +2134,23 @@ def main(stdscr):
 
                     # Check stairs
                     if tile == TILE_STAIRS:
-                        player.levels_cleared += 1
                         if level_num >= MAX_LEVELS:
+                            # Boss must be dead to win
+                            boss_alive = any(e.is_boss and e.alive for e in enemies)
+                            if boss_alive:
+                                messages.append("The stairs crackle with energy. Voss still controls the spire.")
+                                messages.append("Defeat Voss before you can escape!")
+                                # Push player back off the stairs
+                                player.x -= dx
+                                player.y -= dy
+                                continue
                             # Victory!
+                            player.levels_cleared += 1
                             game_over_screen(stdscr, player, level_num, won=True)
                             game_running = False
                             continue
                         else:
+                            player.levels_cleared += 1
                             # Shop between levels
                             shop_screen(stdscr, player, level_num)
                             level_num += 1
@@ -2160,23 +2196,30 @@ def main(stdscr):
                     elif result[0] == "boss_heal":
                         messages.append(f"{e.name} nano-repair: +{result[1]} HP")
                     elif result[0] == "boss_summon":
-                        # Spawn 1-2 guard drones near the boss
-                        num_spawns = random.randint(1, 2)
-                        spawned = 0
-                        for ddx, ddy in [(-2, 0), (2, 0), (0, -2), (0, 2),
-                                         (-1, -1), (1, 1), (-1, 1), (1, -1)]:
-                            if spawned >= num_spawns:
-                                break
-                            sx, sy = e.x + ddx, e.y + ddy
-                            if (0 <= sy < MAP_H and 0 <= sx < MAP_W and
-                                    game_map[sy][sx] in (TILE_FLOOR, TILE_CORRIDOR) and
-                                    not any(oe.alive and oe.x == sx and oe.y == sy for oe in enemies)):
-                                drone = Enemy("Security Drone", sx, sy, level_num)
-                                drone.alert = True
-                                enemies.append(drone)
-                                spawned += 1
-                        if spawned > 0:
-                            messages.append(f"{e.name} summons {spawned} guard drone{'s' if spawned > 1 else ''}!")
+                        # Spawn 1-2 guard drones near the boss (max 5 alive at once)
+                        active_drones = sum(1 for oe in enemies
+                                            if oe.alive and not oe.is_boss
+                                            and oe.name == "Security Drone")
+                        max_drones = 5
+                        if active_drones >= max_drones:
+                            messages.append(f"{e.name} tries to summon drones, but the arena is full!")
+                        else:
+                            num_spawns = min(random.randint(1, 2), max_drones - active_drones)
+                            spawned = 0
+                            for ddx, ddy in [(-2, 0), (2, 0), (0, -2), (0, 2),
+                                             (-1, -1), (1, 1), (-1, 1), (1, -1)]:
+                                if spawned >= num_spawns:
+                                    break
+                                sx, sy = e.x + ddx, e.y + ddy
+                                if (0 <= sy < MAP_H and 0 <= sx < MAP_W and
+                                        game_map[sy][sx] in (TILE_FLOOR, TILE_CORRIDOR) and
+                                        not any(oe.alive and oe.x == sx and oe.y == sy for oe in enemies)):
+                                    drone = Enemy("Security Drone", sx, sy, level_num)
+                                    drone.alert = True
+                                    enemies.append(drone)
+                                    spawned += 1
+                            if spawned > 0:
+                                messages.append(f"{e.name} summons {spawned} guard drone{'s' if spawned > 1 else ''}!")
 
         # Companion follows player
         if companion is not None:
