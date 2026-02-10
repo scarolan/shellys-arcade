@@ -108,14 +108,15 @@ echo ""
 echo "--- Puzzle Progression ---"
 run_test "Can pay Raven for information" "take datapad\ndown\nnorth\npay raven\nquit\ny" "satoshis transfer"
 run_test "Can give datapad to Zephyr" "take datapad\ndown\neast\nsouth\ngive datapad to zephyr\nquit\ny" "decrypt|keycard|zheng|harmon"
-run_test "Keycard grants access to Zheng-Harmon" "take datapad\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nshow keycard to guard\nuse keycard\nquit\ny" "elevator|lobby|executive|floor"
-run_test "Can find experiment logs" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\neast\ntake logs\nexamine logs\nquit\ny" "experiment|neural|clinic|log"
-run_test "Can find Lily at clinic" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\neast\ntake logs\nwest\ndown\ndown\nnorth\nlook\nquit\ny" "lily|chen|daughter|machine"
+run_test "Keycard grants access to Zheng-Harmon" "take datapad\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nshow keycard to guard\nuse keycard\nup\nquit\ny" "elevator|lobby|executive|floor"
+run_test "Can find experiment logs" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\ntake logs\nexamine logs\nquit\ny" "experiment|neural|clinic|log"
+run_test "Can find Lily at clinic" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\ntake logs\nwest\ndown\ndown\nnorth\nlook\nquit\ny" "lily|chen|daughter|machine"
 
 # --- BLOCKING/GATES ---
 echo ""
 echo "--- Blocking/Gates ---"
 run_test "Cannot enter Zheng-Harmon without keycard" "down\nsouth\nenter\nup\nquit\ny" "security|guard|block|keycard|stop|can't"
+run_test "Cannot enter server room without using keycard on terminal" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\neast\nquit\ny" "reinforced door|security terminal|access code"
 run_test "Zephyr's den requires knowing about it" "down\neast\nsouth\nquit\ny" "hidden|door|can't|locked|wall|nothing"
 run_test "Nonsense input doesn't crash" "xyzzy\nfrobnicate\nquit\ny" "understand|don't know|error|what|recognise|verb"
 
@@ -123,7 +124,7 @@ run_test "Nonsense input doesn't crash" "xyzzy\nfrobnicate\nquit\ny" "understand
 echo ""
 echo "--- Game Completion ---"
 run_test "Full game is winnable" \
-    "take datapad\nopen desk\ntake all\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\neast\ntake logs\nwest\ndown\ndown\nnorth\nfree lily\nsave lily\nup\nshoot voss\nquit\ny" \
+    "take datapad\nopen desk\ntake all\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\ntake logs\nwest\ndown\ndown\nnorth\nfree lily\nsave lily\nup\nshoot voss\nquit\ny" \
     "free|saved|rescue|congratulations|end|won|victory"
 
 # --- SUMMARY ---

@@ -3,7 +3,7 @@
 
 Constant Story "Neon Shadows";
 Constant Headline "^A Cyberpunk Detective Noir^^";
-Constant MAX_SCORE 100;
+Constant MAX_SCORE 110;
 
 Replace DrawStatusLine;
 
@@ -16,6 +16,7 @@ Global zephyr_helped = false;
 Global has_keycard = false;
 Global knows_zephyr = false;
 Global found_logs = false;
+Global server_unlocked = false;
 Global lily_freed = false;
 Global voss_dead = false;
 Global player_sats = 50;
@@ -268,9 +269,20 @@ Object lobby "Zheng-Harmon Lobby"
     has light;
 
 Object executive "Executive Floor"
-    with description "A corner office dripping with corporate wealth -- genuine hardwood desk, real leather chairs, and floor-to-ceiling views of the sprawling city below. Rain streaks the panoramic window, distorting the neon skyline into an impressionist nightmare. A crystal decanter of actual whiskey sits on a side table, worth more than your yearly rent.^^You can go down to the lobby or east to the server room.",
+    with description "A corner office dripping with corporate wealth -- genuine hardwood desk, real leather chairs, and floor-to-ceiling views of the sprawling city below. Rain streaks the panoramic window, distorting the neon skyline into an impressionist nightmare. A crystal decanter of actual whiskey sits on a side table, worth more than your yearly rent. A security terminal hums on the wall beside a reinforced door to the east.^^You can go down to the lobby or east to the server room.",
          d_to lobby,
-         e_to server,
+         e_to [;
+             if (server_unlocked) {
+                 if (self hasnt general) {
+                     give self general;
+                     score = score + 10;
+                 }
+                 print "The reinforced door slides open and you step into the server room.^";
+                 return server;
+             }
+             print "A reinforced door blocks the way east. The security terminal beside it glows red -- it requires an access code.^";
+             rfalse;
+         ],
     has light;
 
 Object server "Server Room"
@@ -340,6 +352,19 @@ Object elevator "elevator" lobby
 Object decanter "crystal decanter" executive
     with name 'decanter' 'crystal' 'whiskey',
          description "A crystal decanter filled with genuine whiskey -- the real stuff, not synth. Worth more than your monthly rent. You resist the urge to pour yourself one.",
+    has scenery;
+
+! --- Scenery: Executive Floor - Security Terminal ---
+Object sec_terminal "security terminal" executive
+    with name 'terminal' 'security' 'console' 'screen',
+         description [;
+             if (server_unlocked) {
+                 print "The terminal screen glows green: ACCESS GRANTED. The reinforced door to the east is unlocked.^";
+                 rtrue;
+             }
+             print "A wall-mounted security terminal controlling access to the server room. The screen glows red, displaying: ~SERVER ROOM -- BIOMETRIC OVERRIDE REQUIRED~. A small slot beneath the screen reads ~INSERT KEYCARD FOR OVERRIDE~.^";
+             rtrue;
+         ],
     has scenery;
 
 ! --- Scenery: Precinct ---
@@ -739,6 +764,15 @@ Object rooftop_voss "Director Voss" rooftop
         if (location == lobby) {
             has_keycard = true;
             print "You swipe the keycard. The elevator doors open with a chime. You can go up now.^";
+            rtrue;
+        }
+        if (location == executive) {
+            if (server_unlocked) {
+                print "The security terminal already shows ACCESS GRANTED.^";
+                rtrue;
+            }
+            server_unlocked = true;
+            print "You slide the keycard into the security terminal. The screen flickers, cycles through authentication protocols, then flashes green: ACCESS GRANTED. The reinforced door to the east clicks unlocked.^";
             rtrue;
         }
         print "There's nothing to use the keycard on here.^";
