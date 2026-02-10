@@ -894,7 +894,7 @@ Object whiskey "bottle of synth-whiskey" office
 ! --- NPCs (refactored to use centralized conversation handlers) ---
 Object kai "Kai Chen" office
     with name 'kai' 'chen' 'man' 'client' 'father',
-         description "A desperate man in a rumpled suit. His eyes are sunken, his hands trembling. He looks like he hasn't slept in days.",
+         description "A desperate man in a rumpled suit -- expensive once, maybe last season, but now creased from days of wear. The collar is loosened, the tie yanked halfway down his chest. A cheap neural patch glows amber behind his left ear, the kind the clinics sell for anxiety. It isn't working. His eyes are sunken and bloodshot, ringed with dark circles that speak of sleepless nights spent staring at his comm terminal, willing it to ring. His hands tremble around a cup of cold tea you offered him twenty minutes ago. He hasn't touched it. A wedding band catches the light on his left hand -- scratched, well-worn, the ring of a man who still believes in something. Everything about him says mid-level corporate, respectable, the kind of father who coaches little league on weekends. And everything about the way he's sitting -- hunched forward, jaw clenched, barely holding it together -- says his world has just caved in.",
          life [;
            Ask:
              NPC_Ask_Kai(second);
@@ -1259,8 +1259,11 @@ Object rooftop_voss "Director Voss" rooftop
     location = office;
     score = 0;
 
-    print "^^You're Kira Vex, private eye. The rain hasn't stopped in three days.^";
-    print "Your latest client, Kai Chen, is waiting for you in your cramped office.^^";
+    print "^^You're Kira Vex, private eye. In this city, that means you're either brave or stupid -- most days, you're not sure which.^";
+    print "^Neo-Angeles sprawls beneath a sky that hasn't shown stars in years. The megacorps own everything above the fortieth floor; below that, it's neon, rain, and people trying to survive until tomorrow. You've carved out a life in the margins -- tracking down missing persons, pulling secrets out of corporate databases, occasionally convincing yourself you're making a difference.^";
+    print "^The rain hasn't stopped in three days. It hammers against your office window in sheets, turning the street below into a river of reflected neon. Your coffee went cold an hour ago. The heater died last week. The landlord wants three months' back rent, and your last client paid in expired chits.^";
+    print "^But none of that matters right now, because Kai Chen is sitting across from you, and the look on his face says this isn't a cheating-spouse case.^";
+    print "^Your latest client is waiting for you in your cramped office.^^";
     print "Type 'help' to pull up your PI field manual.^^";
 ];
 
