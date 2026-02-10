@@ -785,5 +785,117 @@ class TestGameProgression(unittest.TestCase):
                                 f"Only {len(found)} cyberpunk theme words: {found}")
 
 
+# =============================================================================
+# 11. PUZZLE GATE TESTS
+# =============================================================================
+
+class TestPuzzleGate(unittest.TestCase):
+    """Tests the puzzle gate mechanic on floor 7."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.source = load_source()
+        cls.source_lower = cls.source.lower()
+        cls.tree = parse_ast()
+        cls.all_funcs = find_all_functions(cls.tree)
+        cls.names = get_top_level_names(cls.tree)
+
+    def test_has_puzzle_gate_tile_constant(self):
+        """Must define a TILE_PUZZLE_GATE constant."""
+        self.assertIn("TILE_PUZZLE_GATE", self.names,
+                      "No TILE_PUZZLE_GATE constant defined")
+
+    def test_has_puzzle_gate_glyph(self):
+        """Must define a GLYPH_PUZZLE_GATE constant."""
+        self.assertIn("GLYPH_PUZZLE_GATE", self.names,
+                      "No GLYPH_PUZZLE_GATE constant defined")
+
+    def test_puzzle_gate_in_tile_chars(self):
+        """TILE_PUZZLE_GATE must be in TILE_CHARS mapping."""
+        self.assertIn("TILE_PUZZLE_GATE", self.source,
+                      "TILE_PUZZLE_GATE not referenced in source")
+        self.assertIn("GLYPH_PUZZLE_GATE", self.source,
+                      "GLYPH_PUZZLE_GATE not referenced in source")
+
+    def test_puzzle_gate_blocks_movement(self):
+        """TILE_PUZZLE_GATE must be in BLOCKING_TILES."""
+        # Check that puzzle gate appears in the BLOCKING_TILES set
+        has_blocking = "TILE_PUZZLE_GATE" in self.source
+        blocking_line = any("BLOCKING_TILES" in line and "TILE_PUZZLE_GATE" in line
+                           for line in self.source.split("\n"))
+        self.assertTrue(blocking_line,
+                        "TILE_PUZZLE_GATE not found in BLOCKING_TILES")
+
+    def test_puzzle_gate_blocks_sight(self):
+        """TILE_PUZZLE_GATE must be in OPAQUE_TILES."""
+        opaque_line = any("OPAQUE_TILES" in line and "TILE_PUZZLE_GATE" in line
+                         for line in self.source.split("\n"))
+        self.assertTrue(opaque_line,
+                        "TILE_PUZZLE_GATE not found in OPAQUE_TILES")
+
+    def test_has_puzzle_gate_screen_function(self):
+        """Must have a puzzle_gate_screen function."""
+        self.assertIn("puzzle_gate_screen", self.all_funcs,
+                      "No puzzle_gate_screen function defined")
+
+    def test_puzzle_gate_has_cipher_theme(self):
+        """Puzzle gate must have cipher/hacking theme."""
+        cipher_words = ["cipher", "hex", "breach", "crack", "ice breaker"]
+        found = [w for w in cipher_words if w in self.source_lower]
+        self.assertGreaterEqual(len(found), 2,
+                                f"Only {len(found)} cipher theme words: {found}")
+
+    def test_puzzle_gate_has_attempts_limit(self):
+        """Puzzle must have an attempts limit (no infinite guessing)."""
+        has_attempts = any(kw in self.source_lower for kw in
+                          ["max_attempts", "attempts", "lockout"])
+        self.assertTrue(has_attempts,
+                        "No attempts limit found in puzzle gate")
+
+    def test_puzzle_gate_placed_on_floor_7(self):
+        """Puzzle gate must be placed on level 7."""
+        # Check that level 7 placement references puzzle gate
+        has_placement = ("puzzle_gate" in self.source_lower and
+                        "level_num == 7" in self.source)
+        self.assertTrue(has_placement,
+                        "Puzzle gate not placed on floor 7")
+
+    def test_puzzle_gate_has_bypass_options(self):
+        """Companion or hack skill must bypass the puzzle gate."""
+        has_companion_bypass = ("companion" in self.source_lower and
+                               "puzzle_gate" in self.source_lower)
+        has_hack_bypass = "hack_skill" in self.source_lower
+        self.assertTrue(has_companion_bypass or has_hack_bypass,
+                        "No bypass options for puzzle gate")
+
+    def test_puzzle_gate_rendering(self):
+        """Puzzle gate must be rendered in draw_map with a distinct color."""
+        lines = self.source.split("\n")
+        has_render = False
+        for i, line in enumerate(lines):
+            if "TILE_PUZZLE_GATE" in line and "tile ==" in line:
+                # Check nearby lines for color rendering
+                nearby = "\n".join(lines[max(0, i-2):i+3])
+                if "color_pair" in nearby:
+                    has_render = True
+                    break
+        self.assertTrue(has_render,
+                        "TILE_PUZZLE_GATE not rendered in draw_map")
+
+    def test_puzzle_gate_interaction_on_e_key(self):
+        """Puzzle gate must respond to e-key interaction."""
+        has_interaction = ("puzzle_gate_screen" in self.source and
+                          "TILE_PUZZLE_GATE" in self.source)
+        self.assertTrue(has_interaction,
+                        "No e-key interaction for puzzle gate")
+
+    def test_puzzle_gate_bump_interaction(self):
+        """Bumping puzzle gate must show a message."""
+        has_bump = any("TILE_PUZZLE_GATE" in line and "tile" in line.lower()
+                      for line in self.source.split("\n"))
+        self.assertTrue(has_bump,
+                        "No bump interaction for puzzle gate")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -55,6 +55,7 @@ GLYPH_EYE = "\uf06e"           # eye
 GLYPH_BOMB = "\uf1e2"          # bomb
 GLYPH_STIM = "\uf0e7"          # bolt (reuse for stim)
 GLYPH_ICE_BARRIER = "\uf023"  # lock (neural ICE barrier)
+GLYPH_PUZZLE_GATE = "\uf120"  # terminal (puzzle gate)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Box-drawing characters
@@ -110,6 +111,7 @@ TILE_SHOP_TILE = 7
 TILE_DOOR_OPEN = 8
 TILE_ICE_BARRIER = 9
 TILE_COVER = 10
+TILE_PUZZLE_GATE = 11
 
 TILE_CHARS = {
     TILE_WALL: "█",
@@ -123,13 +125,14 @@ TILE_CHARS = {
     TILE_DOOR_OPEN: "·",
     TILE_ICE_BARRIER: GLYPH_ICE_BARRIER,
     TILE_COVER: GLYPH_SHIELD,
+    TILE_PUZZLE_GATE: GLYPH_PUZZLE_GATE,
 }
 
 # Tiles that block movement
-BLOCKING_TILES = {TILE_WALL, TILE_DOOR, TILE_DOOR_LOCKED, TILE_ICE_BARRIER, TILE_COVER}
+BLOCKING_TILES = {TILE_WALL, TILE_DOOR, TILE_DOOR_LOCKED, TILE_ICE_BARRIER, TILE_COVER, TILE_PUZZLE_GATE}
 
 # Tiles that block line of sight / FOV
-OPAQUE_TILES = {TILE_WALL, TILE_DOOR, TILE_DOOR_LOCKED, TILE_ICE_BARRIER, TILE_COVER}
+OPAQUE_TILES = {TILE_WALL, TILE_DOOR, TILE_DOOR_LOCKED, TILE_ICE_BARRIER, TILE_COVER, TILE_PUZZLE_GATE}
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Level themes
@@ -748,7 +751,7 @@ def generate_level(level_num):
     """Generate a procedural level with rooms, corridors, doors, and entities.
 
     Returns (game_map, rooms, player_start, stairs_pos, enemies, items, terminals,
-             lily_spawn, ice_barrier_pos).
+             lily_spawn, puzzle_gate_pos).
     """
     game_map = [[TILE_WALL for _ in range(MAP_W)] for _ in range(MAP_H)]
     rooms = []
@@ -856,21 +859,21 @@ def generate_level(level_num):
                 lily_spawn = (nx, ny)
                 break
 
-    # Place ICE barrier on floor 7 (Voss Tower - Server Core) blocking stairs
-    ice_barrier_pos = None
+    # Place puzzle gate on floor 7 (Voss Tower - Server Core) blocking stairs
+    puzzle_gate_pos = None
     if level_num == 7:
         sx, sy = stairs_pos
-        # Place barrier adjacent to stairs — find a walkable tile next to stairs
+        # Place gate adjacent to stairs — find a walkable tile next to stairs
         for ddx, ddy in [(0, -1), (0, 1), (-1, 0), (1, 0)]:
             bx, by = sx + ddx, sy + ddy
             if (0 <= by < MAP_H and 0 <= bx < MAP_W and
                     game_map[by][bx] in (TILE_FLOOR, TILE_CORRIDOR, TILE_DOOR_OPEN)):
-                game_map[by][bx] = TILE_ICE_BARRIER
-                ice_barrier_pos = (bx, by)
+                game_map[by][bx] = TILE_PUZZLE_GATE
+                puzzle_gate_pos = (bx, by)
                 break
 
     return (game_map, rooms, player_start, stairs_pos, enemies, items, terminals,
-            lily_spawn, ice_barrier_pos)
+            lily_spawn, puzzle_gate_pos)
 
 
 def place_room(game_map, room):
@@ -1280,6 +1283,8 @@ def _tile_char_and_attr(game_map, mx, my):
             return ch, curses.color_pair(C_RED)
         elif tile == TILE_ICE_BARRIER:
             return ch, curses.color_pair(C_MAGENTA) | curses.A_BOLD
+        elif tile == TILE_PUZZLE_GATE:
+            return ch, curses.color_pair(C_CYAN) | curses.A_BOLD
         elif tile == TILE_SHOP_TILE:
             return ch, curses.color_pair(C_YELLOW) | curses.A_BOLD
         elif tile == TILE_COVER:
@@ -1382,6 +1387,9 @@ def draw_map(win, game_map, visible, explored, player, enemies, items,
                     elif tile == TILE_ICE_BARRIER:
                         safe_addstr(win, screen_y, screen_x, ch,
                                     curses.color_pair(C_MAGENTA) | curses.A_BOLD)
+                    elif tile == TILE_PUZZLE_GATE:
+                        safe_addstr(win, screen_y, screen_x, ch,
+                                    curses.color_pair(C_CYAN) | curses.A_BOLD)
                     elif tile == TILE_DOOR_OPEN:
                         safe_addstr(win, screen_y, screen_x, ch,
                                     curses.color_pair(C_FLOOR))
@@ -1601,6 +1609,164 @@ def select_class(stdscr):
             return classes[selected]
         elif key in (ord('q'), ord('Q')):
             return None
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Puzzle Gate Screen (Neural Cipher)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+HEX_CHARS = "0123456789ABCDEF"
+CIPHER_LEN = 4
+
+
+def puzzle_gate_screen(stdscr):
+    """Interactive neural cipher puzzle. Player cycles hex digits to match a
+    target code. Returns True if solved, False if aborted."""
+    target = [random.choice(HEX_CHARS) for _ in range(CIPHER_LEN)]
+    guess = [0] * CIPHER_LEN  # indices into HEX_CHARS
+    selected = 0  # which digit position is selected
+    attempts = 0
+    max_attempts = 6
+    feedback_lines = []
+
+    while True:
+        stdscr.clear()
+        h, w = stdscr.getmaxyx()
+        cx = max(0, w // 2 - 25)
+
+        safe_addstr(stdscr, 1, cx,
+                    "╔══ NEURAL CIPHER — ICE BREAKER ══╗",
+                    curses.color_pair(C_CYAN) | curses.A_BOLD)
+        safe_addstr(stdscr, 2, cx,
+                    "  Crack the 4-digit hex cipher to",
+                    curses.color_pair(C_WHITE))
+        safe_addstr(stdscr, 3, cx,
+                    "  bypass the server core firewall.",
+                    curses.color_pair(C_WHITE))
+        safe_addstr(stdscr, 4, cx,
+                    BOX_H * 36,
+                    curses.color_pair(C_CYAN))
+
+        # Current guess display
+        guess_str = ""
+        for i in range(CIPHER_LEN):
+            ch = HEX_CHARS[guess[i]]
+            if i == selected:
+                guess_str += f"[{ch}]"
+            else:
+                guess_str += f" {ch} "
+        safe_addstr(stdscr, 6, cx + 2,
+                    f"  CIPHER: {guess_str}",
+                    curses.color_pair(C_GREEN) | curses.A_BOLD)
+        safe_addstr(stdscr, 7, cx + 2,
+                    f"  Attempts: {attempts}/{max_attempts}",
+                    curses.color_pair(C_YELLOW))
+
+        # Feedback from previous attempts
+        for i, line in enumerate(feedback_lines[-5:]):
+            safe_addstr(stdscr, 9 + i, cx + 2, line,
+                        curses.color_pair(C_WHITE))
+
+        # Controls
+        ctrl_y = 15
+        safe_addstr(stdscr, ctrl_y, cx,
+                    "  LEFT/RIGHT = select digit",
+                    curses.color_pair(C_GRAY))
+        safe_addstr(stdscr, ctrl_y + 1, cx,
+                    "  UP/DOWN    = cycle hex value",
+                    curses.color_pair(C_GRAY))
+        safe_addstr(stdscr, ctrl_y + 2, cx,
+                    "  ENTER      = submit guess",
+                    curses.color_pair(C_GRAY))
+        safe_addstr(stdscr, ctrl_y + 3, cx,
+                    "  Q/ESC      = abort (step away)",
+                    curses.color_pair(C_GRAY))
+
+        stdscr.refresh()
+        key = stdscr.getch()
+
+        if key in (ord('q'), ord('Q'), 27):
+            return False
+        elif key in (curses.KEY_LEFT, ord('a'), ord('A')):
+            selected = (selected - 1) % CIPHER_LEN
+        elif key in (curses.KEY_RIGHT, ord('d'), ord('D')):
+            selected = (selected + 1) % CIPHER_LEN
+        elif key in (curses.KEY_UP, ord('w'), ord('W')):
+            guess[selected] = (guess[selected] + 1) % len(HEX_CHARS)
+        elif key in (curses.KEY_DOWN, ord('s'), ord('S')):
+            guess[selected] = (guess[selected] - 1) % len(HEX_CHARS)
+        elif key in (10, 13, curses.KEY_ENTER):
+            attempts += 1
+            guess_chars = [HEX_CHARS[g] for g in guess]
+            # Build feedback: correct position, correct char wrong pos, miss
+            result = []
+            target_remaining = list(target)
+            guess_remaining = list(guess_chars)
+            # First pass: exact matches
+            exact = [False] * CIPHER_LEN
+            for i in range(CIPHER_LEN):
+                if guess_chars[i] == target[i]:
+                    exact[i] = True
+                    target_remaining[i] = None
+                    guess_remaining[i] = None
+            # Second pass: wrong position
+            displaced = [False] * CIPHER_LEN
+            for i in range(CIPHER_LEN):
+                if exact[i]:
+                    continue
+                if guess_remaining[i] is not None and guess_remaining[i] in target_remaining:
+                    idx = target_remaining.index(guess_remaining[i])
+                    target_remaining[idx] = None
+                    displaced[i] = True
+
+            feedback = ""
+            for i in range(CIPHER_LEN):
+                if exact[i]:
+                    feedback += f"[{guess_chars[i]}]"  # correct
+                elif displaced[i]:
+                    feedback += f"({guess_chars[i]})"  # wrong position
+                else:
+                    feedback += f" {guess_chars[i]} "   # miss
+            exact_count = sum(exact)
+            displaced_count = sum(displaced)
+            hint = f"  {feedback}  [{exact_count} exact, {displaced_count} displaced]"
+            feedback_lines.append(hint)
+
+            if all(exact):
+                # Solved!
+                stdscr.clear()
+                safe_addstr(stdscr, h // 2 - 1, cx,
+                            "  ╔══ CIPHER CRACKED ══╗",
+                            curses.color_pair(C_GREEN) | curses.A_BOLD)
+                safe_addstr(stdscr, h // 2, cx,
+                            f"  Neural ICE breached in {attempts} attempts!",
+                            curses.color_pair(C_GREEN))
+                safe_addstr(stdscr, h // 2 + 1, cx,
+                            "  Press any key to continue...",
+                            curses.color_pair(C_YELLOW))
+                stdscr.refresh()
+                stdscr.getch()
+                return True
+
+            if attempts >= max_attempts:
+                # Failed — reveal the code
+                target_str = "".join(target)
+                stdscr.clear()
+                safe_addstr(stdscr, h // 2 - 1, cx,
+                            "  ╔══ CIPHER LOCKOUT ══╗",
+                            curses.color_pair(C_RED) | curses.A_BOLD)
+                safe_addstr(stdscr, h // 2, cx,
+                            f"  Lockout! Code was: {target_str}",
+                            curses.color_pair(C_RED))
+                safe_addstr(stdscr, h // 2 + 1, cx,
+                            "  The cipher resets. Try again later...",
+                            curses.color_pair(C_YELLOW))
+                safe_addstr(stdscr, h // 2 + 2, cx,
+                            "  Press any key to continue...",
+                            curses.color_pair(C_YELLOW))
+                stdscr.refresh()
+                stdscr.getch()
+                return False
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1844,7 +2010,7 @@ def main(stdscr):
 
     # Generate first level
     (game_map, rooms, start, stairs, enemies, items, terminals,
-     lily_spawn, ice_barrier_pos) = generate_level(level_num)
+     lily_spawn, puzzle_gate_pos) = generate_level(level_num)
     player.x, player.y = start
     explored = set()
 
@@ -2014,12 +2180,12 @@ def main(stdscr):
                                     "I'm in. I have a score to settle.'")
                     lily_npc = None
                     pickup = True
-            # Open adjacent doors / interact with ICE barrier
+            # Open adjacent doors / interact with puzzle gate
             if not pickup:
                 for ddx, ddy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                     tx, ty = player.x + ddx, player.y + ddy
                     if 0 <= ty < MAP_H and 0 <= tx < MAP_W:
-                        if game_map[ty][tx] == TILE_ICE_BARRIER:
+                        if game_map[ty][tx] == TILE_PUZZLE_GATE:
                             if companion is not None:
                                 game_map[ty][tx] = TILE_DOOR_OPEN
                                 messages.append(
@@ -2029,14 +2195,21 @@ def main(stdscr):
                                 game_map[ty][tx] = TILE_DOOR_OPEN
                                 messages.append(
                                     "You brute-force the neural ICE. "
-                                    "The barrier shatters.")
+                                    "The cipher gate shatters.")
                             else:
                                 messages.append(
-                                    "NEURAL ICE BARRIER — your hack skill "
-                                    "isn't strong enough to breach it alone.")
-                                messages.append(
-                                    "A netrunner companion could bypass "
-                                    "this, or higher hack skill (60+).")
+                                    "NEURAL CIPHER GATE — Initiating "
+                                    "ICE breaker sequence...")
+                                solved = puzzle_gate_screen(stdscr)
+                                if solved:
+                                    game_map[ty][tx] = TILE_DOOR_OPEN
+                                    messages.append(
+                                        "Cipher cracked! The gate "
+                                        "dissolves in a shower of sparks.")
+                                else:
+                                    messages.append(
+                                        "Cipher lockout. The gate resets. "
+                                        "Try again or find another way.")
                             pickup = True
                             break
                         elif game_map[ty][tx] == TILE_DOOR:
@@ -2101,7 +2274,7 @@ def main(stdscr):
                     else:
                         messages.append("Door locked! Need a keycard or hack.")
 
-                elif tile == TILE_ICE_BARRIER:
+                elif tile == TILE_PUZZLE_GATE:
                     if companion is not None:
                         game_map[ny][nx] = TILE_DOOR_OPEN
                         player.x = nx
@@ -2115,11 +2288,11 @@ def main(stdscr):
                         player.y = ny
                         messages.append(
                             "You brute-force the neural ICE. "
-                            "The barrier shatters.")
+                            "The cipher gate shatters.")
                     else:
                         messages.append(
-                            "NEURAL ICE BARRIER — your hack skill "
-                            "isn't strong enough to breach it alone.")
+                            "NEURAL CIPHER GATE — Press 'e' to "
+                            "initiate ICE breaker sequence.")
 
                 elif tile in (TILE_FLOOR, TILE_CORRIDOR, TILE_DOOR_OPEN,
                               TILE_STAIRS, TILE_TERMINAL, TILE_SHOP_TILE):
@@ -2155,7 +2328,7 @@ def main(stdscr):
                             shop_screen(stdscr, player, level_num)
                             level_num += 1
                             (game_map, rooms, start, stairs, enemies, items,
-                             terminals, lily_spawn, ice_barrier_pos) = generate_level(level_num)
+                             terminals, lily_spawn, puzzle_gate_pos) = generate_level(level_num)
                             player.x, player.y = start
                             explored = set()
                             # Carry companion to new level
