@@ -802,7 +802,7 @@ Verb 'free' 'rescue'
 Extend 'save' first
     * noun                                      -> Free;
 
-Extend 'pay' first
+Extend 'pay' replace
     * creature                                  -> Pay;
 
 Extend 'give' first
