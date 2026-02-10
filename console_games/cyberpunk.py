@@ -741,8 +741,9 @@ def generate_level(level_num):
     items = place_items(game_map, rooms, level_num, player_start)
 
     # Place Raven the bartender in a mid-range room (not start or stairs room)
+    # Raven only appears on level 3+
     raven_pos = None
-    if len(rooms) > 2:
+    if level_num >= 3 and len(rooms) > 2:
         mid_rooms = rooms[1:-1]
         raven_room = random.choice(mid_rooms)
         rx = random.randint(raven_room.x + 1, raven_room.x + raven_room.w - 2)
@@ -1581,11 +1582,11 @@ def select_class(stdscr):
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# Shop Screen (between levels)
+# Shop Screen (Raven NPC)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def shop_screen(stdscr, player, level_num):
-    """Display shop between levels. Player can buy items with satoshis."""
+    """Display Raven's shop. Player can buy items with satoshis."""
     stock = get_shop_stock(level_num)
     selected = 0
     messages = []
@@ -1593,13 +1594,13 @@ def shop_screen(stdscr, player, level_num):
     while True:
         stdscr.clear()
         h, w = stdscr.getmaxyx()
-        title = f"╔══ THE FINN'S MARKET — Level {level_num} Complete ══╗"
+        title = f"╔══ RAVEN'S SHOP — Level {level_num} ══╗"
         cx = max(0, w // 2 - len(title) // 2)
 
         safe_addstr(stdscr, 1, cx, title, curses.color_pair(C_MAGENTA) | curses.A_BOLD)
         safe_addstr(stdscr, 2, cx, f"  {GLYPH_CREDITS} Satoshis: {player.credits}",
                     curses.color_pair(C_YELLOW) | curses.A_BOLD)
-        safe_addstr(stdscr, 3, cx, "  Buy gear for the next floor.", curses.color_pair(C_WHITE))
+        safe_addstr(stdscr, 3, cx, "  Browse Raven's wares.", curses.color_pair(C_WHITE))
         safe_addstr(stdscr, 4, cx, BOX_H * len(title), curses.color_pair(C_MAGENTA))
 
         for i, item in enumerate(stock):
@@ -1615,7 +1616,7 @@ def shop_screen(stdscr, player, level_num):
             safe_addstr(stdscr, y, cx, f"{marker}{item.get('glyph', GLYPH_STAR)} {item['name']}{price_str}", attr)
 
         foot_y = 6 + len(stock) * 2 + 1
-        safe_addstr(stdscr, foot_y, cx, "  ENTER = purchase, C = continue to next level",
+        safe_addstr(stdscr, foot_y, cx, "  ENTER = purchase, C = close shop",
                     curses.color_pair(C_YELLOW))
 
         for i, msg in enumerate(messages[-3:]):
@@ -2126,8 +2127,6 @@ def main(stdscr):
                             game_running = False
                             continue
                         else:
-                            # Shop between levels
-                            shop_screen(stdscr, player, level_num)
                             level_num += 1
                             game_map, rooms, start, stairs, enemies, items, terminals, raven_pos = generate_level(level_num)
                             player.x, player.y = start
