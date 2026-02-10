@@ -191,6 +191,22 @@ run_test "Lily follows player to rooftop after Voss is dead" \
     "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nup\nshoot voss\ndown\nup\nlook\nquit\ny" \
     "Lily Chen"
 
+# --- GRAMMAR: PLURAL OBJECTS ---
+echo ""
+echo "--- Grammar: Plural Objects ---"
+
+run_test "Filing cabinets does not produce 'a filing cabinets'" \
+    "examine cabinets\ntake cabinets\nquit\ny" \
+    "a filing cabinets" "true"
+
+run_test "Data streams does not produce 'a data streams'" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nexamine streams\ntake streams\nquit\ny" \
+    "a data streams" "true"
+
+run_test "Experiment logs does not produce 'a experiment logs'" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nexamine logs\ndrop logs\ntake logs\nquit\ny" \
+    "a experiment logs" "true"
+
 # --- GAME COMPLETION ---
 echo ""
 echo "--- Game Completion ---"

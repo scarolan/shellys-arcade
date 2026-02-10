@@ -377,7 +377,7 @@ Object window "window" office
 Object cabinets "filing cabinets" office
     with name 'cabinets' 'cabinet' 'filing',
          description "Dented metal filing cabinets stuffed with cold cases nobody wants solved. The drawers are jammed shut with years of neglect.",
-    has scenery;
+    has scenery pluralname;
 
 ! --- Scenery: Chinatown Alley ---
 Object cardboard_box "cardboard box" alley
@@ -466,7 +466,7 @@ Object ice_wall "ICE wall" cyber_lobby
 Object data_streams "data streams" cyber_lobby
     with name 'streams' 'rivers' 'code',
          description "Rivers of luminous code flow beneath you, carrying fragments of corporate data -- financial records, employee files, research notes. The experiment logs you need are locked behind the ICE to the north.",
-    has scenery;
+    has scenery pluralname;
 
 Object data_node "data node" cyber_vault
     with name 'node' 'data',
@@ -626,7 +626,7 @@ Object guard "Security Guard" lobby
              print "The guard ignores you.^";
              rtrue;
          ],
-    has animate;
+    has animate proper;
 
 Object lily "Lily Chen" clinic
     with name 'lily' 'chen' 'woman' 'daughter',
@@ -661,7 +661,8 @@ Object logs "experiment logs"
                  print "The data is locked behind military-grade ICE. You'll need to jack into the server's neural interface to access it through cyberspace.^";
                  rtrue;
              }
-         ];
+         ]
+    has pluralname;
 
 ! --- Voss on rooftop (separate instance for final encounter) ---
 Object rooftop_voss "Director Voss" rooftop
