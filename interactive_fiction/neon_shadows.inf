@@ -41,7 +41,7 @@ Global jacked_in = false;
     }
     print "Kai Chen grips your arm, desperation etched into every line of his face. ~Please -- my daughter Lily has been missing for three weeks. She's a neural programmer, was working for Zheng-Harmon Corp on some classified project. One day she just vanished -- apartment cleaned out, accounts frozen, like she never existed.~^^";
     print "He takes a shuddering breath. ~I went to the police, but that useless Detective Tanaka hasn't lifted a finger. I think Zheng-Harmon is covering something up. Lily left an encrypted datapad hidden in her apartment -- it's on your desk. Maybe someone can crack it.~^^";
-    print "~I've already transferred fifty satoshis to your datapad -- you'll need them. Information doesn't come free in this city.~^^";
+    print "~I loaded fifty satoshis onto Lily's datapad -- you'll need them. Information doesn't come free in this city.~^^";
     print "~There's a bar down the street, the Neon Lotus. The bartender Raven knows every fixer and hacker in the city. Start there. Please, Vex -- you're my last hope.~^";
 ];
 
@@ -225,7 +225,7 @@ Global jacked_in = false;
 
 ! --- Rooms ---
 Object office "Your Office"
-    with description "Crammed into a space no bigger than a closet, your office smells of stale synth-whiskey and ozone. A single window overlooks the rain-slicked street below, neon signs painting shifting colors on the glass. Filing cabinets line one wall, their drawers jammed with cold cases nobody wants solved. A datapad sits on the cluttered desk beside a half-empty bottle.^^You can go down to the street from here.",
+    with description "Crammed into a space no bigger than a closet, your office smells of stale synth-whiskey and ozone. A single window overlooks the rain-slicked street below, neon signs painting shifting colors on the glass. Filing cabinets line one wall, their drawers jammed with cold cases nobody wants solved. Lily's encrypted datapad sits on the cluttered desk beside a half-empty bottle.^^You can go down to the street from here.",
          d_to street,
          before [;
            Go:
@@ -501,7 +501,7 @@ Object clinic_door "clinic door" industrial
 ! --- Objects in Office ---
 Object desk "desk" office
     with name 'desk' 'drawer',
-         description "A cramped metal desk, cluttered with datapads and empty synth-whiskey bottles. A small drawer is set into the front.",
+         description "A cramped metal desk, cluttered with case files and empty synth-whiskey bottles. A small drawer is set into the front.",
     has scenery container openable;
 
 Object datapad "datapad" office
@@ -784,7 +784,7 @@ Object rooftop_voss "Director Voss" rooftop
     print "  talk to X ........ Start a conversation. Keep it casual.^";
     print "  ask X about Y .... Dig for specifics. Names, corps, events.^";
     print "  give/hand X to Y .. Grease palms. Information has a price.^";
-    print "  pay X ............ Digital transfer. Use your datapad.^";
+    print "  pay X ............ Digital transfer. Use the datapad.^";
     print "  show X to Y ...... Flash credentials or evidence.^^";
 
     print "[SPECIAL ACTIONS]^";
@@ -872,7 +872,7 @@ Object rooftop_voss "Director Voss" rooftop
             rtrue;
         }
         if (datapad notin player) {
-            print "Raven smirks. ~You don't even have a datapad to transfer with, sweetheart. Maybe check your desk back at the office?~^";
+            print "Raven smirks. ~You don't even have the datapad to transfer with, sweetheart. Maybe check your desk back at the office?~^";
             rtrue;
         }
         if (player_sats <= 0) {
