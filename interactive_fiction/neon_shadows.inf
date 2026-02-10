@@ -636,6 +636,11 @@ Object bar_dealer "dealer" bar
          description "A gaunt man in a long coat, sitting in the darkest corner of the bar. His eyes flick to every person who enters, cataloging them with practiced efficiency. A faint chemical smell wafts from his direction -- stim patches, probably, or something worse. He's the kind of person you pretend not to see.",
     has static animate;
 
+Object raven_tattoo "raven tattoo" bar
+    with name 'tattoo' 'ink',
+         description "A tattoo of a raven in flight, inked in deep black across the left side of Raven's neck. The linework is sharp and deliberate -- not some back-alley impulse job. The bird's wings are spread wide, caught mid-beat, as though it might tear free of her skin and vanish into the neon haze.",
+    has scenery;
+
 ! --- Scenery: Zephyr's Den ---
 Object den_screens "screens" den
     with name 'screens' 'monitors' 'screen' 'monitor',
