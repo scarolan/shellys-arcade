@@ -109,8 +109,8 @@ echo "--- Puzzle Progression ---"
 run_test "Can pay Raven for information" "take datapad\ndown\nnorth\npay raven\nquit\ny" "satoshis transfer"
 run_test "Can give datapad to Zephyr" "take datapad\ndown\neast\nsouth\ngive datapad to zephyr\nquit\ny" "decrypt|keycard|zheng|harmon"
 run_test "Keycard grants access to Zheng-Harmon" "take datapad\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nshow keycard to guard\nuse keycard\nup\nquit\ny" "elevator|lobby|executive|floor"
-run_test "Can find experiment logs" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\ntake logs\nexamine logs\nquit\ny" "experiment|neural|clinic|log"
-run_test "Can find Lily at clinic" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\ntake logs\nwest\ndown\ndown\nnorth\nlook\nquit\ny" "lily|chen|daughter|machine"
+run_test "Can find experiment logs via cyberspace" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nexamine logs\nquit\ny" "experiment|neural|clinic|7749"
+run_test "Can find Lily at clinic" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nlook\nquit\ny" "lily|chen|daughter|machine"
 
 # --- BLOCKING/GATES ---
 echo ""
@@ -118,13 +118,25 @@ echo "--- Blocking/Gates ---"
 run_test "Cannot enter Zheng-Harmon without keycard" "down\nsouth\nenter\nup\nquit\ny" "security|guard|block|keycard|stop|can't"
 run_test "Cannot enter server room without using keycard on terminal" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\neast\nquit\ny" "reinforced door|security terminal|access code"
 run_test "Zephyr's den requires knowing about it" "down\neast\nsouth\nquit\ny" "hidden|door|can't|locked|wall|nothing"
+run_test "Cannot take logs directly from server room" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\ntake logs\nquit\ny" "locked behind|military-grade ICE|jack"
+run_test "Jack in fails outside server room" "jack in\nquit\ny" "no neural interface"
+run_test "ICE blocks vault before hacking" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nnorth\nquit\ny" "ICE blocks|intrusion countermeasures|hack"
 run_test "Nonsense input doesn't crash" "xyzzy\nfrobnicate\nquit\ny" "understand|don't know|error|what|recognise|verb"
+
+# --- CYBERSPACE ---
+echo ""
+echo "--- Cyberspace ---"
+run_test "Can jack into server and enter cyberspace" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nlook\nquit\ny" "cyberspace|nexus|ICE|vault|digital"
+run_test "Can hack through ICE" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nquit\ny" "shatters|buffer overflow|vault is open"
+run_test "Can reach data vault after hacking ICE" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\nlook\nquit\ny" "data vault|cathedral|data node"
+run_test "Can extract data and return to server room" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nlook\nquit\ny" "server room|server racks"
+run_test "Disconnect returns to server room" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\ndisconnect\nlook\nquit\ny" "server room|server racks"
 
 # --- GAME COMPLETION ---
 echo ""
 echo "--- Game Completion ---"
 run_test "Full game is winnable" \
-    "take datapad\nopen desk\ntake all\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\ntake logs\nwest\ndown\ndown\nnorth\nfree lily\nsave lily\nup\nshoot voss\nquit\ny" \
+    "take datapad\nopen desk\ntake all\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nup\nshoot voss\nquit\ny" \
     "free|saved|rescue|congratulations|end|won|victory"
 
 # --- SUMMARY ---

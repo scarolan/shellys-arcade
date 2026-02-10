@@ -43,11 +43,11 @@ You play Kira Vex, a private detective in Neo-Angeles. Your client Kai Chen hire
 2. Pay Raven at bar → learn about Zephyr
 3. Give datapad to Zephyr → get keycard
 4. Use keycard at Zheng-Harmon lobby → executive floor
-5. Enter server room → take experiment logs (reveals clinic code 7749)
+5. Enter server room → jack in → hack ICE → take data node (reveals clinic code 7749)
 6. Industrial district → enter clinic with code → free Lily
 7. Rooftop → confront/shoot Voss → victory
 
-**Global flags:** `raven_paid`, `zephyr_helped`, `has_keycard`, `knows_zephyr`, `found_logs`, `lily_freed`, `voss_dead`, `player_sats`
+**Global flags:** `raven_paid`, `zephyr_helped`, `has_keycard`, `knows_zephyr`, `found_logs`, `server_unlocked`, `lily_freed`, `voss_dead`, `player_sats`, `ice_bypassed`, `jacked_in`
 
 ## Inform 6 notes
 

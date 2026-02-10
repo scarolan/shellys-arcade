@@ -3,7 +3,7 @@
 
 Constant Story "Neon Shadows";
 Constant Headline "^A Cyberpunk Detective Noir^^";
-Constant MAX_SCORE 110;
+Constant MAX_SCORE 120;
 
 Replace DrawStatusLine;
 
@@ -20,6 +20,8 @@ Global server_unlocked = false;
 Global lily_freed = false;
 Global voss_dead = false;
 Global player_sats = 50;
+Global ice_bypassed = false;
+Global jacked_in = false;
 
 ! --- NPC Conversation Helper ---
 ! Consistent pattern: each NPC has a talk routine and an ask routine.
@@ -286,8 +288,24 @@ Object executive "Executive Floor"
     has light;
 
 Object server "Server Room"
-    with description "Rows of server racks hum with cooling fans, filling the room with a constant mechanical drone. Red LEDs blink in rhythmic patterns along each rack like the heartbeats of sleeping machines. The temperature is a good ten degrees colder than the rest of the building. A data drive console in the corner flickers with unencrypted experiment logs -- someone got sloppy, or wanted them found.^^You can go west to return to the executive floor.",
+    with description "Rows of server racks hum with cooling fans, filling the room with a constant mechanical drone. Red LEDs blink in rhythmic patterns along each rack like the heartbeats of sleeping machines. The temperature is a good ten degrees colder than the rest of the building. A neural jack point protrudes from the main server console, its chrome port gleaming under the cold lights. The data you need is locked behind military-grade ICE -- you will need to jack in to get it.^^You can go west to return to the executive floor.",
          w_to executive,
+    has light;
+
+Object cyber_lobby "Cyberspace Nexus"
+    with description "You float in a vast digital void, geometric shapes pulsing with neon light in every direction. Data streams flow like rivers of luminous code beneath a grid-lined sky. The server's architecture manifests here as towering crystalline structures. To the north, a massive wall of shimmering red ICE blocks access to the data vault -- Zheng-Harmon's military-grade firewall, just like Zephyr warned about.^^You can go north to the data vault (if the ICE is down) or type 'disconnect' to jack out.",
+         n_to [;
+             if (ice_bypassed) {
+                 return cyber_vault;
+             }
+             print "A wall of shimmering red ICE blocks your path. Military-grade intrusion countermeasures -- one wrong move and it could fry your neural implant. You need to hack through it first.^";
+             rfalse;
+         ],
+    has light;
+
+Object cyber_vault "Data Vault"
+    with description "Beyond the shattered ICE, the data vault opens before you -- a cathedral of pure information. Columns of encrypted data rise like pillars into an infinite digital sky. At the center, a glowing data node pulses with experiment logs, unprotected now that the ICE is down.^^You can go south to the cyberspace nexus or type 'disconnect' to jack out.",
+         s_to cyber_lobby,
     has light;
 
 Object precinct "Police Precinct"
@@ -378,6 +396,54 @@ Object rig "neural interface rig" clinic
     with name 'rig' 'neural' 'interface' 'machine' 'cables' 'electrodes',
          description "A nightmarish tangle of cables, electrodes, and pulsing green circuitry. The rig hums with a low, sickly vibration. Lily is connected to it by a web of wires snaking into her temples.",
     has scenery;
+
+! --- Scenery: Server Room ---
+Object neural_jack "neural jack point" server
+    with name 'jack' 'point' 'port' 'chrome',
+         description "A chrome neural interface port protruding from the main server console. You could jack in to access the server's data directly through cyberspace.",
+    has scenery;
+
+Object data_console "data console" server
+    with name 'console' 'data' 'logs' 'drive' 'server',
+         description "The main server console hums with activity. A neural jack point protrudes from its surface -- the only way to access the data locked behind Zheng-Harmon's military-grade ICE.",
+         before [;
+           Take:
+             print "The data is locked behind military-grade ICE. You'll need to jack into the server's neural interface to access it through cyberspace.^";
+             rtrue;
+         ],
+    has scenery;
+
+! --- Scenery: Cyberspace ---
+Object ice_wall "ICE wall" cyber_lobby
+    with name 'ice' 'wall' 'firewall' 'barrier' 'countermeasures',
+         description [;
+             if (ice_bypassed) {
+                 print "The ICE wall lies in shattered fragments, its red glow fading to nothing. The path north to the data vault is clear.^";
+                 rtrue;
+             }
+             print "A massive wall of shimmering red energy blocks the path north. Military-grade Intrusion Countermeasure Electronics -- Zheng-Harmon's finest. The patterns shift and pulse like a living thing. You'll need to hack through it.^";
+             rtrue;
+         ],
+    has scenery;
+
+Object data_streams "data streams" cyber_lobby
+    with name 'streams' 'rivers' 'code',
+         description "Rivers of luminous code flow beneath you, carrying fragments of corporate data -- financial records, employee files, research notes. The experiment logs you need are locked behind the ICE to the north.",
+    has scenery;
+
+Object data_node "data node" cyber_vault
+    with name 'node' 'data',
+         description "A pulsing sphere of light containing Zheng-Harmon's experiment logs. Unprotected now that the ICE is down, you can download its contents directly into your neural implant.",
+         before [;
+           Take:
+             found_logs = true;
+             score = score + 20;
+             move logs to player;
+             print "You reach into the data node, your neural implant interfacing directly with the raw data. The experiment logs flood into your consciousness -- horrifying records of neural experiments on human subjects. Among the files you find coordinates for an abandoned clinic in the industrial district, along with a door code: 7749.^^The data extracted, cyberspace dissolves around you. Your eyes snap open in the server room, the neural jack disconnecting with a soft click.^";
+             jacked_in = false;
+             PlayerTo(server);
+             rtrue;
+         ];
 
 ! --- Scenery: Industrial District ---
 Object dumpster "rusty dumpster" industrial
@@ -548,15 +614,15 @@ Object keycard "keycard"
          description "A platinum access keycard for Zheng-Harmon executive floors.";
 
 ! --- Experiment Logs ---
-Object logs "experiment logs" server
-    with name 'logs' 'experiment' 'data' 'log',
-         description "Unencrypted experiment logs detailing neural experiments on human subjects. The clinic location in the industrial district is mentioned repeatedly. Among the files you find coordinates for an abandoned clinic in the industrial district, along with a door code: 7749.",
+Object logs "experiment logs"
+    with name 'logs' 'experiment' 'log',
+         description "Experiment logs detailing neural experiments on human subjects. The clinic location in the industrial district is mentioned repeatedly. Among the files you find coordinates for an abandoned clinic in the industrial district, along with a door code: 7749.",
          before [;
            Take:
-             found_logs = true;
-             score = score + 20;
-             print "Taken. Among the files you find coordinates for an abandoned clinic in the industrial district, along with a door code: 7749.^";
-             rtrue;
+             if (location == server) {
+                 print "The data is locked behind military-grade ICE. You'll need to jack into the server's neural interface to access it through cyberspace.^";
+                 rtrue;
+             }
          ];
 
 ! --- Voss on rooftop (separate instance for final encounter) ---
@@ -608,7 +674,7 @@ Object rooftop_voss "Director Voss" rooftop
 ! 'pay' is a synonym of 'give' in Grammar.h and Extend 'pay' replace
 ! cannot detach it.  Rewriting to 'zpy' routes through Verb 'zpy'
 ! which maps cleanly to PaySub with no implicit-take issues.
-[ BeforeParsing i w;
+[ BeforeParsing i len w;
     wn = 1;
     w = NextWord();
     if (w == 'pay') {
@@ -616,6 +682,33 @@ Object rooftop_voss "Director Voss" rooftop
         i->0 = 'z';
         i->1 = 'p';
         i->2 = 'y';
+        Tokenise__(buffer, parse);
+    }
+    if (w == 'jack') {
+        i = WordAddress(1);
+        len = WordLength(1);
+        i->0 = 'z';
+        i->1 = 'j';
+        i->2 = 'k';
+        if (len > 3) i->3 = ' ';
+        Tokenise__(buffer, parse);
+    }
+    if (w == 'hack' or 'bypass') {
+        i = WordAddress(1);
+        len = WordLength(1);
+        i->0 = 'z';
+        i->1 = 'h';
+        i->2 = 'k';
+        while (len > 3) { len--; i->len = ' '; }
+        Tokenise__(buffer, parse);
+    }
+    if (w == 'disconnect') {
+        i = WordAddress(1);
+        len = WordLength(1);
+        i->0 = 'z';
+        i->1 = 'd';
+        i->2 = 'c';
+        while (len > 3) { len--; i->len = ' '; }
         Tokenise__(buffer, parse);
     }
     rfalse;
@@ -658,7 +751,10 @@ Object rooftop_voss "Director Voss" rooftop
     print "[SPECIAL ACTIONS]^";
     print "  shoot X .......... Last resort. Requires a loaded weapon.^";
     print "  free X ........... Disconnect someone from hostile tech.^";
-    print "  use X ............ Deploy keycards, tools, whatever fits.^^";
+    print "  use X ............ Deploy keycards, tools, whatever fits.^";
+    print "  jack in .......... Interface with a neural jack point.^";
+    print "  hack ............. Breach ICE defenses in cyberspace.^";
+    print "  disconnect ....... Jack out of cyberspace.^^";
 
     print "[SYSTEM]^";
     print "  quit ............. Walk away from the case. Not recommended.^";
@@ -781,6 +877,50 @@ Object rooftop_voss "Director Voss" rooftop
     print "You can't use that.^";
 ];
 
+! --- Jack In action ---
+[ JackInSub;
+    if (location ~= server) {
+        print "There's no neural interface to jack into here.^";
+        rtrue;
+    }
+    if (found_logs) {
+        print "You've already extracted the data from this server. No need to jack in again.^";
+        rtrue;
+    }
+    jacked_in = true;
+    print "You press your neural implant against the chrome jack point. A jolt of electricity arcs through your skull as the connection initializes. Reality dissolves into cascading lines of code...^^";
+    PlayerTo(cyber_lobby);
+    rtrue;
+];
+
+! --- Hack ICE action ---
+[ HackICESub;
+    if (location ~= cyber_lobby) {
+        print "There's nothing to hack here.^";
+        rtrue;
+    }
+    if (ice_bypassed) {
+        print "The ICE is already down. The path north is clear.^";
+        rtrue;
+    }
+    ice_bypassed = true;
+    score = score + 10;
+    print "You focus your neural implant on the ICE wall, probing for weaknesses. Your consciousness splits into a dozen parallel threads, each one testing a different vulnerability. The military-grade firewall fights back -- your vision blurs, pain lancing through your temples -- but you find the crack. A buffer overflow in an unpatched security module.^^The ICE wall shatters like red glass, fragments dissolving into nothing. The path to the data vault is open.^";
+    rtrue;
+];
+
+! --- Disconnect action ---
+[ DisconnectSub;
+    if (location ~= cyber_lobby && location ~= cyber_vault) {
+        print "You're not jacked into anything.^";
+        rtrue;
+    }
+    jacked_in = false;
+    print "You trigger the disconnect sequence. Cyberspace dissolves around you in a cascade of fading pixels. Your eyes snap open in the server room, the neural jack disconnecting with a soft click.^";
+    PlayerTo(server);
+    rtrue;
+];
+
 Include "Grammar";
 
 ! --- Custom verb definitions ---
@@ -810,3 +950,14 @@ Verb 'hand'
 
 Verb 'use'
     * noun                                      -> UseCard;
+
+Verb 'zjk'
+    *                                           -> JackIn
+    * 'in'                                      -> JackIn;
+
+Verb 'zhk'
+    *                                           -> HackICE
+    * noun                                      -> HackICE;
+
+Verb 'zdc'
+    *                                           -> Disconnect;
