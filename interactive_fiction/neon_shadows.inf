@@ -223,6 +223,55 @@ Global jacked_in = false;
     rtrue;
 ];
 
+[ NPC_Talk_Lily;
+    if (lily_freed == false) {
+        print "Lily is unconscious, connected to the neural rig. She can't hear you.^";
+        rtrue;
+    }
+    if (voss_dead) {
+        print "Lily takes a deep breath, steadier now. ~It's really over, isn't it? Voss is gone. I keep expecting to wake up back in that chair, wires in my skull. But this is real.~ She looks out at the city. ~Thank you, Vex. For everything.~^";
+        rtrue;
+    }
+    print "Lily stays close, her voice low and urgent. ~Voss -- Director Voss -- he's the one who did this to me. He ran the whole program. The neural experiments, the test subjects... I wasn't the first. I was just the one who survived the longest.~ She shudders. ~He's still out there, Vex. He won't stop until someone stops him.~^";
+];
+
+[ NPC_Ask_Lily topic;
+    if (lily_freed == false) {
+        print "Lily is unconscious. She can't respond.^";
+        rtrue;
+    }
+    if (topic == 'voss' or 'director') {
+        if (voss_dead) {
+            print "Lily closes her eyes for a moment. ~He's gone. I should feel something -- relief, maybe. But mostly I just feel tired. He treated us like lab equipment, Vex. Disposable components in his grand experiment. At least he can't hurt anyone else now.~^";
+            rtrue;
+        }
+        print "Lily's face hardens. ~Director Voss is a monster. He recruited me for what he called a ~groundbreaking neural interface project.~ When I found out he was experimenting on unwilling subjects, I tried to leave. That's when they grabbed me.~ Her hands tremble. ~He'll be on the rooftop helipad -- that's his escape route. He always has an exit plan.~^";
+        rtrue;
+    }
+    if (topic == 'father' or 'kai' or 'dad' or 'family') {
+        print "Lily's eyes fill with tears. ~My father -- is he okay? He must be worried sick. I haven't been able to contact him since they took me. Please, Vex, tell him I'm alive. Tell him I'm coming home.~^";
+        rtrue;
+    }
+    if (topic == 'clinic' or 'experiment' or 'rig' or 'neural' or 'interface') {
+        print "Lily wraps her arms around herself. ~The rig keeps your mind trapped in a loop -- a simulated cyberspace prison. They were mapping neural pathways, trying to perfect a direct brain-machine interface. The other subjects... their minds couldn't take it. I only survived because I understood the technology well enough to build mental firewalls.~^";
+        rtrue;
+    }
+    if (topic == 'cyberspace' or 'ice' or 'hack') {
+        print "Lily nods slowly. ~Zheng-Harmon's cyberspace ICE is built on stolen neural patterns -- patterns harvested from the test subjects. That's why it's so effective. It thinks like a human brain because parts of it literally are.~ She shudders. ~If you jacked in and survived, you're tougher than you look, Vex.~^";
+        rtrue;
+    }
+    if (topic == 'zheng' or 'harmon' or 'corp' or 'corporation') {
+        print "Lily's jaw tightens. ~Zheng-Harmon recruited me six months ago. The pay was incredible, the tech was cutting-edge. But when I saw what they were really doing -- the human trials, the subjects who came out as vegetables -- I knew I had to get out. They couldn't let me leave with what I knew.~^";
+        rtrue;
+    }
+    if (topic == 'help') {
+        print "Lily manages a weak smile. ~You've already helped me more than I can say, Vex. But if you need a refresher, try typing 'help' on its own.~^";
+        rtrue;
+    }
+    print "Lily shakes her head. ~I'm sorry, I don't know much about that. My world has been pretty small lately -- just that chair and the inside of a neural prison.~^";
+    rtrue;
+];
+
 ! --- Rooms ---
 Object office "Your Office"
     with description "Crammed into a space no bigger than a closet, your office smells of stale synth-whiskey and ozone. A single window overlooks the rain-slicked street below, neon signs painting shifting colors on the glass. Filing cabinets line one wall, their drawers jammed with cold cases nobody wants solved. Lily's encrypted datapad sits on the cluttered desk beside a half-empty bottle.^^You can go down to the street from here.",
@@ -816,6 +865,25 @@ Object lily "Lily Chen" clinic
              print "A young woman, pale and unconscious, connected to the neural rig. She looks terrified even in unconsciousness.^";
              rtrue;
          ],
+         life [;
+           Ask:
+             NPC_Ask_Lily(second);
+             rtrue;
+           Tell:
+             if (lily_freed == false) {
+                 print "Lily is unconscious. She can't hear you.^";
+                 rtrue;
+             }
+             print "Lily listens intently, nodding. ~I believe you, Vex. After what I've been through, nothing surprises me anymore.~^";
+             rtrue;
+           Give:
+             if (lily_freed == false) {
+                 print "Lily is unconscious. She can't take anything right now.^";
+                 rtrue;
+             }
+             print "Lily shakes her head. ~Hold onto that, Vex. You might need it more than I do.~^";
+             rtrue;
+         ],
          daemon [;
              if (lily_freed) {
                  if (location == rooftop && ~~voss_dead) return;
@@ -989,6 +1057,7 @@ Object rooftop_voss "Director Voss" rooftop
     if (noun == zephyr)           { NPC_Talk_Zephyr(); rtrue; }
     if (noun == tanaka)           { NPC_Talk_Tanaka(); rtrue; }
     if (noun == guard)            { NPC_Talk_Guard(); rtrue; }
+    if (noun == lily)             { NPC_Talk_Lily(); rtrue; }
     if (noun == rooftop_voss) { NPC_Talk_RooftopVoss(); rtrue; }
     if (noun has animate) {
         print (The) noun, " doesn't seem interested in talking.^";

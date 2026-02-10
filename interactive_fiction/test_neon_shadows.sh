@@ -191,6 +191,62 @@ run_test "Lily follows player to rooftop after Voss is dead" \
     "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nup\nshoot voss\ndown\nup\nlook\nquit\ny" \
     "Lily Chen"
 
+# --- LILY CONVERSATION ---
+echo ""
+echo "--- Lily Conversation ---"
+
+# Talk to unconscious Lily (before freeing)
+run_test "Talk to Lily while unconscious produces appropriate response" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\ntalk to lily\nquit\ny" \
+    "unconscious"
+
+# Talk to Lily after freeing her
+run_test "Talk to Lily after freeing produces contextual response" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\ntalk to lily\nquit\ny" \
+    "Voss|Director Voss|neural experiments"
+
+run_test "Talk to Lily after freeing does not show generic fallback" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\ntalk to lily\nquit\ny" \
+    "doesn't seem interested in talking" "true"
+
+# Ask Lily about Voss
+run_test "Ask Lily about Voss returns meaningful response" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nask lily about voss\nquit\ny" \
+    "monster|rooftop|experiment"
+
+# Ask Lily about father/Kai
+run_test "Ask Lily about father returns meaningful response" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nask lily about father\nquit\ny" \
+    "worried sick|coming home"
+
+run_test "Ask Lily about kai returns meaningful response" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nask lily about kai\nquit\ny" \
+    "worried sick|coming home"
+
+# Ask Lily about clinic/rig
+run_test "Ask Lily about clinic returns meaningful response" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nask lily about clinic\nquit\ny" \
+    "rig|neural pathways|cyberspace prison"
+
+run_test "Ask Lily about rig returns meaningful response" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nask lily about rig\nquit\ny" \
+    "rig|neural pathways|cyberspace prison"
+
+# Ask unconscious Lily
+run_test "Ask unconscious Lily produces appropriate response" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nask lily about voss\nquit\ny" \
+    "unconscious"
+
+# Tell Lily about something
+run_test "Tell Lily about something after freeing produces Lily-specific response" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\ntell lily about voss\nquit\ny" \
+    "believe you|nothing surprises me"
+
+# Give item to Lily
+run_test "Give item to Lily after freeing produces Lily-specific response" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\ngive pistol to lily\nquit\ny" \
+    "Hold onto that|need it more"
+
 # --- GRAMMAR: PLURAL OBJECTS ---
 echo ""
 echo "--- Grammar: Plural Objects ---"
