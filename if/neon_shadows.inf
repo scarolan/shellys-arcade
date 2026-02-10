@@ -230,8 +230,15 @@ Global player_sats = 50;
 
 ! --- Rooms ---
 Object office "Your Office"
-    with description "Crammed into a space no bigger than a closet, your office smells of stale synth-whiskey and ozone. A single window overlooks the rain-slicked street below, neon signs painting shifting colors on the glass. Filing cabinets line one wall, their drawers jammed with cold cases nobody wants solved. Your datapad sits on the cluttered desk beside a half-empty bottle and a loaded pistol.^^You can go down to the street from here.",
+    with description "Crammed into a space no bigger than a closet, your office smells of stale synth-whiskey and ozone. A single window overlooks the rain-slicked street below, neon signs painting shifting colors on the glass. Filing cabinets line one wall, their drawers jammed with cold cases nobody wants solved. Your datapad sits on the cluttered desk beside a half-empty bottle.^^You can go down to the street from here.",
          d_to street,
+         before [;
+           Go:
+             if (noun == d_obj && pistol notin player && self hasnt general) {
+                 give self general;
+                 print "Your neural implant buzzes at the base of your skull -- a cold prickle of instinct. Something tells you you're forgetting something important.^^";
+             }
+         ],
     has light;
 
 Object street "Rain-Soaked Street"
@@ -380,7 +387,7 @@ Object clinic_door "clinic door" industrial
 ! --- Objects in Office ---
 Object desk "desk" office
     with name 'desk' 'drawer',
-         description "A cramped metal desk, cluttered with datapads, empty synth-whiskey bottles, and a small drawer.",
+         description "A cramped metal desk, cluttered with datapads and empty synth-whiskey bottles. A small drawer is set into the front.",
     has scenery container openable;
 
 Object datapad "datapad" office
@@ -622,7 +629,6 @@ Object rooftop_voss "Director Voss" rooftop
 [ Initialise;
     location = office;
     score = player_sats;
-    give desk open;
 
     print "^^You're Kira Vex, private eye. The rain hasn't stopped in three days.^";
     print "Your latest client, Kai Chen, is waiting for you in your cramped office.^^";
