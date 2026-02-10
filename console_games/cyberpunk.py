@@ -14,6 +14,7 @@ Controls:
   q                  — Quit
 """
 
+import collections
 import curses
 import math
 import random
@@ -925,6 +926,166 @@ def attempt_hack(player, target_type="terminal"):
     return False, f"Hack failed (rolled {roll}, needed <= {chance})"
 
 
+# ── ICE Breaker minigame ─────────────────────────────────────────────────────
+
+# Hex symbol pool used by the code-breaker puzzle
+_ICE_SYMBOLS = "0123456789ABCDEF"
+
+
+def _ice_params(player, level_num):
+    """Return (code_length, max_attempts, pool_size) scaled by floor and skill.
+
+    Higher hack_skill  -> more attempts, smaller symbol pool (easier).
+    Higher level_num   -> longer code, larger symbol pool (harder).
+    """
+    # Code length: 3 on floor 1, up to 6 on floor 9
+    code_length = min(3 + (level_num - 1) // 2, 6)
+
+    # Symbol pool: base 8, +1 per 2 floors, reduced by high hack_skill
+    pool = 8 + (level_num - 1) // 2
+    if player.hack_skill >= 70:
+        pool -= 2
+    elif player.hack_skill >= 35:
+        pool -= 1
+    pool = max(4, min(pool, len(_ICE_SYMBOLS)))
+
+    # Attempts: base 6, +2 for Netrunner-tier skill, +1 for mid skill
+    max_attempts = 6
+    if player.hack_skill >= 70:
+        max_attempts += 2
+    elif player.hack_skill >= 35:
+        max_attempts += 1
+
+    return code_length, max_attempts, pool
+
+
+def _ice_evaluate(secret, guess):
+    """Return (exact, misplaced) counts for *guess* vs *secret*.
+
+    exact    — correct symbol in the correct position.
+    misplaced — correct symbol but wrong position.
+    """
+    exact = sum(s == g for s, g in zip(secret, guess))
+    # Count misplaced: shared symbol frequency minus exact matches
+    s_counts = collections.Counter(secret)
+    g_counts = collections.Counter(guess)
+    total_shared = sum((s_counts & g_counts).values())
+    misplaced = total_shared - exact
+    return exact, misplaced
+
+
+def hack_minigame(stdscr, player, level_num):
+    """Interactive ICE Breaker code-cracking minigame.
+
+    Returns True on success, False on failure.
+    """
+    code_length, max_attempts, pool_size = _ice_params(player, level_num)
+    symbols = _ICE_SYMBOLS[:pool_size]
+    secret = [random.choice(symbols) for _ in range(code_length)]
+
+    guesses = []          # list of (guess_list, exact, misplaced)
+    current = [0] * code_length  # indices into *symbols*
+    cursor = 0            # which digit the cursor is on
+    player.hacks_attempted += 1
+
+    while True:
+        stdscr.clear()
+        h, w = stdscr.getmaxyx()
+
+        # ── title ────────────────────────────────────────────────────
+        title = f"╔══ ICE BREAKER — Floor {level_num} ══╗"
+        cx = max(0, w // 2 - len(title) // 2)
+        safe_addstr(stdscr, 1, cx, title,
+                    curses.color_pair(C_CYAN) | curses.A_BOLD)
+
+        # ── info line ────────────────────────────────────────────────
+        remaining = max_attempts - len(guesses)
+        info = (f"  Crack the {code_length}-symbol code  |  "
+                f"Symbols: {symbols}  |  "
+                f"Attempts left: {remaining}")
+        safe_addstr(stdscr, 3, cx, info, curses.color_pair(C_WHITE))
+
+        # ── previous guesses ─────────────────────────────────────────
+        row = 5
+        for gi, (g, ex, mis) in enumerate(guesses):
+            code_str = " ".join(g)
+            # Color each symbol: green=exact, yellow=misplaced-counted
+            # (simple: just show aggregate counts to the right)
+            line = f"  {''.join(g)}  "
+            safe_addstr(stdscr, row, cx, line, curses.color_pair(C_GRAY))
+            # Feedback glyphs
+            fb = (f"  {'●' * ex}{'○' * mis}{'·' * (code_length - ex - mis)}"
+                  f"  ({ex} exact, {mis} close)")
+            safe_addstr(stdscr, row, cx + code_length + 4, fb,
+                        curses.color_pair(C_YELLOW if mis else
+                                          (C_GREEN if ex else C_RED)))
+            row += 1
+
+        # ── current guess (editable) ────────────────────────────────
+        row = max(row, 5 + max_attempts) + 1
+        safe_addstr(stdscr, row, cx, "  YOUR GUESS:",
+                    curses.color_pair(C_MAGENTA) | curses.A_BOLD)
+        row += 1
+        for i in range(code_length):
+            sym = symbols[current[i]]
+            if i == cursor:
+                attr = curses.color_pair(C_GREEN) | curses.A_BOLD | curses.A_UNDERLINE
+            else:
+                attr = curses.color_pair(C_WHITE) | curses.A_BOLD
+            safe_addstr(stdscr, row, cx + 2 + i * 3, f"[{sym}]", attr)
+
+        # ── controls ────────────────────────────────────────────────
+        ctrl_y = row + 2
+        safe_addstr(stdscr, ctrl_y, cx,
+                    "  ←/→ move cursor  ↑/↓ change symbol  ENTER submit  ESC abort",
+                    curses.color_pair(C_YELLOW))
+
+        stdscr.refresh()
+
+        # ── input ───────────────────────────────────────────────────
+        key = stdscr.getch()
+
+        if key == 27:  # ESC — abort (counts as failure)
+            return False
+        elif key in (curses.KEY_LEFT, ord('a'), ord('A')):
+            cursor = (cursor - 1) % code_length
+        elif key in (curses.KEY_RIGHT, ord('d'), ord('D')):
+            cursor = (cursor + 1) % code_length
+        elif key in (curses.KEY_UP, ord('w'), ord('W')):
+            current[cursor] = (current[cursor] + 1) % pool_size
+        elif key in (curses.KEY_DOWN, ord('s'), ord('S')):
+            current[cursor] = (current[cursor] - 1) % pool_size
+        elif key in (10, 13, curses.KEY_ENTER):
+            guess = [symbols[c] for c in current]
+            exact, misplaced = _ice_evaluate(secret, guess)
+
+            if exact == code_length:
+                # ── SUCCESS ──────────────────────────────────────────
+                player.hacks_succeeded += 1
+                stdscr.clear()
+                msg = "ACCESS GRANTED — ICE BROKEN"
+                safe_addstr(stdscr, h // 2, max(0, w // 2 - len(msg) // 2),
+                            msg,
+                            curses.color_pair(C_GREEN) | curses.A_BOLD)
+                stdscr.refresh()
+                curses.napms(1200)
+                return True
+
+            guesses.append((guess, exact, misplaced))
+
+            if len(guesses) >= max_attempts:
+                # ── FAILURE ──────────────────────────────────────────
+                ans = "".join(secret)
+                stdscr.clear()
+                msg = f"ICE LOCKOUT — Code was {ans}"
+                safe_addstr(stdscr, h // 2, max(0, w // 2 - len(msg) // 2),
+                            msg,
+                            curses.color_pair(C_RED) | curses.A_BOLD)
+                stdscr.refresh()
+                curses.napms(1200)
+                return False
+
+
 def _find_spawn_pos(game_map, enemies, cx, cy):
     """Find an empty walkable tile adjacent to (cx, cy) for spawning."""
     for ddx, ddy in [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, -1), (-1, 1), (1, 1)]:
@@ -936,9 +1097,18 @@ def _find_spawn_pos(game_map, enemies, cx, cy):
     return None
 
 
-def hack_terminal_effects(player, game_map, enemies, tx, ty):
-    """Apply hack effects: disable nearby drones, unlock doors, override turrets."""
-    success, msg = attempt_hack(player, "terminal")
+def hack_terminal_effects(player, game_map, enemies, tx, ty,
+                          stdscr=None, level_num=1):
+    """Apply hack effects: disable nearby drones, unlock doors, override turrets.
+
+    When *stdscr* is provided the interactive ICE Breaker minigame is used
+    instead of the passive dice-roll.
+    """
+    if stdscr is not None:
+        success = hack_minigame(stdscr, player, level_num)
+        msg = "Hack successful!" if success else "Hack failed — ICE held."
+    else:
+        success, msg = attempt_hack(player, "terminal")
     if not success:
         # ~30% chance to spawn a security drone on failure
         if random.random() < 0.3:
@@ -1736,7 +1906,9 @@ def main(stdscr):
                 tx, ty = player.x + ddx, player.y + ddy
                 if 0 <= ty < MAP_H and 0 <= tx < MAP_W:
                     if game_map[ty][tx] == TILE_TERMINAL:
-                        msg = hack_terminal_effects(player, game_map, enemies, tx, ty)
+                        msg = hack_terminal_effects(
+                            player, game_map, enemies, tx, ty,
+                            stdscr=stdscr, level_num=level_num)
                         messages.append(msg)
                         hacked = True
                         break

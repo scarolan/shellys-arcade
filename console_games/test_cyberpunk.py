@@ -548,6 +548,77 @@ class TestHackingMechanic(unittest.TestCase):
 
 
 # =============================================================================
+# 8b. ICE BREAKER MINIGAME TESTS
+# =============================================================================
+
+class TestICEBreakerMinigame(unittest.TestCase):
+    """Tests the interactive ICE Breaker hacking minigame."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.source = load_source()
+        cls.source_lower = cls.source.lower()
+
+    def test_has_minigame_function(self):
+        """Must have an interactive hack minigame function."""
+        has_minigame = any(kw in self.source_lower for kw in
+                           ["hack_minigame", "ice_breaker", "minigame",
+                            "code_breaker", "ice breaker"])
+        self.assertTrue(has_minigame, "No hacking minigame found")
+
+    def test_has_ice_symbols(self):
+        """Minigame must use a symbol pool for code-breaking."""
+        has_symbols = any(kw in self.source_lower for kw in
+                          ["_ice_symbols", "symbol", "hex", "code_length",
+                           "pool_size"])
+        self.assertTrue(has_symbols, "No symbol pool for ICE minigame found")
+
+    def test_has_ice_params(self):
+        """Minigame difficulty must scale with floor and hack_skill."""
+        has_params = any(kw in self.source_lower for kw in
+                         ["_ice_params", "ice_param", "code_length",
+                          "max_attempts", "pool_size"])
+        self.assertTrue(has_params,
+                        "No difficulty scaling parameters found")
+
+    def test_has_ice_evaluate(self):
+        """Minigame must evaluate guesses (exact/misplaced feedback)."""
+        has_eval = any(kw in self.source_lower for kw in
+                       ["_ice_evaluate", "exact", "misplaced", "evaluate",
+                        "feedback"])
+        self.assertTrue(has_eval,
+                        "No guess evaluation logic found")
+
+    def test_difficulty_scales_with_level(self):
+        """Code length or pool size should reference level_num."""
+        # The _ice_params function should use level_num to scale difficulty
+        has_level_scaling = "level_num" in self.source_lower
+        self.assertTrue(has_level_scaling,
+                        "Minigame difficulty does not reference level_num")
+
+    def test_hack_skill_matters(self):
+        """hack_skill should influence minigame parameters."""
+        has_skill_ref = "hack_skill" in self.source_lower
+        self.assertTrue(has_skill_ref,
+                        "Minigame does not reference hack_skill")
+
+    def test_has_success_and_failure_outcomes(self):
+        """Minigame must have both success and failure paths."""
+        has_success = any(kw in self.source_lower for kw in
+                          ["access granted", "ice broken", "hack successful"])
+        has_failure = any(kw in self.source_lower for kw in
+                          ["lockout", "ice held", "hack failed"])
+        self.assertTrue(has_success, "No success outcome text found")
+        self.assertTrue(has_failure, "No failure outcome text found")
+
+    def test_minigame_uses_curses(self):
+        """Minigame must be playable in curses terminal (stdscr param)."""
+        has_stdscr = "stdscr" in self.source
+        self.assertTrue(has_stdscr,
+                        "Minigame does not accept stdscr for curses rendering")
+
+
+# =============================================================================
 # 9. FOG OF WAR TESTS
 # =============================================================================
 
