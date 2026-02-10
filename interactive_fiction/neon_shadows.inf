@@ -21,6 +21,8 @@ Global lily_freed = false;
 Global voss_dead = false;
 Global player_sats = 50;
 Global ice_bypassed = false;
+Global ice_analyzed = false;
+Global ice_exploit_ready = false;
 Global jacked_in = false;
 
 ! --- NPC Conversation Helper ---
@@ -383,7 +385,15 @@ Object cyber_lobby "Cyberspace Nexus"
                 print "You float in a vast digital void, geometric shapes pulsing with neon light in every direction. Data streams flow like rivers of luminous code beneath a grid-lined sky. The server's architecture manifests here as towering crystalline structures. To the north, the shattered remnants of the ICE wall flicker and fade, leaving the path to the data vault wide open.^^You can go north to the data vault or type 'disconnect' to jack out.^";
                 rtrue;
             }
-            print "You float in a vast digital void, geometric shapes pulsing with neon light in every direction. Data streams flow like rivers of luminous code beneath a grid-lined sky. The server's architecture manifests here as towering crystalline structures. To the north, a massive wall of shimmering red ICE blocks access to the data vault -- Zheng-Harmon's military-grade firewall, just like Zephyr warned about.^^You can go north to the data vault (if the ICE is down) or type 'disconnect' to jack out.^";
+            if (ice_exploit_ready) {
+                print "You float in a vast digital void, geometric shapes pulsing with neon light in every direction. Data streams flow like rivers of luminous code beneath a grid-lined sky. The server's architecture manifests here as towering crystalline structures. To the north, a massive wall of shimmering red ICE blocks access to the data vault. Your neural implant thrums with the loaded exploit -- you're ready to hack through.^^You can hack the ICE, go north (if the ICE is down), or type 'disconnect' to jack out.^";
+                rtrue;
+            }
+            if (ice_analyzed) {
+                print "You float in a vast digital void, geometric shapes pulsing with neon light in every direction. Data streams flow like rivers of luminous code beneath a grid-lined sky. The server's architecture manifests here as towering crystalline structures. To the north, a massive wall of shimmering red ICE blocks access to the data vault. You've found a flaw in the ICE -- now you need an exploit to crack it. Try scanning the data streams.^^You can go north (if the ICE is down) or type 'disconnect' to jack out.^";
+                rtrue;
+            }
+            print "You float in a vast digital void, geometric shapes pulsing with neon light in every direction. Data streams flow like rivers of luminous code beneath a grid-lined sky. The server's architecture manifests here as towering crystalline structures. To the north, a massive wall of shimmering red ICE blocks access to the data vault -- Zheng-Harmon's military-grade firewall, just like Zephyr warned about.^^Try scanning the ICE to find a weakness. You can also type 'disconnect' to jack out.^";
             rtrue;
         ],
          n_to [;
@@ -690,14 +700,29 @@ Object ice_wall "ICE wall" cyber_lobby
                  print "The ICE wall lies in shattered fragments, its red glow fading to nothing. The path north to the data vault is clear.^";
                  rtrue;
              }
-             print "A massive wall of shimmering red energy blocks the path north. Military-grade Intrusion Countermeasure Electronics -- Zheng-Harmon's finest. The patterns shift and pulse like a living thing. You'll need to hack through it.^";
+             if (ice_analyzed) {
+                 print "A massive wall of shimmering red energy blocks the path north. Now that you've analyzed its architecture, you can see the hairline fracture in the security lattice -- a buffer overflow in an unpatched module. You need an exploit to crack it open. Try scanning the data streams for usable code.^";
+                 rtrue;
+             }
+             print "A massive wall of shimmering red energy blocks the path north. Military-grade Intrusion Countermeasure Electronics -- Zheng-Harmon's finest. The patterns shift and pulse like a living thing. Try scanning it to find a weakness.^";
              rtrue;
          ],
     has scenery;
 
 Object data_streams "data streams" cyber_lobby
     with name 'streams' 'rivers' 'code',
-         description "Rivers of luminous code flow beneath you, carrying fragments of corporate data -- financial records, employee files, research notes. The experiment logs you need are locked behind the ICE to the north.",
+         description [;
+             if (ice_exploit_ready) {
+                 print "Rivers of luminous code flow beneath you. You've already extracted an exploit sequence from the stream -- your neural implant is primed and ready to deploy it against the ICE wall.^";
+                 rtrue;
+             }
+             if (ice_analyzed) {
+                 print "Rivers of luminous code flow beneath you, carrying fragments of corporate data. Now that you know the ICE's weakness, you might be able to scan the streams for a matching exploit sequence.^";
+                 rtrue;
+             }
+             print "Rivers of luminous code flow beneath you, carrying fragments of corporate data -- financial records, employee files, research notes. The experiment logs you need are locked behind the ICE to the north.^";
+             rtrue;
+         ],
     has scenery pluralname;
 
 Object vault_columns "data columns" cyber_vault
@@ -998,6 +1023,15 @@ Object rooftop_voss "Director Voss" rooftop
         if (len > 3) i->3 = ' ';
         Tokenise__(buffer, parse);
     }
+    if (w == 'scan' or 'analyze' or 'probe') {
+        i = WordAddress(1);
+        len = WordLength(1);
+        i->0 = 'z';
+        i->1 = 's';
+        i->2 = 'c';
+        while (len > 3) { len--; i->len = ' '; }
+        Tokenise__(buffer, parse);
+    }
     if (w == 'hack' or 'bypass') {
         i = WordAddress(1);
         len = WordLength(1);
@@ -1058,6 +1092,7 @@ Object rooftop_voss "Director Voss" rooftop
     print "  free X ........... Disconnect someone from hostile tech.^";
     print "  use X ............ Deploy keycards, tools, whatever fits.^";
     print "  jack in .......... Interface with a neural jack point.^";
+    print "  scan X ........... Analyze cyberspace objects for weaknesses.^";
     print "  hack ............. Breach ICE defenses in cyberspace.^";
     print "  disconnect ....... Jack out of cyberspace.^^";
 
@@ -1206,6 +1241,44 @@ Object rooftop_voss "Director Voss" rooftop
     rtrue;
 ];
 
+! --- Scan action (cyberspace analysis) ---
+[ ScanSub;
+    if (location ~= cyber_lobby) {
+        print "There's nothing to scan here.^";
+        rtrue;
+    }
+    if (ice_bypassed) {
+        print "The ICE is already down. There's nothing left to scan.^";
+        rtrue;
+    }
+    if (noun == ice_wall || noun == nothing) {
+        if (ice_analyzed) {
+            print "You've already mapped the ICE's vulnerability -- a buffer overflow in an unpatched security module. Now you need an exploit to crack it. Try scanning the data streams.^";
+            rtrue;
+        }
+        ice_analyzed = true;
+        score = score + 5;
+        print "You focus your neural implant on the ICE wall, letting your consciousness split into parallel threads to map its architecture. Layer by layer, the firewall's structure reveals itself -- adaptive encryption, rotating cipher keys, self-healing code matrices. But there, deep in the lattice, you spot it: a hairline fracture. A buffer overflow in an unpatched security module.^^You've found the weakness, but you'll need an exploit to crack it open. The data streams flowing through cyberspace might contain usable code.^";
+        rtrue;
+    }
+    if (noun == data_streams) {
+        if (ice_analyzed == false) {
+            print "Rivers of code flow past, but without knowing what you're looking for, the data is meaningless noise. Try scanning the ICE wall first to identify a vulnerability.^";
+            rtrue;
+        }
+        if (ice_exploit_ready) {
+            print "Your neural implant is already loaded with the exploit sequence. You're ready to hack the ICE.^";
+            rtrue;
+        }
+        ice_exploit_ready = true;
+        score = score + 5;
+        print "You plunge your awareness into the data streams, sifting through torrents of corporate code. Financial records, personnel files, security patches -- there. A fragment of an old penetration test, buried in a forgotten QA directory. It targets exactly the buffer overflow vulnerability you found in the ICE.^^Your neural implant absorbs the exploit sequence, compiling it into a ready-to-deploy payload. You're armed and ready -- hack the ICE wall to bring it down.^";
+        rtrue;
+    }
+    print "You scan it, but find nothing useful. Try scanning the ICE wall or the data streams.^";
+    rtrue;
+];
+
 ! --- Hack ICE action ---
 [ HackICESub;
     if (location ~= cyber_lobby) {
@@ -1216,9 +1289,16 @@ Object rooftop_voss "Director Voss" rooftop
         print "The ICE is already down. The path north is clear.^";
         rtrue;
     }
+    if (ice_analyzed == false) {
+        print "You throw yourself at the ICE wall, neural implant blazing -- but the military-grade firewall deflects every probe. You're attacking blind. You need to scan the ICE first and find a vulnerability before you can break through.^";
+        rtrue;
+    }
+    if (ice_exploit_ready == false) {
+        print "You found the weakness in the ICE -- a buffer overflow in an unpatched module -- but you don't have an exploit to drive through the crack. Try scanning the data streams for usable attack code.^";
+        rtrue;
+    }
     ice_bypassed = true;
-    score = score + 10;
-    print "You focus your neural implant on the ICE wall, probing for weaknesses. Your consciousness splits into a dozen parallel threads, each one testing a different vulnerability. The military-grade firewall fights back -- your vision blurs, pain lancing through your temples -- but you find the crack. A buffer overflow in an unpatched security module.^^The ICE wall shatters like red glass, fragments dissolving into nothing. The path to the data vault is open.^";
+    print "You deploy the exploit sequence against the ICE wall's buffer overflow. Your neural implant drives the payload deep into the security lattice, thread by thread unraveling the firewall from the inside. The military-grade ICE fights back -- your vision blurs, pain lancing through your temples -- but the exploit holds. The crack widens, fractures spiderwebbing across the red wall of energy.^^The ICE wall shatters like red glass, fragments dissolving into nothing. The path to the data vault is open.^";
     rtrue;
 ];
 
@@ -1271,6 +1351,10 @@ Verb 'use'
 Verb 'zjk'
     *                                           -> JackIn
     * 'in'                                      -> JackIn;
+
+Verb 'zsc'
+    *                                           -> Scan
+    * noun                                      -> Scan;
 
 Verb 'zhk'
     *                                           -> HackICE

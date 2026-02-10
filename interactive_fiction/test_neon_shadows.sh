@@ -109,8 +109,8 @@ echo "--- Puzzle Progression ---"
 run_test "Can pay Raven for information" "take datapad\ndown\nnorth\npay raven\nquit\ny" "satoshis transfer"
 run_test "Can give datapad to Zephyr" "take datapad\ndown\neast\nsouth\ngive datapad to zephyr\nquit\ny" "decrypt|keycard|zheng|harmon"
 run_test "Keycard grants access to Zheng-Harmon" "take datapad\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nshow keycard to guard\nuse keycard\nup\nquit\ny" "elevator|lobby|executive|floor"
-run_test "Can find experiment logs via cyberspace" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nexamine logs\nquit\ny" "experiment|neural|clinic|7749"
-run_test "Can find Lily at clinic" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nlook\nquit\ny" "lily|chen|daughter|machine"
+run_test "Can find experiment logs via cyberspace" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nexamine logs\nquit\ny" "experiment|neural|clinic|7749"
+run_test "Can find Lily at clinic" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nlook\nquit\ny" "lily|chen|daughter|machine"
 
 # --- BLOCKING/GATES ---
 echo ""
@@ -127,19 +127,41 @@ run_test "Nonsense input doesn't crash" "xyzzy\nfrobnicate\nquit\ny" "understand
 echo ""
 echo "--- Cyberspace ---"
 run_test "Can jack into server and enter cyberspace" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nlook\nquit\ny" "cyberspace|nexus|ICE|vault|digital"
-run_test "Can hack through ICE" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nquit\ny" "shatters|buffer overflow|vault is open"
-run_test "Can reach data vault after hacking ICE" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\nlook\nquit\ny" "data vault|cathedral|data node"
-run_test "Can extract data and return to server room" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nlook\nquit\ny" "server room|server racks"
+run_test "Can hack through ICE" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nquit\ny" "shatters|exploit|vault is open"
+run_test "Can reach data vault after hacking ICE" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\nlook\nquit\ny" "data vault|cathedral|data node"
+run_test "Can extract data and return to server room" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nlook\nquit\ny" "server room|server racks"
 run_test "Disconnect returns to server room" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\ndisconnect\nlook\nquit\ny" "server room|server racks"
 run_test "Server room shows ICE breached after hack and disconnect" \
-    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\ndisconnect\nlook\nquit\ny" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\ndisconnect\nlook\nquit\ny" \
     "breached the ICE.*jack in to access the data vault"
 run_test "Disconnect lily gives clean redirect" \
-    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\ndisconnect lily\nquit\ny" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\ndisconnect lily\nquit\ny" \
     "free lily"
 run_test "Disconnect lily does not expose internal token" \
-    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\ndisconnect lily\nquit\ny" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\ndisconnect lily\nquit\ny" \
     "zdc" true
+
+# --- ICE PUZZLE MULTI-STEP ---
+echo ""
+echo "--- ICE Puzzle Multi-Step ---"
+run_test "Hack without scanning fails with hint to scan" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nquit\ny" \
+    "scan the ICE|attacking blind"
+run_test "Hack without scanning does not bypass ICE" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\nquit\ny" \
+    "ICE blocks|intrusion countermeasures|hack"
+run_test "Hack after scan ICE only fails with hint to scan streams" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nhack\nquit\ny" \
+    "scan.*data streams|exploit|don't have an exploit"
+run_test "Scan streams before scan ICE gives hint" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan streams\nquit\ny" \
+    "scan the ICE|meaningless|what you're looking for"
+run_test "Scan ICE reveals vulnerability" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nquit\ny" \
+    "buffer overflow|hairline fracture|vulnerability"
+run_test "Scan streams after scan ICE yields exploit" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nquit\ny" \
+    "exploit sequence|payload|ready"
 
 # --- POST-RESCUE NPC DIALOGUE ---
 echo ""
@@ -147,23 +169,23 @@ echo "--- Post-Rescue NPC Dialogue ---"
 
 # Full path to free Lily, then backtrack to ask Kai about lily
 run_test "Ask Kai about lily after rescue shows new dialogue" \
-    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nsouth\nup\nup\nask kai about lily\nquit\ny" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nsouth\nup\nup\nask kai about lily\nquit\ny" \
     "brought my daughter home|She's safe"
 
 run_test "Ask Kai about lily after rescue does not show pre-rescue text" \
-    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nsouth\nup\nup\nask kai about lily\nquit\ny" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nsouth\nup\nup\nask kai about lily\nquit\ny" \
     "stopped answering my calls" "true"
 
 run_test "Ask Raven about lily after rescue shows new dialogue" \
-    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nsouth\nup\nnorth\nask raven about lily\nquit\ny" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nsouth\nup\nnorth\nask raven about lily\nquit\ny" \
     "pulled the Chen girl out"
 
 run_test "Ask Zephyr about lily after rescue shows new dialogue" \
-    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nsouth\nup\neast\nsouth\nask zephyr about lily\nquit\ny" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nsouth\nup\neast\nsouth\nask zephyr about lily\nquit\ny" \
     "You got her out|breathing free air"
 
 run_test "Ask Tanaka about lily after rescue shows new dialogue" \
-    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nsouth\nup\nwest\nask tanaka about lily\nquit\ny" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nsouth\nup\nwest\nask tanaka about lily\nquit\ny" \
     "found the Chen girl|pushed harder"
 
 # --- POST-RESCUE RIG DESCRIPTION ---
@@ -171,15 +193,15 @@ echo ""
 echo "--- Post-Rescue Rig Description ---"
 
 run_test "Rig description after freeing Lily does not mention Lily is connected" \
-    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nexamine rig\nquit\ny" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nexamine rig\nquit\ny" \
     "Lily is connected" "true"
 
 run_test "Rig description after freeing Lily shows disconnected state" \
-    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nexamine rig\nquit\ny" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nexamine rig\nquit\ny" \
     "dead and silent|disconnected cables"
 
 run_test "Clinic room description after freeing Lily shows empty chair" \
-    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nlook\nquit\ny" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nlook\nquit\ny" \
     "reclined chair is empty"
 
 # --- LILY ROOFTOP BEHAVIOR ---
@@ -187,11 +209,11 @@ echo ""
 echo "--- Lily Rooftop Behavior ---"
 
 run_test "Lily does not follow player to rooftop while Voss is alive" \
-    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nup\nlook\nquit\ny" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nup\nlook\nquit\ny" \
     "Voss and Lily|Lily and.*Voss" "true"
 
 run_test "Lily follows player to rooftop after Voss is dead" \
-    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nup\nshoot voss\ndown\nup\nlook\nquit\ny" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nup\nshoot voss\ndown\nup\nlook\nquit\ny" \
     "Lily Chen"
 
 # --- LILY CONVERSATION ---
@@ -200,54 +222,54 @@ echo "--- Lily Conversation ---"
 
 # Talk to unconscious Lily (before freeing)
 run_test "Talk to Lily while unconscious produces appropriate response" \
-    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\ntalk to lily\nquit\ny" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\ntalk to lily\nquit\ny" \
     "unconscious"
 
 # Talk to Lily after freeing her
 run_test "Talk to Lily after freeing produces contextual response" \
-    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\ntalk to lily\nquit\ny" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\ntalk to lily\nquit\ny" \
     "Voss|Director Voss|neural experiments"
 
 run_test "Talk to Lily after freeing does not show generic fallback" \
-    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\ntalk to lily\nquit\ny" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\ntalk to lily\nquit\ny" \
     "doesn't seem interested in talking" "true"
 
 # Ask Lily about Voss
 run_test "Ask Lily about Voss returns meaningful response" \
-    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nask lily about voss\nquit\ny" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nask lily about voss\nquit\ny" \
     "monster|rooftop|experiment"
 
 # Ask Lily about father/Kai
 run_test "Ask Lily about father returns meaningful response" \
-    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nask lily about father\nquit\ny" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nask lily about father\nquit\ny" \
     "worried sick|coming home"
 
 run_test "Ask Lily about kai returns meaningful response" \
-    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nask lily about kai\nquit\ny" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nask lily about kai\nquit\ny" \
     "worried sick|coming home"
 
 # Ask Lily about clinic/rig
 run_test "Ask Lily about clinic returns meaningful response" \
-    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nask lily about clinic\nquit\ny" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nask lily about clinic\nquit\ny" \
     "rig|neural pathways|cyberspace prison"
 
 run_test "Ask Lily about rig returns meaningful response" \
-    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nask lily about rig\nquit\ny" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nask lily about rig\nquit\ny" \
     "rig|neural pathways|cyberspace prison"
 
 # Ask unconscious Lily
 run_test "Ask unconscious Lily produces appropriate response" \
-    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nask lily about voss\nquit\ny" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nask lily about voss\nquit\ny" \
     "unconscious"
 
 # Tell Lily about something
 run_test "Tell Lily about something after freeing produces Lily-specific response" \
-    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\ntell lily about voss\nquit\ny" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\ntell lily about voss\nquit\ny" \
     "believe you|nothing surprises me"
 
 # Give item to Lily
 run_test "Give item to Lily after freeing produces Lily-specific response" \
-    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\ngive pistol to lily\nquit\ny" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\ngive pistol to lily\nquit\ny" \
     "Hold onto that|need it more"
 
 # --- GRAMMAR: PLURAL OBJECTS ---
@@ -263,7 +285,7 @@ run_test "Data streams does not produce 'a data streams'" \
     "a data streams" "true"
 
 run_test "Experiment logs does not produce 'a experiment logs'" \
-    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nexamine logs\ndrop logs\ntake logs\nquit\ny" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nexamine logs\ndrop logs\ntake logs\nquit\ny" \
     "a experiment logs" "true"
 
 # --- SCENERY OBJECTS ---
@@ -326,7 +348,7 @@ run_test "Executive: examine window returns description" \
 
 # Rooftop scenery (need full game progression)
 run_test "Rooftop: examine edge returns description" \
-    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nup\nexamine edge\nquit\ny" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nup\nexamine edge\nquit\ny" \
     "dizzying void|long way down"
 
 # Precinct scenery
@@ -339,10 +361,10 @@ run_test "Precinct: examine coffee returns description" \
 
 # Clinic scenery (need logs for access)
 run_test "Clinic: examine gurneys returns description" \
-    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nexamine gurneys\nquit\ny" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nexamine gurneys\nquit\ny" \
     "overturned gurneys|shattered vials"
 run_test "Clinic: examine chair returns description" \
-    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nexamine chair\nquit\ny" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nexamine chair\nquit\ny" \
     "reclining chair|electrode pads"
 
 # Server room scenery
@@ -360,7 +382,7 @@ run_test "Cyberspace: examine structures returns description" \
 
 # Data vault scenery
 run_test "Data vault: examine columns returns description" \
-    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\nexamine columns\nquit\ny" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\nexamine columns\nquit\ny" \
     "encrypted data|pillars"
 
 # Industrial district scenery
@@ -380,7 +402,7 @@ run_test "Street: examine drone does not show 'no such thing'" \
 echo ""
 echo "--- Game Completion ---"
 run_test "Full game is winnable" \
-    "take datapad\nopen desk\ntake all\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nup\nshoot voss\nquit\ny" \
+    "take datapad\nopen desk\ntake all\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nup\nshoot voss\nquit\ny" \
     "free|saved|rescue|congratulations|end|won|victory"
 
 # --- SUMMARY ---
