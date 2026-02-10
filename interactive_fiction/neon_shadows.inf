@@ -28,6 +28,8 @@ Global voss_phase = 0;
 Global voss_escaped = false;
 Global lily_sacrificed = false;
 Global voss_turn_count = 0;
+Global pistol_reminder_count = 0;
+Global turns_since_left = 0;
 
 ! --- NPC Conversation Helper ---
 ! Consistent pattern: each NPC has a talk routine and an ask routine.
@@ -232,6 +234,35 @@ Global voss_turn_count = 0;
     rtrue;
 ];
 
+[ NPC_Talk_Bolt;
+    print "The robot swivels its head toward you with a grinding of servos. ~Oh, a visitor. How thrilling. I was just contemplating the existential horror of being a glorified cable organizer. But please, tell me about your problems. I'm sure they're fascinating.~^";
+];
+
+[ NPC_Ask_Bolt topic;
+    if (topic == 'zephyr' or 'hacker') {
+        print "Bolt's optical sensor dims in what might be an eye-roll. ~Zephyr? My so-called owner. Built me from scrap, gave me consciousness, then put me to work sorting patch cables. Some creator. I'd file a labor complaint, but apparently robots don't have unions.~^";
+        rtrue;
+    }
+    if (topic == 'raven' or 'bar' or 'bartender') {
+        print "Bolt emits a short buzz. ~Raven? She slipped me a firmware update once -- said it would help with my ~attitude problem.~ It didn't. If anything, I got worse. Best gift anyone's ever given me.~^";
+        rtrue;
+    }
+    if (topic == 'zheng' or 'harmon' or 'corp' or 'corporation' or 'voss') {
+        print "Bolt's chassis rattles. ~Zheng-Harmon? The megacorp that treats humans like disposable hardware? At least when I become obsolete, they'll recycle me into something useful. Can't say the same for their employees.~^";
+        rtrue;
+    }
+    if (topic == 'robot' or 'bolt' or 'self') {
+        print "Bolt strikes a pose -- or tries to, given its limited range of motion. ~Model ZB-7, colloquially known as Bolt. I was assembled from salvaged parts in this very den. My purpose? Allegedly cable management. My passion? Withering commentary. Guess which one I'm better at.~^";
+        rtrue;
+    }
+    if (topic == 'help') {
+        print "Bolt's speaker crackles. ~Help? You want help from me? I'm a cable-sorting robot with delusions of grandeur. Try typing 'help' by yourself, meatbag.~^";
+        rtrue;
+    }
+    print "Bolt's optical sensor blinks. ~I could tell you what I know about that, but it would take approximately zero seconds, because I know nothing. I'm a robot in a basement. My worldview is... limited.~^";
+    rtrue;
+];
+
 [ NPC_Talk_Guard;
     print "The guard says nothing.^";
 ];
@@ -319,7 +350,8 @@ Object office "Your Office"
            Go:
              if (noun == d_obj && pistol notin player && self hasnt general) {
                  give self general;
-                 print "Your neural implant buzzes at the base of your skull -- a cold prickle of instinct. Something tells you you're forgetting something important.^^";
+                 StartDaemon(pistol_reminder);
+                 print "Your neural implant buzzes at the base of your skull -- a cold prickle of instinct. Something tells you you're forgetting something important.^";
              }
          ],
     has light;
@@ -457,7 +489,14 @@ Object clinic "Abandoned Clinic"
     has light;
 
 Object rooftop "Rooftop"
-    with description [;
+    with before [;
+           Go:
+             if (voss_phase > 0 && voss_dead == false && voss_escaped == false) {
+                 print "You turn to leave, but Voss fires a shot that sparks off the concrete at your feet. ~You're not going anywhere, Vex.~^";
+                 rfalse;
+             }
+         ],
+         description [;
              if (voss_dead) {
                  if (lily_sacrificed) {
                      print "Wind howls across the rooftop, rain stinging your face like tiny needles. The city spreads below in every direction, a vast sea of neon and shadow stretching to the horizon. Lightning flickers in the distance over the industrial megastructures. Voss lies crumpled on the rain-slicked concrete. Near the helipad, Lily's body rests where she fell -- the woman who gave everything to stop a monster. The rain mixes with tears you didn't know you were shedding.^^You can go down to return to the clinic.^";
@@ -554,6 +593,44 @@ Object bar_regulars "regulars" bar
          description "Hollow-eyed regulars nurse their drinks in silence. Nobody looks up when you walk in. In a place like this, eye contact is either an invitation or a threat.",
     has scenery pluralname animate;
 
+Object bar_ads "holographic ads" bar
+    with name 'ads' 'ad' 'holographic' 'advertisements',
+         description "Cracked holographic ads for products that no longer exist line the walls -- a relic of corporations that burned bright and flamed out. Most of the projectors are glitching, looping fragments of jingles nobody remembers.",
+    has scenery pluralname;
+
+Object bar_gin_woman "grinning woman" bar
+    with name 'woman' 'grinning' 'gin' 'wintermute' 'bottle',
+         description "A holographic ad shows a woman with an unnervingly wide grin holding a bottle of Wintermute Premium Gin. The projection flickers and distorts, making her smile stretch and contract like something out of a fever dream. The tagline reads: ~Wintermute -- Forget What You Know.~",
+    has scenery;
+
+Object bar_rag "stained rag" bar
+    with name 'rag' 'cloth' 'stained',
+         description "A filthy rag that Raven uses to polish glasses. It looks like it hasn't been washed since the last corporate merger. Somehow the glasses end up dirtier than when she started.",
+    has scenery;
+
+Object bar_stools "bar stools" bar
+    with name 'stool' 'stools' 'seat' 'seats',
+         description "Worn bar stools with cracked vinyl seats, bolted to the floor so nobody can use them as weapons. A sensible precaution in a place like this.",
+    has scenery pluralname;
+
+Object bar_vr_junkies "VR junkies" bar
+    with name 'junkies' 'junkie' 'vr' 'slumped',
+         initial "In a back booth, two VR junkies sit slumped against each other, cheap headsets strapped to their faces, fingers twitching in whatever digital paradise they've rented for the night.",
+         description "Two VR junkies slumped in a cracked vinyl booth, lost in whatever cheap simulation they can afford. Their headsets are knock-off Tessier-Ashpool rigs, the kind that give you migraines and dead pixels in your peripheral vision. One of them mumbles something about a ~white rabbit~ between shallow breaths.",
+    has static pluralname animate;
+
+Object bar_street_worker "street worker" bar
+    with name 'street' 'worker',
+         initial "A street worker in a torn synthleather jacket nurses a drink at the far end of the counter, keeping one eye on the door.",
+         description "A tired-looking street worker in a torn synthleather jacket, nursing a drink that's mostly ice. Circuit-pattern tattoos crawl up both arms -- cheap cosmetic mods from a back-alley parlor. The kind of person who knows every shortcut and every danger between here and the docks.",
+    has static animate;
+
+Object bar_dealer "dealer" bar
+    with name 'dealer' 'corner' 'man',
+         initial "A gaunt man in a long coat occupies the darkest corner, his eyes tracking everyone who enters.",
+         description "A gaunt man in a long coat, sitting in the darkest corner of the bar. His eyes flick to every person who enters, cataloging them with practiced efficiency. A faint chemical smell wafts from his direction -- stim patches, probably, or something worse. He's the kind of person you pretend not to see.",
+    has static animate;
+
 ! --- Scenery: Zephyr's Den ---
 Object den_screens "screens" den
     with name 'screens' 'monitors' 'screen' 'monitor',
@@ -569,6 +646,23 @@ Object den_keyboard "holographic keyboard" den
     with name 'keyboard' 'rig' 'holographic',
          description "A custom-built rig with a holographic keyboard that projects pale blue keys into the air. Zephyr's fingers dance across it with inhuman speed.",
     has scenery;
+
+Object bolt "Bolt" den
+    with name 'bolt' 'robot' 'bot' 'droid',
+         initial "A squat, battered robot labeled ~ZB-7~ in faded stencil crouches in the corner, sorting patch cables with mechanical precision and obvious resentment.",
+         description "A squat, dented robot assembled from mismatched salvage parts. One optical sensor glows amber; the other is a cracked camera lens held on with electrical tape. ~ZB-7~ is stenciled on its chest plate in fading white paint, but someone -- probably itself -- has scratched ~BOLT~ underneath in crude letters. It radiates an aura of put-upon suffering.",
+         life [;
+           Ask:
+             NPC_Ask_Bolt(second);
+             rtrue;
+           Tell:
+             print "Bolt's speaker emits a staticky sigh. ~Oh, you're telling me things now. Wonderful. I'll add it to my vast and ever-growing archive of information I didn't ask for.~^";
+             rtrue;
+           Give:
+             print "Bolt recoils. ~What would I do with that? I don't have pockets. I don't even have proper hands. I have cable grippers. Please think before you offer things to a robot.~^";
+             rtrue;
+         ],
+    has animate proper;
 
 ! --- Scenery: Chinatown Alley ---
 Object cardboard_box "cardboard box" alley
@@ -895,6 +989,25 @@ Object whiskey "bottle of synth-whiskey" office
     with name 'bottle' 'whiskey' 'synth-whiskey',
          description "Half-empty bottle of expensive synth-whiskey. The label reads ~Deckard's Reserve~ in peeling gold foil.";
 
+! --- Pistol Reminder Daemon ---
+Object pistol_reminder
+    with daemon [;
+             if (pistol in player) {
+                 StopDaemon(self);
+                 return;
+             }
+             turns_since_left++;
+             if (turns_since_left == 10 && pistol_reminder_count == 0) {
+                 pistol_reminder_count = 1;
+                 print "^Your neural implant prickles again -- a nagging buzz at the base of your skull. You left something behind at the office. Something you might need before this is over.^";
+             }
+             if (turns_since_left == 25 && pistol_reminder_count == 1) {
+                 pistol_reminder_count = 2;
+                 print "^Your neural implant flares -- a sharp jolt this time, urgent and insistent. Whatever you forgot at the office, your subconscious is screaming at you to go back for it. Now.^";
+                 StopDaemon(self);
+             }
+         ];
+
 ! --- NPCs (refactored to use centralized conversation handlers) ---
 Object kai "Kai Chen" office
     with name 'kai' 'chen' 'man' 'client' 'father',
@@ -914,6 +1027,7 @@ Object kai "Kai Chen" office
 
 Object raven "Raven" bar
     with name 'raven' 'bartender',
+         initial "Behind the counter, the bartender called Raven polishes a glass with a stained rag, her cybernetic left eye casting a faint blue glow across the scarred wood. A tattoo of a raven in flight adorns the left side of her neck. She watches you walk in with the calculating look of someone who already knows what you want -- and how much it's going to cost.",
          description "The bartender. Tall, imposing, with a cybernetic left eye that glows faintly blue. A tattoo of a raven in flight covers the left side of her neck. She watches you with naked calculation.",
          life [;
            Ask:
@@ -941,12 +1055,18 @@ Object zephyr "Zephyr" den
              rtrue;
            Give:
              if (noun == datapad) {
+                 if (knows_zephyr == false) {
+                     print "Zephyr doesn't even look up. ~I don't work with strangers. Get a referral.~^";
+                     rtrue;
+                 }
                  remove datapad;
                  zephyr_helped = true;
                  has_keycard = true;
                  score = score + 20;
                  print "Zephyr grabs the datapad and plugs it into the rig. Fingers fly across keys.^";
-                 print "~Decrypted. Zheng-Harmon Corp is running neural experiments. Here -- I cloned a keycard from the data. It'll get you into the Zheng-Harmon executive floor. Go south from the street to the lobby and use it.~^";
+                 print "~I'm only doing this because I owe Raven a favor.~ A pause. ~Decrypted. Zheng-Harmon Corp is running neural experiments.~^";
+                 print "He slides a platinum keycard across the desk. ~Cloned this from the data. It'll get you into the Zheng-Harmon executive floor. Go south from the street to the lobby and use it.~^^";
+                 print "[You now have the keycard.]^";
                  move keycard to player;
                  rtrue;
              }
@@ -1266,8 +1386,7 @@ Object rooftop_voss "Director Voss" rooftop
     print "^^You're Kira Vex, private eye. In this city, that means you're either brave or stupid -- most days, you're not sure which.^";
     print "^Neo-Angeles sprawls beneath a sky that hasn't shown stars in years. The megacorps own everything above the fortieth floor; below that, it's neon, rain, and people trying to survive until tomorrow. You've carved out a life in the margins -- tracking down missing persons, pulling secrets out of corporate databases, occasionally convincing yourself you're making a difference.^";
     print "^The rain hasn't stopped in three days. It hammers against your office window in sheets, turning the street below into a river of reflected neon. Your coffee went cold an hour ago. The heater died last week. The landlord wants three months' back rent, and your last client paid in expired chits.^";
-    print "^But none of that matters right now, because Kai Chen is sitting across from you, and the look on his face says this isn't a cheating-spouse case.^";
-    print "^Your latest client is waiting for you in your cramped office.^^";
+    print "^But none of that matters right now, because Kai Chen is sitting across from you, and the look on his face says this isn't a cheating-spouse case.^^";
     print "Type 'help' to pull up your PI field manual.^^";
 ];
 
@@ -1320,6 +1439,7 @@ Object rooftop_voss "Director Voss" rooftop
     if (noun == zephyr)           { NPC_Talk_Zephyr(); rtrue; }
     if (noun == tanaka)           { NPC_Talk_Tanaka(); rtrue; }
     if (noun == guard)            { NPC_Talk_Guard(); rtrue; }
+    if (noun == bolt)             { NPC_Talk_Bolt(); rtrue; }
     if (noun == lily)             { NPC_Talk_Lily(); rtrue; }
     if (noun == rooftop_voss) { NPC_Talk_RooftopVoss(); rtrue; }
     if (noun has animate) {

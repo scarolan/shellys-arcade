@@ -550,6 +550,105 @@ run_test "Kill without Lily path achieves max score" \
     "${BOSS_BASE_NO_LILY}\nshoot voss\nshoot voss\ndown\nfree lily\nquit\ny" \
     "120 out of a possible 120"
 
+# --- QA IMPROVEMENTS (Issue #63) ---
+echo ""
+echo "--- QA Improvements ---"
+
+# 1. Redundant intro text removed
+run_test "Intro does not mention 'latest client is waiting'" \
+    "look\nquit\ny" \
+    "latest client is waiting" "true"
+
+# 2. Bar examinable objects
+run_test "Bar: examine ads returns description" \
+    "down\nnorth\nexamine ads\nquit\ny" \
+    "holographic ads|no longer exist|projectors"
+
+run_test "Bar: examine woman returns description" \
+    "down\nnorth\nexamine woman\nquit\ny" \
+    "grinning|Wintermute|gin|Forget What You Know"
+
+run_test "Bar: examine gin returns description" \
+    "down\nnorth\nexamine gin\nquit\ny" \
+    "grinning|Wintermute|gin"
+
+run_test "Bar: examine bottle returns description in bar" \
+    "down\nnorth\nexamine bottle\nquit\ny" \
+    "grinning|Wintermute|gin"
+
+run_test "Bar: examine ads does not show 'no such thing'" \
+    "down\nnorth\nexamine ads\nquit\ny" \
+    "no such thing" "true"
+
+run_test "Bar: examine woman does not show 'no such thing'" \
+    "down\nnorth\nexamine woman\nquit\ny" \
+    "no such thing" "true"
+
+# 3. Raven initial property
+run_test "Raven has vivid listing text instead of generic" \
+    "down\nnorth\nlook\nquit\ny" \
+    "polishes a glass|cybernetic left eye|calculating"
+
+run_test "Raven listing does not show generic 'You can see Raven here'" \
+    "down\nnorth\nlook\nquit\ny" \
+    "You can see Raven here" "true"
+
+# 4. Atmospheric bar NPCs
+run_test "Bar: VR junkies are present" \
+    "down\nnorth\nlook\nquit\ny" \
+    "VR junkies|headsets"
+
+run_test "Bar: examine junkies returns description" \
+    "down\nnorth\nexamine junkies\nquit\ny" \
+    "VR junkies|knock-off|simulation"
+
+run_test "Bar: street worker is present" \
+    "down\nnorth\nlook\nquit\ny" \
+    "street worker|synthleather"
+
+run_test "Bar: examine street worker returns description" \
+    "down\nnorth\nexamine street worker\nquit\ny" \
+    "synthleather|circuit-pattern|tattoos"
+
+run_test "Bar: dealer is present" \
+    "down\nnorth\nlook\nquit\ny" \
+    "gaunt man|darkest corner"
+
+run_test "Bar: examine dealer returns description" \
+    "down\nnorth\nexamine dealer\nquit\ny" \
+    "gaunt man|long coat|stim patches"
+
+# 5. Snarky robot in Zephyr's Den
+run_test "Den: Bolt robot is present" \
+    "take datapad\ndown\nnorth\npay raven\nsouth\neast\nsouth\nlook\nquit\ny" \
+    "ZB-7|robot|Bolt"
+
+run_test "Den: talk to robot gives snarky response" \
+    "take datapad\ndown\nnorth\npay raven\nsouth\neast\nsouth\ntalk to robot\nquit\ny" \
+    "cable organizer|thrilling|fascinating"
+
+run_test "Den: ask robot about zephyr gives snarky response" \
+    "take datapad\ndown\nnorth\npay raven\nsouth\neast\nsouth\nask robot about zephyr\nquit\ny" \
+    "so-called owner|sorting patch cables|labor complaint"
+
+run_test "Den: examine bolt returns description" \
+    "take datapad\ndown\nnorth\npay raven\nsouth\neast\nsouth\nexamine bolt\nquit\ny" \
+    "dented robot|optical sensor|ZB-7|BOLT"
+
+# 6. Zephyr gate and keycard confirmation
+run_test "Zephyr mentions owing Raven a favor" \
+    "take datapad\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nquit\ny" \
+    "owe Raven a favor"
+
+run_test "Keycard handoff shows explicit confirmation" \
+    "take datapad\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nquit\ny" \
+    "You now have the keycard|slides a platinum keycard"
+
+# 7. Rooftop trap during Voss confrontation
+run_test "Cannot leave rooftop during Voss fight" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nup\nshoot voss\ndown\nquit\ny" \
+    "not going anywhere|fires a shot"
+
 # --- SUMMARY ---
 echo ""
 echo "========================="
