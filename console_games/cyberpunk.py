@@ -15,11 +15,13 @@ Controls:
 """
 
 import collections
+import copy
 import curses
+import json
 import math
+import os
 import random
 import sys
-import copy
 import time
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -121,6 +123,147 @@ TILE_CHARS = {
     TILE_SHOP_TILE: GLYPH_SHOP,
     TILE_DOOR_OPEN: "·",
 }
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Tileset loading (JSON config + settings persistence)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+_TILES_JSON = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cyberpunk_tiles.json")
+_SETTINGS_FILE = os.path.join(os.path.expanduser("~"), ".cyberpunk_settings")
+
+# Current tile mode — "nerdfont" (default) or "ascii"
+_tile_mode = "nerdfont"
+
+
+def _load_settings():
+    """Load persisted settings from ~/.cyberpunk_settings."""
+    global _tile_mode
+    try:
+        with open(_SETTINGS_FILE, "r") as f:
+            data = json.load(f)
+        _tile_mode = data.get("tile_mode", "nerdfont")
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
+        _tile_mode = "nerdfont"
+
+
+def _save_settings():
+    """Persist current settings to ~/.cyberpunk_settings."""
+    try:
+        with open(_SETTINGS_FILE, "w") as f:
+            json.dump({"tile_mode": _tile_mode}, f)
+    except OSError:
+        pass
+
+
+def _apply_tileset():
+    """Load glyphs and tile chars from cyberpunk_tiles.json for current mode."""
+    global GLYPH_PLAYER, GLYPH_DRONE, GLYPH_DRONE_ANGRY, GLYPH_DRONE_DEAD
+    global GLYPH_DRONE_CONFUSED, GLYPH_DRONE_HAPPY, GLYPH_GANG, GLYPH_GUARD
+    global GLYPH_TURRET, GLYPH_NETRUNNER, GLYPH_MEDKIT, GLYPH_CREDITS
+    global GLYPH_WEAPON, GLYPH_KEY, GLYPH_CHIP, GLYPH_TERMINAL, GLYPH_STAIRS
+    global GLYPH_SHOP, GLYPH_HEART, GLYPH_BOLT, GLYPH_SHIELD, GLYPH_DOOR
+    global GLYPH_LOCK, GLYPH_STAR, GLYPH_EYE, GLYPH_BOMB, GLYPH_STIM
+    global GLYPH_JACK_IN, GLYPH_RAVEN
+    global TILE_CHARS
+
+    try:
+        with open(_TILES_JSON, "r", encoding="utf-8") as f:
+            tilesets = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
+        return  # Keep compiled-in defaults on error
+
+    mode = _tile_mode if _tile_mode in tilesets else "nerdfont"
+    ts = tilesets.get(mode)
+    if not ts:
+        return
+
+    g = ts.get("glyphs", {})
+    GLYPH_PLAYER = g.get("GLYPH_PLAYER", GLYPH_PLAYER)
+    GLYPH_DRONE = g.get("GLYPH_DRONE", GLYPH_DRONE)
+    GLYPH_DRONE_ANGRY = g.get("GLYPH_DRONE_ANGRY", GLYPH_DRONE_ANGRY)
+    GLYPH_DRONE_DEAD = g.get("GLYPH_DRONE_DEAD", GLYPH_DRONE_DEAD)
+    GLYPH_DRONE_CONFUSED = g.get("GLYPH_DRONE_CONFUSED", GLYPH_DRONE_CONFUSED)
+    GLYPH_DRONE_HAPPY = g.get("GLYPH_DRONE_HAPPY", GLYPH_DRONE_HAPPY)
+    GLYPH_GANG = g.get("GLYPH_GANG", GLYPH_GANG)
+    GLYPH_GUARD = g.get("GLYPH_GUARD", GLYPH_GUARD)
+    GLYPH_TURRET = g.get("GLYPH_TURRET", GLYPH_TURRET)
+    GLYPH_NETRUNNER = g.get("GLYPH_NETRUNNER", GLYPH_NETRUNNER)
+    GLYPH_MEDKIT = g.get("GLYPH_MEDKIT", GLYPH_MEDKIT)
+    GLYPH_CREDITS = g.get("GLYPH_CREDITS", GLYPH_CREDITS)
+    GLYPH_WEAPON = g.get("GLYPH_WEAPON", GLYPH_WEAPON)
+    GLYPH_KEY = g.get("GLYPH_KEY", GLYPH_KEY)
+    GLYPH_CHIP = g.get("GLYPH_CHIP", GLYPH_CHIP)
+    GLYPH_TERMINAL = g.get("GLYPH_TERMINAL", GLYPH_TERMINAL)
+    GLYPH_STAIRS = g.get("GLYPH_STAIRS", GLYPH_STAIRS)
+    GLYPH_SHOP = g.get("GLYPH_SHOP", GLYPH_SHOP)
+    GLYPH_HEART = g.get("GLYPH_HEART", GLYPH_HEART)
+    GLYPH_BOLT = g.get("GLYPH_BOLT", GLYPH_BOLT)
+    GLYPH_SHIELD = g.get("GLYPH_SHIELD", GLYPH_SHIELD)
+    GLYPH_DOOR = g.get("GLYPH_DOOR", GLYPH_DOOR)
+    GLYPH_LOCK = g.get("GLYPH_LOCK", GLYPH_LOCK)
+    GLYPH_STAR = g.get("GLYPH_STAR", GLYPH_STAR)
+    GLYPH_EYE = g.get("GLYPH_EYE", GLYPH_EYE)
+    GLYPH_BOMB = g.get("GLYPH_BOMB", GLYPH_BOMB)
+    GLYPH_STIM = g.get("GLYPH_STIM", GLYPH_STIM)
+    GLYPH_JACK_IN = g.get("GLYPH_JACK_IN", GLYPH_JACK_IN)
+    GLYPH_RAVEN = g.get("GLYPH_RAVEN", GLYPH_RAVEN)
+
+    # Tile name → tile constant mapping
+    _tile_name_map = {
+        "TILE_WALL": TILE_WALL,
+        "TILE_FLOOR": TILE_FLOOR,
+        "TILE_DOOR": TILE_DOOR,
+        "TILE_DOOR_LOCKED": TILE_DOOR_LOCKED,
+        "TILE_STAIRS": TILE_STAIRS,
+        "TILE_CORRIDOR": TILE_CORRIDOR,
+        "TILE_TERMINAL": TILE_TERMINAL,
+        "TILE_SHOP_TILE": TILE_SHOP_TILE,
+        "TILE_DOOR_OPEN": TILE_DOOR_OPEN,
+    }
+    t = ts.get("tiles", {})
+    for name, char in t.items():
+        if name in _tile_name_map:
+            TILE_CHARS[_tile_name_map[name]] = char
+
+    # Refresh data structures that captured glyph values at definition time
+    _refresh_glyph_refs()
+
+
+def _refresh_glyph_refs():
+    """Update dicts that cached glyph values at import time."""
+    _enemy_glyph = {
+        "Security Drone": GLYPH_DRONE,
+        "Gang Member": GLYPH_GANG,
+        "Corporate Guard": GLYPH_GUARD,
+        "Turret": GLYPH_TURRET,
+        "Netrunner ICE": GLYPH_NETRUNNER,
+    }
+    for name, glyph in _enemy_glyph.items():
+        if name in ENEMY_TYPES:
+            ENEMY_TYPES[name]["glyph"] = glyph
+
+    _cons_glyph = {
+        "Medkit": GLYPH_MEDKIT,
+        "Stim Pack": GLYPH_STIM,
+        "EMP Grenade": GLYPH_BOMB,
+    }
+    for name, glyph in _cons_glyph.items():
+        if name in CONSUMABLES:
+            CONSUMABLES[name]["glyph"] = glyph
+
+
+def _toggle_tile_mode():
+    """Switch between nerdfont and ascii modes, persist, and reload glyphs."""
+    global _tile_mode
+    _tile_mode = "ascii" if _tile_mode == "nerdfont" else "nerdfont"
+    _apply_tileset()
+    _save_settings()
+
+
+def is_ascii_mode():
+    """Return True when the current tile mode is ASCII."""
+    return _tile_mode == "ascii"
+
 
 # Tiles that block movement
 BLOCKING_TILES = {TILE_WALL, TILE_DOOR, TILE_DOOR_LOCKED}
@@ -1347,7 +1490,7 @@ def draw_map(win, game_map, visible, explored, player, enemies, items,
                 if not drawn and raven_pos and mx == raven_pos[0] and my == raven_pos[1]:
                     safe_addstr(win, screen_y, screen_x, GLYPH_RAVEN,
                                 curses.color_pair(C_MAGENTA) | curses.A_BOLD)
-                    if screen_x + 1 < view_w + map_x_off:
+                    if not is_ascii_mode() and screen_x + 1 < view_w + map_x_off:
                         nch, nattr = _tile_char_and_attr(game_map, mx + 1, my)
                         safe_addstr(win, screen_y, screen_x + 1, nch, nattr)
                     drawn = True
@@ -1359,8 +1502,8 @@ def draw_map(win, game_map, visible, explored, player, enemies, items,
                             safe_addstr(win, screen_y, screen_x, glyph,
                                         curses.color_pair(C_ENEMY) | curses.A_BOLD)
                             # Fix wide glyph color bleed: redraw next cell
-                            # with the correct background tile
-                            if screen_x + 1 < view_w + map_x_off:
+                            # with the correct background tile (nerdfont only)
+                            if not is_ascii_mode() and screen_x + 1 < view_w + map_x_off:
                                 nch, nattr = _tile_char_and_attr(
                                     game_map, mx + 1, my)
                                 safe_addstr(win, screen_y, screen_x + 1,
@@ -1388,8 +1531,8 @@ def draw_map(win, game_map, visible, explored, player, enemies, items,
                     elif tile == TILE_TERMINAL:
                         safe_addstr(win, screen_y, screen_x, ch,
                                     curses.color_pair(C_MAGENTA) | curses.A_BOLD)
-                        # Fix wide glyph color bleed: redraw next cell
-                        if screen_x + 1 < view_w + map_x_off:
+                        # Fix wide glyph color bleed: redraw next cell (nerdfont only)
+                        if not is_ascii_mode() and screen_x + 1 < view_w + map_x_off:
                             nch, nattr = _tile_char_and_attr(
                                 game_map, mx + 1, my)
                             safe_addstr(win, screen_y, screen_x + 1,
@@ -1563,6 +1706,9 @@ def select_class(stdscr):
             safe_addstr(stdscr, y + 2, cx + 4, stat_line,
                         curses.color_pair(C_CYAN))
 
+        mode_label = "NerdFont" if _tile_mode == "nerdfont" else "ASCII"
+        safe_addstr(stdscr, 21, cx, f"Tile Mode: {mode_label}  (v to toggle)",
+                    curses.color_pair(C_MAGENTA))
         safe_addstr(stdscr, 22, cx, "Arrow keys to select, ENTER to confirm",
                     curses.color_pair(C_YELLOW))
         safe_addstr(stdscr, 23, cx, "q to quit",
@@ -1575,6 +1721,8 @@ def select_class(stdscr):
             selected = (selected - 1) % len(classes)
         elif key in (curses.KEY_DOWN, ord('s'), ord('S')):
             selected = (selected + 1) % len(classes)
+        elif key in (ord('v'), ord('V')):
+            _toggle_tile_mode()
         elif key in (10, 13, curses.KEY_ENTER):
             return classes[selected]
         elif key in (ord('q'), ord('Q')):
@@ -1876,7 +2024,11 @@ def main(stdscr):
     stdscr.keypad(True)
     init_colors()
 
-    # Class selection
+    # Load tileset preference and apply
+    _load_settings()
+    _apply_tileset()
+
+    # Class selection (includes tile mode toggle)
     char_class = select_class(stdscr)
     if char_class is None:
         return
