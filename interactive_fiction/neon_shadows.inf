@@ -309,7 +309,14 @@ Object server "Server Room"
     has light;
 
 Object cyber_lobby "Cyberspace Nexus"
-    with description "You float in a vast digital void, geometric shapes pulsing with neon light in every direction. Data streams flow like rivers of luminous code beneath a grid-lined sky. The server's architecture manifests here as towering crystalline structures. To the north, a massive wall of shimmering red ICE blocks access to the data vault -- Zheng-Harmon's military-grade firewall, just like Zephyr warned about.^^You can go north to the data vault (if the ICE is down) or type 'disconnect' to jack out.",
+    with description [;
+            if (ice_bypassed) {
+                print "You float in a vast digital void, geometric shapes pulsing with neon light in every direction. Data streams flow like rivers of luminous code beneath a grid-lined sky. The server's architecture manifests here as towering crystalline structures. To the north, the shattered remnants of the ICE wall flicker and fade, leaving the path to the data vault wide open.^^You can go north to the data vault or type 'disconnect' to jack out.^";
+                rtrue;
+            }
+            print "You float in a vast digital void, geometric shapes pulsing with neon light in every direction. Data streams flow like rivers of luminous code beneath a grid-lined sky. The server's architecture manifests here as towering crystalline structures. To the north, a massive wall of shimmering red ICE blocks access to the data vault -- Zheng-Harmon's military-grade firewall, just like Zephyr warned about.^^You can go north to the data vault (if the ICE is down) or type 'disconnect' to jack out.^";
+            rtrue;
+        ],
          n_to [;
              if (ice_bypassed) {
                  return cyber_vault;
