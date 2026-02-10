@@ -125,6 +125,10 @@ Global voss_turn_count = 0;
         print "Raven snorts. ~The cops? Don't make me laugh. Half of them are on Zheng-Harmon's payroll. Tanaka's the worst of the lot -- lazy, corrupt, and just smart enough to know which way the wind blows. If you're counting on the police to help, you're already dead.~^";
         rtrue;
     }
+    if (topic == 'tattoo') {
+        print "Raven's hand drifts to the left side of her neck, fingers tracing the inked wings. For a moment the mask slips -- something old and sharp flickers behind her cybernetic eye. ~Everybody in this city has a past, Vex. Some of us just wear ours where people can see it.~ She lowers her hand and picks up a glass. ~The raven isn't a decoration. It's a reminder. That's all you're getting.~^";
+        rtrue;
+    }
     if (topic == 'help') {
         print "Raven raises an eyebrow. ~You need help? Try typing 'help' by itself, detective. I'm a bartender, not tech support.~^";
         rtrue;

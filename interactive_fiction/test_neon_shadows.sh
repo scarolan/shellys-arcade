@@ -101,6 +101,12 @@ echo "--- NPC Interaction ---"
 run_test "Kai Chen is in the office at start" "look\nquit\ny" "kai|chen|client|father"
 run_test "Can talk to Kai Chen" "talk to kai\nask kai about lily\nquit\ny" "daughter|lily|missing|find"
 run_test "Raven responds to conversation" "down\nnorth\ntalk to raven\nask raven about zheng\nquit\ny" "raven|know|info|zheng|corp"
+run_test "Ask Raven about tattoo after paying reveals backstory hint" \
+    "take datapad\ndown\nnorth\npay raven\nask raven about tattoo\nquit\ny" \
+    "reminder"
+run_test "Ask Raven about tattoo before paying returns gatekeeping line" \
+    "down\nnorth\nask raven about tattoo\nquit\ny" \
+    "Info costs satoshis"
 run_test "Tanaka is at precinct" "down\nwest\nlook\nquit\ny" "tanaka|detective"
 
 # --- PUZZLE PROGRESSION ---
