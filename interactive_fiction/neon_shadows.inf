@@ -931,7 +931,7 @@ Verb 'talk'
     * 'to' creature                             -> TalkTo;
 
 Verb 'shoot'
-    * noun                                      -> Shoot;
+    * creature                                  -> Shoot;
 
 Verb 'free' 'rescue'
     * noun                                      -> Free;
