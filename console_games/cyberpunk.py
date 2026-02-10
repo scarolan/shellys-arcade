@@ -1996,32 +1996,32 @@ def main(stdscr):
                         shop_screen(stdscr, player, level_num)
                         interacted_raven = True
                         break
-            # Pick up items at current position
-            pickup = False
+            # Open adjacent doors (checked before items so locked doors
+            # aren't blocked by standing on a pickup)
+            opened_door = False
             if not interacted_raven:
-                for it in items[:]:
-                    if it.x == player.x and it.y == player.y:
-                        _pickup_item(player, it, items, messages)
-                        pickup = True
-            # Open adjacent doors
-            if not interacted_raven and not pickup:
                 for ddx, ddy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                     tx, ty = player.x + ddx, player.y + ddy
                     if 0 <= ty < MAP_H and 0 <= tx < MAP_W:
                         if game_map[ty][tx] == TILE_DOOR:
                             game_map[ty][tx] = TILE_DOOR_OPEN
                             messages.append("Opened door.")
-                            pickup = True
+                            opened_door = True
                             break
                         elif game_map[ty][tx] == TILE_DOOR_LOCKED:
                             if player.keycards > 0:
                                 player.keycards -= 1
                                 game_map[ty][tx] = TILE_DOOR_OPEN
                                 messages.append("Used keycard — unlocked door!")
-                                pickup = True
+                                opened_door = True
                             else:
-                                messages.append("Door locked! Need a keycard.")
+                                messages.append("Door locked! Need a keycard or hack.")
                             break
+            # Pick up items at current position
+            if not interacted_raven and not opened_door:
+                for it in items[:]:
+                    if it.x == player.x and it.y == player.y:
+                        _pickup_item(player, it, items, messages)
 
         elif dx != 0 or dy != 0:
             nx, ny = player.x + dx, player.y + dy
@@ -2054,13 +2054,9 @@ def main(stdscr):
                     messages.append("Opened door.")
 
                 elif tile == TILE_DOOR_LOCKED:
-                    # Bump locked door — use keycard if available
+                    # Bump locked door — hint to use 'e' instead
                     if player.keycards > 0:
-                        player.keycards -= 1
-                        game_map[ny][nx] = TILE_DOOR_OPEN
-                        player.x = nx
-                        player.y = ny
-                        messages.append("Used keycard — unlocked door!")
+                        messages.append("Door locked! Press 'e' to use a keycard.")
                     else:
                         messages.append("Door locked! Need a keycard or hack.")
 
