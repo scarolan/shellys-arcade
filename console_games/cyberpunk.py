@@ -53,6 +53,7 @@ GLYPH_EYE = "\uf06e"           # eye
 GLYPH_BOMB = "\uf1e2"          # bomb
 GLYPH_STIM = "\uf0e7"          # bolt (reuse for stim)
 GLYPH_JACK_IN = "\U000f0322"   # nf-md-laptop (cyberspace jack-in)
+GLYPH_RAVEN = "\uf0fc"         # nf-fa-bar_chart (bartender NPC)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Box-drawing characters
@@ -204,6 +205,20 @@ CONSUMABLES = {
     "Stim Pack": {"heal": 0, "attack_boost": 5, "duration": 10, "price": 60, "glyph": GLYPH_STIM},
     "EMP Grenade": {"emp_damage": 40, "price": 80, "glyph": GLYPH_BOMB},
 }
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Raven — bartender NPC (shared-universe tie-in with Neon Shadows IF)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+RAVEN_DIALOGUE = [
+    "Raven slides a drink across the bar. 'What'll it be, runner?'",
+    "Raven polishes a glass. 'Heard the corps are hiring new muscle upstairs.'",
+    "Raven leans in. 'Watch yourself out there. The ICE is getting thicker.'",
+    "Raven nods. 'You look like you've seen some things. Browse my stock.'",
+    "Raven grins. 'Credits talk, runner. Let's do business.'",
+    "Raven eyes you over the counter. 'The Neon Lotus never closes.'",
+]
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Enemy definitions
@@ -610,7 +625,7 @@ def _can_reach(game_map, start, goal):
 def generate_level(level_num):
     """Generate a procedural level with rooms, corridors, doors, and entities.
 
-    Returns (game_map, rooms, player_start, stairs_pos, enemies, items, terminals).
+    Returns (game_map, rooms, player_start, stairs_pos, enemies, items, terminals, raven_pos).
     """
     game_map = [[TILE_WALL for _ in range(MAP_W)] for _ in range(MAP_H)]
     rooms = []
@@ -678,7 +693,17 @@ def generate_level(level_num):
     # Place items — ensure keycards are reachable without locked doors
     items = place_items(game_map, rooms, level_num, player_start)
 
-    return game_map, rooms, player_start, stairs_pos, enemies, items, terminals
+    # Place Raven the bartender in a mid-range room (not start or stairs room)
+    raven_pos = None
+    if len(rooms) > 2:
+        mid_rooms = rooms[1:-1]
+        raven_room = random.choice(mid_rooms)
+        rx = random.randint(raven_room.x + 1, raven_room.x + raven_room.w - 2)
+        ry = random.randint(raven_room.y + 1, raven_room.y + raven_room.h - 2)
+        if game_map[ry][rx] == TILE_FLOOR:
+            raven_pos = (rx, ry)
+
+    return game_map, rooms, player_start, stairs_pos, enemies, items, terminals, raven_pos
 
 
 def place_room(game_map, room):
@@ -1079,7 +1104,8 @@ def _tile_char_and_attr(game_map, mx, my):
 
 
 def draw_map(win, game_map, visible, explored, player, enemies, items,
-             cam_x, cam_y, view_w, view_h, map_y_off, map_x_off):
+             cam_x, cam_y, view_w, view_h, map_y_off, map_x_off,
+             raven_pos=None):
     """Render the visible portion of the game map."""
     for sy in range(view_h):
         my = cam_y + sy
@@ -1099,6 +1125,14 @@ def draw_map(win, game_map, visible, explored, player, enemies, items,
                 if mx == player.x and my == player.y:
                     safe_addstr(win, screen_y, screen_x, GLYPH_PLAYER,
                                 curses.color_pair(C_PLAYER) | curses.A_BOLD)
+                    drawn = True
+                # Raven (after player, before enemies)
+                if not drawn and raven_pos and mx == raven_pos[0] and my == raven_pos[1]:
+                    safe_addstr(win, screen_y, screen_x, GLYPH_RAVEN,
+                                curses.color_pair(C_MAGENTA) | curses.A_BOLD)
+                    if screen_x + 1 < view_w + map_x_off:
+                        nch, nattr = _tile_char_and_attr(game_map, mx + 1, my)
+                        safe_addstr(win, screen_y, screen_x + 1, nch, nattr)
                     drawn = True
                 # Enemies
                 if not drawn:
@@ -1568,7 +1602,7 @@ def main(stdscr):
     messages = [f"Welcome to Neo-Shibuya, {char_class}.", "Find the stairs to descend deeper."]
 
     # Generate first level
-    game_map, rooms, start, stairs, enemies, items, terminals = generate_level(level_num)
+    game_map, rooms, start, stairs, enemies, items, terminals, raven_pos = generate_level(level_num)
     player.x, player.y = start
     explored = set()
 
@@ -1598,7 +1632,8 @@ def main(stdscr):
         map_y_off = 1
         map_x_off = 1
         draw_map(stdscr, game_map, visible, explored, player, enemies, items,
-                 cam_x, cam_y, view_w, view_h, map_y_off, map_x_off)
+                 cam_x, cam_y, view_w, view_h, map_y_off, map_x_off,
+                 raven_pos=raven_pos)
 
         # Bottom border of map
         bot_border = BOX_BL + BOX_H * view_w + BOX_BR
@@ -1709,14 +1744,25 @@ def main(stdscr):
                 messages.append("No terminal nearby to hack!")
 
         elif action == "interact":
+            # Check for adjacent Raven NPC
+            interacted_raven = False
+            if raven_pos:
+                for ddx, ddy in [(-1, 0), (1, 0), (0, -1), (0, 1), (0, 0)]:
+                    tx, ty = player.x + ddx, player.y + ddy
+                    if (tx, ty) == raven_pos:
+                        messages.append(random.choice(RAVEN_DIALOGUE))
+                        shop_screen(stdscr, player, level_num)
+                        interacted_raven = True
+                        break
             # Pick up items at current position
             pickup = False
-            for it in items[:]:
-                if it.x == player.x and it.y == player.y:
-                    _pickup_item(player, it, items, messages)
-                    pickup = True
+            if not interacted_raven:
+                for it in items[:]:
+                    if it.x == player.x and it.y == player.y:
+                        _pickup_item(player, it, items, messages)
+                        pickup = True
             # Open adjacent doors
-            if not pickup:
+            if not interacted_raven and not pickup:
                 for ddx, ddy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                     tx, ty = player.x + ddx, player.y + ddy
                     if 0 <= ty < MAP_H and 0 <= tx < MAP_W:
@@ -1739,14 +1785,15 @@ def main(stdscr):
             nx, ny = player.x + dx, player.y + dy
             if 0 <= ny < MAP_H and 0 <= nx < MAP_W:
                 tile = game_map[ny][nx]
-                # Check for enemy (bump-to-attack / melee combat)
-                target_enemy = None
-                for e in enemies:
-                    if e.alive and e.x == nx and e.y == ny:
-                        target_enemy = e
-                        break
 
-                if target_enemy:
+                # Raven blocks movement but is not attackable
+                if raven_pos and (nx, ny) == raven_pos:
+                    messages.append("Raven blocks your path. Press 'e' to talk.")
+
+                # Check for enemy (bump-to-attack / melee combat)
+                elif (target_enemy := next(
+                    (e for e in enemies if e.alive and e.x == nx and e.y == ny), None
+                )):
                     dmg = player.deal_melee_damage()
                     actual = target_enemy.take_damage(dmg)
                     player.damage_dealt += actual
@@ -1798,7 +1845,7 @@ def main(stdscr):
                             # Shop between levels
                             shop_screen(stdscr, player, level_num)
                             level_num += 1
-                            game_map, rooms, start, stairs, enemies, items, terminals = generate_level(level_num)
+                            game_map, rooms, start, stairs, enemies, items, terminals, raven_pos = generate_level(level_num)
                             player.x, player.y = start
                             explored = set()
                             messages.append(f"Descended to Level {level_num}...")
