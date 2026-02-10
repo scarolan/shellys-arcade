@@ -834,9 +834,9 @@ run_test "Alley: examine laundry shows cant see (known bug #65)" \
     "down\neast\nexamine laundry\nquit\ny" \
     "can't see any such thing"
 
-run_test "Precinct: examine lights shows cant see (known bug #66)" \
+run_test "Precinct: examine lights returns description (fix #66)" \
     "down\nwest\nexamine lights\nquit\ny" \
-    "can't see any such thing"
+    "fluorescent tubes buzz"
 
 run_test "Server: examine fans shows description" \
     "take datapad\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\nexamine fans\nquit\ny" \

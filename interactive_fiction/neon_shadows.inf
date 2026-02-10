@@ -820,6 +820,11 @@ Object precinct_coffee "coffee" precinct
          description "A cup of cold coffee sits on Tanaka's desk, a skin of oil floating on its surface. It looks like it's been there since last Tuesday.",
     has scenery;
 
+Object precinct_lights "fluorescent lights" precinct
+    with name 'lights' 'light' 'fluorescent',
+         description "Harsh fluorescent tubes buzz overhead, one of them flickering in a maddening, irregular rhythm. The cold light gives everyone in the precinct a sickly pallor.",
+    has scenery pluralname;
+
 ! --- Scenery: Clinic ---
 Object clinic_gurneys "medical equipment" clinic
     with name 'gurneys' 'gurney' 'equipment' 'medical' 'vials' 'tubing',
