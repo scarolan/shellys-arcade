@@ -588,7 +588,7 @@ Object exec_window "panoramic window" executive
 
 ! --- Scenery: Executive Floor - Security Terminal ---
 Object sec_terminal "security terminal" executive
-    with name 'terminal' 'security' 'console' 'screen',
+    with name 'terminal' 'security' 'console' 'screen' 'slot',
          description [;
              if (server_unlocked) {
                  print "The terminal screen glows green: ACCESS GRANTED. The reinforced door to the east is unlocked.^";
@@ -940,7 +940,19 @@ Object lily "Lily Chen" clinic
 ! --- Keycard ---
 Object keycard "keycard"
     with name 'keycard' 'card' 'key',
-         description "A platinum access keycard for Zheng-Harmon executive floors.";
+         description "A platinum access keycard for Zheng-Harmon executive floors.",
+         before [;
+           Insert:
+             if (location == executive && second == sec_terminal) {
+                 if (server_unlocked) {
+                     print "The security terminal already shows ACCESS GRANTED.^";
+                     rtrue;
+                 }
+                 server_unlocked = true;
+                 print "You slide the keycard into the security terminal. The screen flickers, cycles through authentication protocols, then flashes green: ACCESS GRANTED. The reinforced door to the east clicks unlocked.^";
+                 rtrue;
+             }
+         ];
 
 ! --- Experiment Logs ---
 Object logs "experiment logs"
@@ -1347,6 +1359,9 @@ Verb 'hand'
 
 Verb 'use'
     * noun                                      -> UseCard;
+
+Extend 'insert' first
+    * held                                      -> UseCard;
 
 Verb 'zjk'
     *                                           -> JackIn

@@ -112,6 +112,38 @@ run_test "Keycard grants access to Zheng-Harmon" "take datapad\ndown\nnorth\npay
 run_test "Can find experiment logs via cyberspace" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nexamine logs\nquit\ny" "experiment|neural|clinic|7749"
 run_test "Can find Lily at clinic" "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nlook\nquit\ny" "lily|chen|daughter|machine"
 
+# --- INSERT KEYCARD VARIANTS ---
+echo ""
+echo "--- Insert Keycard Variants ---"
+
+# Base path to get keycard and reach executive floor
+# take datapad, pay raven, give datapad to zephyr, use keycard at lobby, go up
+INSERT_BASE="take datapad\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup"
+
+run_test "insert keycard unlocks server room" \
+    "${INSERT_BASE}\ninsert keycard\neast\nlook\nquit\ny" \
+    "ACCESS GRANTED|server room|Server Room"
+
+run_test "insert keycard in terminal unlocks server room" \
+    "${INSERT_BASE}\ninsert keycard in terminal\neast\nlook\nquit\ny" \
+    "ACCESS GRANTED|server room|Server Room"
+
+run_test "insert keycard in slot unlocks server room" \
+    "${INSERT_BASE}\ninsert keycard in slot\neast\nlook\nquit\ny" \
+    "ACCESS GRANTED|server room|Server Room"
+
+run_test "insert card in terminal unlocks server room" \
+    "${INSERT_BASE}\ninsert card in terminal\neast\nlook\nquit\ny" \
+    "ACCESS GRANTED|server room|Server Room"
+
+run_test "use keycard still works" \
+    "${INSERT_BASE}\nuse keycard\neast\nlook\nquit\ny" \
+    "ACCESS GRANTED|server room|Server Room"
+
+run_test "insert keycard when already unlocked shows already granted" \
+    "${INSERT_BASE}\nuse keycard\ninsert keycard in terminal\nquit\ny" \
+    "already shows ACCESS GRANTED|already"
+
 # --- BLOCKING/GATES ---
 echo ""
 echo "--- Blocking/Gates ---"
