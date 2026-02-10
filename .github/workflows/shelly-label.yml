@@ -1,4 +1,4 @@
-name: Kanban → Shelly Label Sync
+name: "Kanban to Shelly Label Sync"
 
 on:
   schedule:
@@ -13,7 +13,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            // Project number 3, owner scarolan
             const query = `query {
               user(login: "scarolan") {
                 projectV2(number: 3) {
@@ -44,20 +43,20 @@ jobs:
             for (const item of items) {
               const pipeline = item.fieldValueByName?.name;
               const issue = item.content;
-              if (\!issue || \!issue.number) continue;
-              if (issue.state \!== "OPEN") continue;
+              if (!issue || !issue.number) continue;
+              if (issue.state !== "OPEN") continue;
 
               const owner = issue.repository.owner.login;
               const repo = issue.repository.name;
               const hasLabel = issue.labels.nodes.some(l => l.name === "shelly");
 
-              if (pipeline === "Ready for Shelly" && \!hasLabel) {
+              if (pipeline === "Ready for Shelly" && !hasLabel) {
                 await github.rest.issues.addLabels({
                   owner, repo,
                   issue_number: issue.number,
                   labels: ["shelly"]
                 });
-                console.log(`Labeled ${repo}#${issue.number}`);
+                console.log("Labeled " + repo + "#" + issue.number);
               }
 
               if ((pipeline === "Backlog" || pipeline === "Done") && hasLabel) {
@@ -67,7 +66,7 @@ jobs:
                     issue_number: issue.number,
                     name: "shelly"
                   });
-                  console.log(`Unlabeled ${repo}#${issue.number}`);
+                  console.log("Unlabeled " + repo + "#" + issue.number);
                 } catch(e) {}
               }
             }
