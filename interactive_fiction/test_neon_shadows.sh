@@ -806,9 +806,9 @@ echo "--- Missing Scenery: Known Bugs ---"
 
 # These document missing scenery objects (issues #65, #66, #71, #72).
 # After fixes, these tests should be inverted (the "no such thing" should disappear).
-run_test "Street: examine sign shows cant see (known bug #71)" \
+run_test "Street: examine sign describes noodle sign" \
     "down\nexamine sign\nquit\ny" \
-    "can't see any such thing"
+    "Hiro's Noodles"
 
 run_test "Alley: examine laundry shows cant see (known bug #65)" \
     "down\neast\nexamine laundry\nquit\ny" \

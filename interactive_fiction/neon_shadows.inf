@@ -572,6 +572,11 @@ Object street_rain "rain" street
          description "The rain hasn't stopped in three days. It pools in the cracks between duraplast slabs, turning the street into a mirror of neon and shadow.",
     has scenery;
 
+Object street_sign "noodle sign" street
+    with name 'sign' 'noodles' 'hiro' 'kanji' 'noodle',
+         description "A flickering neon sign across the street reads ~Hiro's Noodles~ in garish pink kanji. The holographic chopsticks in the logo keep glitching, frozen mid-twirl. The place is closed -- or maybe just abandoned. Hard to tell in this city.",
+    has scenery;
+
 ! --- Scenery: Neon Lotus Bar ---
 Object bar_counter "bar counter" bar
     with name 'counter' 'bar',
