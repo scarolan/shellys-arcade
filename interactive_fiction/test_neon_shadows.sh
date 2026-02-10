@@ -207,6 +207,116 @@ run_test "Experiment logs does not produce 'a experiment logs'" \
     "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nexamine logs\ndrop logs\ntake logs\nquit\ny" \
     "a experiment logs" "true"
 
+# --- SCENERY OBJECTS ---
+echo ""
+echo "--- Scenery Objects ---"
+
+# Street scenery
+run_test "Street: examine drone returns description" \
+    "down\nexamine drone\nquit\ny" \
+    "surveillance drone|spotlight"
+run_test "Street: examine neon lights returns description" \
+    "down\nexamine neon lights\nquit\ny" \
+    "holographic advertisements|neon glow"
+run_test "Street: examine rain returns description" \
+    "down\nexamine rain\nquit\ny" \
+    "hasn't stopped|pools in the cracks"
+
+# Bar scenery
+run_test "Bar: examine counter returns description" \
+    "down\nnorth\nexamine counter\nquit\ny" \
+    "scarred with cigarette|glass rings"
+run_test "Bar: examine speaker returns description" \
+    "down\nnorth\nexamine speaker\nquit\ny" \
+    "jazz synth|saxophone"
+run_test "Bar: examine regulars returns description" \
+    "down\nnorth\nexamine regulars\nquit\ny" \
+    "hollow-eyed|nurse their drinks"
+
+# Den scenery (need to unlock path first)
+run_test "Den: examine screens returns description" \
+    "take datapad\ndown\nnorth\npay raven\nsouth\neast\nsouth\nexamine screens\nquit\ny" \
+    "cascading code|surveillance feeds"
+run_test "Den: examine cables returns description" \
+    "take datapad\ndown\nnorth\npay raven\nsouth\neast\nsouth\nexamine cables\nquit\ny" \
+    "tangled cables|copper veins"
+
+# Alley scenery
+run_test "Alley: examine wok stall returns description" \
+    "down\neast\nexamine wok\nquit\ny" \
+    "automated wok stall|synthetic noodles"
+run_test "Alley: examine steam returns description" \
+    "down\neast\nexamine steam\nquit\ny" \
+    "rises from grates|chemical runoff"
+
+# Lobby scenery
+run_test "Lobby: examine logo returns description" \
+    "down\nsouth\nexamine logo\nquit\ny" \
+    "holographic logo|Innovation Through Integration"
+run_test "Lobby: examine reception desk returns description" \
+    "down\nsouth\nexamine reception\nquit\ny" \
+    "curved reception desk|polished white"
+
+# Executive floor scenery (need keycard)
+run_test "Executive: examine desk returns description" \
+    "take datapad\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nexamine desk\nquit\ny" \
+    "genuine hardwood|polished to a mirror"
+run_test "Executive: examine window returns description" \
+    "take datapad\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nexamine window\nquit\ny" \
+    "panoramic view|neon skyline"
+
+# Rooftop scenery (need full game progression)
+run_test "Rooftop: examine edge returns description" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nup\nexamine edge\nquit\ny" \
+    "dizzying void|long way down"
+
+# Precinct scenery
+run_test "Precinct: examine desks returns description" \
+    "down\nwest\nexamine desks\nquit\ny" \
+    "budget cuts|cold case files"
+run_test "Precinct: examine coffee returns description" \
+    "down\nwest\nexamine coffee\nquit\ny" \
+    "cold coffee|oil floating"
+
+# Clinic scenery (need logs for access)
+run_test "Clinic: examine gurneys returns description" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nexamine gurneys\nquit\ny" \
+    "overturned gurneys|shattered vials"
+run_test "Clinic: examine chair returns description" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nexamine chair\nquit\ny" \
+    "reclining chair|electrode pads"
+
+# Server room scenery
+run_test "Server: examine racks returns description" \
+    "take datapad\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\nexamine racks\nquit\ny" \
+    "humming server racks|blinking hardware"
+run_test "Server: examine leds returns description" \
+    "take datapad\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\nexamine leds\nquit\ny" \
+    "rhythmic patterns|heartbeats"
+
+# Cyberspace scenery
+run_test "Cyberspace: examine structures returns description" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nexamine structures\nquit\ny" \
+    "crystalline structures|file directories"
+
+# Data vault scenery
+run_test "Data vault: examine columns returns description" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\nexamine columns\nquit\ny" \
+    "encrypted data|pillars"
+
+# Industrial district scenery
+run_test "Industrial: examine factories returns description" \
+    "down\ndown\nexamine factories\nquit\ny" \
+    "bones of dead giants|smokestacks"
+run_test "Industrial: examine conveyor returns description" \
+    "down\ndown\nexamine conveyor\nquit\ny" \
+    "rust in the rain|circuit boards"
+
+# Street scenery: no such thing check
+run_test "Street: examine drone does not show 'no such thing'" \
+    "down\nexamine drone\nquit\ny" \
+    "no such thing" "true"
+
 # --- GAME COMPLETION ---
 echo ""
 echo "--- Game Completion ---"

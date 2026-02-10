@@ -379,6 +379,59 @@ Object cabinets "filing cabinets" office
          description "Dented metal filing cabinets stuffed with cold cases nobody wants solved. The drawers are jammed shut with years of neglect.",
     has scenery pluralname;
 
+! --- Scenery: Rain-Soaked Street ---
+Object street_neon "neon lights" street
+    with name 'neon' 'lights' 'signs' 'advertisements' 'holographic',
+         description "Holographic advertisements flicker and die above the wet duraplast, their neon glow bleeding into the rain like watercolors on a dark canvas. Most of them advertise products from corporations that went bust years ago.",
+    has scenery pluralname;
+
+Object street_drone "drone" street
+    with name 'drone',
+         description "A heavy surveillance drone buzzes overhead, its spotlight sweeping the alleys in lazy arcs. Corporate security -- or maybe police. Hard to tell the difference in Neo-Angeles.",
+    has scenery;
+
+Object street_rain "rain" street
+    with name 'rain' 'water' 'puddles',
+         description "The rain hasn't stopped in three days. It pools in the cracks between duraplast slabs, turning the street into a mirror of neon and shadow.",
+    has scenery;
+
+! --- Scenery: Neon Lotus Bar ---
+Object bar_counter "bar counter" bar
+    with name 'counter' 'bar',
+         description "A long counter scarred with cigarette burns and glass rings. Raven works behind it with the practiced ease of someone who has heard every sob story in Neo-Angeles.",
+    has scenery;
+
+Object bar_neon "neon tubes" bar
+    with name 'neon' 'tubes' 'lights',
+         description "Flickering neon tubes cast an unsteady glow over the bar, buzzing faintly like trapped insects. Half of them are burnt out, giving the place a permanent twilight feel.",
+    has scenery pluralname;
+
+Object bar_speaker "speaker" bar
+    with name 'speaker' 'music' 'jazz' 'synth',
+         description "A busted speaker in the corner croons out jazz synth -- mournful saxophone layered over electronic beats. The sound quality is terrible, but it fits the mood.",
+    has scenery;
+
+Object bar_regulars "regulars" bar
+    with name 'regulars' 'patrons' 'drinkers',
+         description "Hollow-eyed regulars nurse their drinks in silence. Nobody looks up when you walk in. In a place like this, eye contact is either an invitation or a threat.",
+    has scenery pluralname animate;
+
+! --- Scenery: Zephyr's Den ---
+Object den_screens "screens" den
+    with name 'screens' 'monitors' 'screen' 'monitor',
+         description "A dozen screens glow with cascading code, stock tickers, and surveillance feeds from across the city. One of them is cycling through Zheng-Harmon security camera footage.",
+    has scenery pluralname;
+
+Object den_cables "cables" den
+    with name 'cables' 'wires' 'cable' 'wire',
+         description "Tangled cables snake across every surface like copper veins, connecting salvaged hardware into a jury-rigged network that would make a corporate sysadmin weep.",
+    has scenery pluralname;
+
+Object den_keyboard "holographic keyboard" den
+    with name 'keyboard' 'rig' 'holographic',
+         description "A custom-built rig with a holographic keyboard that projects pale blue keys into the air. Zephyr's fingers dance across it with inhuman speed.",
+    has scenery;
+
 ! --- Scenery: Chinatown Alley ---
 Object cardboard_box "cardboard box" alley
     with name 'box' 'cardboard',
@@ -390,16 +443,61 @@ Object alley_cat "feral cat" alley
          description "A scraggly grey cat perched on the fire escape, watching you with unblinking yellow eyes. It hisses softly when you get too close.",
     has scenery animate;
 
+Object alley_wok "wok stall" alley
+    with name 'wok' 'stall' 'noodles',
+         description "An automated wok stall that never closes, frying synthetic noodles around the clock. The smell is equal parts appetizing and suspicious. A faded menu offers ~Combo A~ through ~Combo F~ -- no descriptions, no questions.",
+    has scenery;
+
+Object alley_signage "Mandarin signage" alley
+    with name 'signage' 'signs' 'mandarin',
+         description "Flickering Mandarin signage casts long, shifting shadows across the cracked alley walls. Most of it advertises cheap augmentation clinics and money transfer services.",
+    has scenery;
+
+Object alley_fire_escape "fire escape" alley
+    with name 'fire' 'escape',
+         description "A rusty fire escape zigzags up the side of the building, its metal groaning in the wind. The feral cat has claimed the lowest landing as its personal lookout.",
+    has scenery;
+
+Object alley_steam "steam" alley
+    with name 'steam' 'grates' 'grate',
+         description "Steam rises from grates in the ground, carrying the smell of overheated machinery and chemical runoff from somewhere deep beneath the city.",
+    has scenery;
+
 ! --- Scenery: Lobby ---
 Object elevator "elevator" lobby
     with name 'elevator' 'lift',
          description "A sleek corporate elevator with brushed steel doors. A keycard scanner glows red beside it. The security guard stands between you and it.",
     has scenery;
 
+Object lobby_logo "holographic logo" lobby
+    with name 'logo' 'holographic' 'hologram' 'slogan',
+         description "A slowly rotating holographic logo projects the Zheng-Harmon corporate emblem above the reception desk. Beneath it, the slogan ~Innovation Through Integration~ pulses in cold blue light.",
+    has scenery;
+
+Object lobby_reception "reception desk" lobby
+    with name 'reception' 'desk',
+         description "A curved reception desk of polished white composite. It looks expensive and completely unmanned -- automated systems handle visitor processing now. A small scanner plate glows softly on its surface.",
+    has scenery;
+
 ! --- Scenery: Executive Floor ---
 Object decanter "crystal decanter" executive
     with name 'decanter' 'crystal' 'whiskey',
          description "A crystal decanter filled with genuine whiskey -- the real stuff, not synth. Worth more than your monthly rent. You resist the urge to pour yourself one.",
+    has scenery;
+
+Object exec_desk "hardwood desk" executive
+    with name 'desk' 'hardwood',
+         description "A genuine hardwood desk -- real wood, not the synthetic stuff. The surface is polished to a mirror shine. Whatever Voss does up here, it pays well.",
+    has scenery;
+
+Object exec_chairs "leather chairs" executive
+    with name 'chairs' 'chair' 'leather',
+         description "Real leather chairs, supple and dark. The kind of furniture that says ~I own people~ without needing to say a word.",
+    has scenery pluralname;
+
+Object exec_window "panoramic window" executive
+    with name 'window' 'view' 'skyline' 'panoramic',
+         description "Floor-to-ceiling windows offer a panoramic view of the sprawling city below. Rain streaks the glass, distorting the neon skyline into an impressionist nightmare. From up here, the streets look almost peaceful.",
     has scenery;
 
 ! --- Scenery: Executive Floor - Security Terminal ---
@@ -415,13 +513,56 @@ Object sec_terminal "security terminal" executive
          ],
     has scenery;
 
+! --- Scenery: Rooftop ---
+Object rooftop_edge "edge" rooftop
+    with name 'edge' 'ledge',
+         description "The edge of the rooftop drops away into a dizzying void. Far below, the neon-lit streets of Neo-Angeles crawl with traffic and rain. One wrong step and it's a long way down.",
+    has scenery;
+
+Object rooftop_city "city skyline" rooftop
+    with name 'city' 'skyline' 'buildings' 'megastructures',
+         description "The city spreads below in every direction -- a vast sea of neon and shadow stretching to the horizon. Megastructures pierce the cloud layer like steel fingers reaching for something they'll never grasp.",
+    has scenery;
+
+Object rooftop_wind "wind" rooftop
+    with name 'wind' 'rain' 'lightning',
+         description "The wind howls across the rooftop, driving rain sideways into your face. Lightning flickers in the distance over the industrial megastructures, briefly illuminating the cloud layer from within.",
+    has scenery;
+
 ! --- Scenery: Precinct ---
 Object bulletin "bulletin board" precinct
     with name 'bulletin' 'board' 'posters' 'poster' 'wanted',
          description "A cork bulletin board covered in wanted posters -- mostly small-time hackers and street dealers. Nobody important. A few missing persons flyers are buried underneath, yellowed and forgotten.",
     has scenery;
 
+Object precinct_desks "desks" precinct
+    with name 'desks' 'desk',
+         description "Half the desks are empty -- budget cuts gutted the force years ago. The occupied ones are buried under takeout containers and cold case files that will never see the light of day.",
+    has scenery pluralname;
+
+Object precinct_coffee "coffee" precinct
+    with name 'coffee' 'cup' 'mug',
+         description "A cup of cold coffee sits on Tanaka's desk, a skin of oil floating on its surface. It looks like it's been there since last Tuesday.",
+    has scenery;
+
 ! --- Scenery: Clinic ---
+Object clinic_gurneys "medical equipment" clinic
+    with name 'gurneys' 'gurney' 'equipment' 'medical' 'vials' 'tubing',
+         description "Overturned gurneys, shattered vials, and coils of surgical tubing litter the floor. Whatever NeoMed Solutions was before it closed, someone repurposed it for something far worse.",
+    has scenery pluralname;
+
+Object clinic_chair "reclined chair" clinic
+    with name 'chair' 'reclined',
+         description [;
+             if (lily_freed) {
+                 print "The reclined chair sits empty, its leather surface still bearing the impression of Lily's body. Disconnected electrode pads dangle from the headrest.^";
+                 rtrue;
+             }
+             print "A medical reclining chair with Lily strapped into it. Electrode pads are attached to her temples, connecting her to the neural interface rig.^";
+             rtrue;
+         ],
+    has scenery;
+
 Object rig "neural interface rig" clinic
     with name 'rig' 'neural' 'interface' 'machine' 'cables' 'electrodes',
          description [;
@@ -435,6 +576,16 @@ Object rig "neural interface rig" clinic
     has scenery;
 
 ! --- Scenery: Server Room ---
+Object server_racks "server racks" server
+    with name 'racks' 'rack' 'servers',
+         description "Rows of humming server racks stretch from floor to ceiling, each one packed with blinking hardware. The combined heat output is considerable despite the industrial cooling. Somewhere in these machines, Zheng-Harmon's darkest secrets are stored.",
+    has scenery pluralname;
+
+Object server_leds "LEDs" server
+    with name 'leds' 'led' 'lights',
+         description "Red LEDs blink in rhythmic patterns along each server rack, like the heartbeats of sleeping machines. Occasionally one flickers amber -- a drive working overtime, or maybe a warning nobody will ever read.",
+    has scenery pluralname;
+
 Object neural_jack "neural jack point" server
     with name 'jack' 'point' 'port' 'chrome',
          description "A chrome neural interface port protruding from the main server console. You could jack in to access the server's data directly through cyberspace.",
@@ -451,6 +602,11 @@ Object data_console "data console" server
     has scenery;
 
 ! --- Scenery: Cyberspace ---
+Object cyber_structures "crystalline structures" cyber_lobby
+    with name 'crystalline' 'structures' 'towers' 'crystal',
+         description "Towering crystalline structures rise around you -- the server's architecture rendered as geometry in cyberspace. Each facet contains flickering data: file directories, access logs, encrypted vaults. The structures pulse with cold neon light.",
+    has scenery pluralname;
+
 Object ice_wall "ICE wall" cyber_lobby
     with name 'ice' 'wall' 'firewall' 'barrier' 'countermeasures',
          description [;
@@ -468,6 +624,11 @@ Object data_streams "data streams" cyber_lobby
          description "Rivers of luminous code flow beneath you, carrying fragments of corporate data -- financial records, employee files, research notes. The experiment logs you need are locked behind the ICE to the north.",
     has scenery pluralname;
 
+Object vault_columns "data columns" cyber_vault
+    with name 'columns' 'column' 'pillars' 'pillar',
+         description "Columns of encrypted data rise like pillars into an infinite digital sky, each one containing terabytes of corporate information. The encryption patterns shimmer and shift, but with the ICE down, the data is exposed.",
+    has scenery pluralname;
+
 Object data_node "data node" cyber_vault
     with name 'node' 'data',
          description "A pulsing sphere of light containing Zheng-Harmon's experiment logs. Unprotected now that the ICE is down, you can download its contents directly into your neural implant.",
@@ -483,6 +644,16 @@ Object data_node "data node" cyber_vault
          ];
 
 ! --- Scenery: Industrial District ---
+Object industrial_factories "factories" industrial
+    with name 'factories' 'factory' 'buildings',
+         description "Dark factories loom against the neon sky like the bones of dead giants. Their windows are dark, their smokestacks cold. Whatever they once manufactured, the machines fell silent years ago.",
+    has scenery pluralname;
+
+Object industrial_conveyors "conveyor belts" industrial
+    with name 'conveyor' 'conveyors' 'belts' 'belt',
+         description "Broken conveyor belts rust in the rain, their rubber surfaces cracked and peeling. Scattered along them are fragments of discarded tech -- circuit boards, cable bundles, cracked screens.",
+    has scenery pluralname;
+
 Object dumpster "rusty dumpster" industrial
     with name 'dumpster' 'rusty',
          description "A rusted-out industrial dumpster, half-blocking an alley entrance to the east. It reeks of chemical waste and old machine oil.",
