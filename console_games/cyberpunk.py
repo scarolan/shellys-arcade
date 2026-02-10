@@ -34,8 +34,6 @@ GLYPH_GANG = "\U0000ee15"      # nf-fa-skull
 GLYPH_GUARD = "\uf132"         # shield
 GLYPH_TURRET = "\uf05b"        # crosshairs
 GLYPH_NETRUNNER = "\uf120"     # terminal
-GLYPH_BOSS = "\U000f0680"     # nf-md-skull_crossbones
-GLYPH_LILY = "\uf120"         # terminal (netrunner companion)
 
 GLYPH_MEDKIT = "\uf0fa"        # medkit
 GLYPH_CREDITS = "\uf155"       # dollar
@@ -54,8 +52,6 @@ GLYPH_STAR = "\uf005"          # star
 GLYPH_EYE = "\uf06e"           # eye
 GLYPH_BOMB = "\uf1e2"          # bomb
 GLYPH_STIM = "\uf0e7"          # bolt (reuse for stim)
-GLYPH_ICE_BARRIER = "\uf023"  # lock (neural ICE barrier)
-GLYPH_PUZZLE_GATE = "\uf120"  # terminal (puzzle gate)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Box-drawing characters
@@ -94,7 +90,6 @@ C_FLOOR = 13
 C_FOG = 14
 C_TITLE = 15
 C_SHOP_BG = 16
-C_BOSS = 17
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Tile types
@@ -109,9 +104,6 @@ TILE_CORRIDOR = 5
 TILE_TERMINAL = 6
 TILE_SHOP_TILE = 7
 TILE_DOOR_OPEN = 8
-TILE_ICE_BARRIER = 9
-TILE_COVER = 10
-TILE_PUZZLE_GATE = 11
 
 TILE_CHARS = {
     TILE_WALL: "█",
@@ -123,16 +115,13 @@ TILE_CHARS = {
     TILE_TERMINAL: GLYPH_TERMINAL,
     TILE_SHOP_TILE: GLYPH_SHOP,
     TILE_DOOR_OPEN: "·",
-    TILE_ICE_BARRIER: GLYPH_ICE_BARRIER,
-    TILE_COVER: GLYPH_SHIELD,
-    TILE_PUZZLE_GATE: GLYPH_PUZZLE_GATE,
 }
 
 # Tiles that block movement
-BLOCKING_TILES = {TILE_WALL, TILE_DOOR, TILE_DOOR_LOCKED, TILE_ICE_BARRIER, TILE_COVER, TILE_PUZZLE_GATE}
+BLOCKING_TILES = {TILE_WALL, TILE_DOOR, TILE_DOOR_LOCKED}
 
 # Tiles that block line of sight / FOV
-OPAQUE_TILES = {TILE_WALL, TILE_DOOR, TILE_DOOR_LOCKED, TILE_ICE_BARRIER, TILE_COVER, TILE_PUZZLE_GATE}
+OPAQUE_TILES = {TILE_WALL, TILE_DOOR, TILE_DOOR_LOCKED}
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Level themes
@@ -141,11 +130,11 @@ OPAQUE_TILES = {TILE_WALL, TILE_DOOR, TILE_DOOR_LOCKED, TILE_ICE_BARRIER, TILE_C
 LEVEL_THEMES = [
     {"level_name": "Neon Street District", "zone": "street"},
     {"level_name": "Kabuki Market Underground", "zone": "underground"},
-    {"level_name": "Voss Tower - Lower Floors", "zone": "corporate"},
+    {"level_name": "Koroshi Tower - Lower Floors", "zone": "corporate"},
     {"level_name": "Synth Den Tunnels", "zone": "underground"},
-    {"level_name": "Voss Tower - Executive Suite", "zone": "corporate"},
+    {"level_name": "Koroshi Tower - Executive Suite", "zone": "corporate"},
     {"level_name": "Chrome Alley - Gang Territory", "zone": "street"},
-    {"level_name": "Voss Tower - Server Core", "zone": "corporate"},
+    {"level_name": "Koroshi Tower - Server Core", "zone": "corporate"},
     {"level_name": "Neural Nexus - Deep Underground", "zone": "underground"},
     {"level_name": "Megacity Spire - Apex", "zone": "corporate"},
 ]
@@ -243,12 +232,6 @@ ENEMY_TYPES = {
         "glyph": GLYPH_NETRUNNER, "hp": 20, "attack": 6, "defense": 1,
         "behavior": "wander", "xp": 8, "credits": 10,
         "desc": "Rogue neural ICE. Wanders erratically.",
-    },
-    "Voss": {
-        "glyph": GLYPH_BOSS, "hp": 250, "attack": 22, "defense": 10,
-        "behavior": "boss", "xp": 200, "credits": 500,
-        "desc": "Apex Overseer. Master of the Megacity Spire.",
-        "is_boss": True, "ranged_attack": 18, "ranged_range": 6,
     },
 }
 
@@ -393,34 +376,15 @@ class Enemy:
         self.x = x
         self.y = y
         self.glyph = template["glyph"]
-        self.is_boss = template.get("is_boss", False)
-        # Boss enemies don't scale — they use their raw high stats
-        if self.is_boss:
-            self.hp = template["hp"]
-            self.max_hp = self.hp
-            self.attack = template["attack"]
-            self.base_attack = self.attack
-            self.defense = template["defense"]
-            self.credits = template["credits"]
-            self.ranged_attack = template.get("ranged_attack", 0)
-            self.base_ranged_attack = self.ranged_attack
-            self.ranged_range = template.get("ranged_range", 0)
-            # Boss phase tracking
-            self.boss_turn_counter = 0
-            self.shield_turns = 0       # Turns remaining on shield (50% dmg reduction)
-            self.enraged = False         # Enrage below 30% HP
-        else:
-            # Scale with level_num for increasing difficulty
-            scale = 1.0 + (level_num - 1) * 0.15
-            self.hp = int(template["hp"] * scale)
-            self.max_hp = self.hp
-            self.attack = int(template["attack"] * scale)
-            self.defense = int(template["defense"] * scale)
-            self.credits = int(template["credits"] * scale)
-            self.ranged_attack = 0
-            self.ranged_range = 0
+        # Scale with level_num for increasing difficulty
+        scale = 1.0 + (level_num - 1) * 0.15
+        self.hp = int(template["hp"] * scale)
+        self.max_hp = self.hp
+        self.attack = int(template["attack"] * scale)
+        self.defense = int(template["defense"] * scale)
         self.behavior = template["behavior"]
         self.xp = template["xp"]
+        self.credits = int(template["credits"] * scale)
         self.alert = False
         self.patrol_dir = random.choice([(0, 1), (0, -1), (1, 0), (-1, 0)])
         self.disabled = False
@@ -446,9 +410,6 @@ class Enemy:
 
     def take_damage(self, dmg):
         actual = max(1, dmg - self.defense)
-        # Boss shield reduces damage by 50%
-        if self.is_boss and self.shield_turns > 0:
-            actual = max(1, actual // 2)
         self.hp -= actual
         if self.hp < 0:
             self.hp = 0
@@ -467,55 +428,6 @@ class Enemy:
             if dist <= 5 and self._has_line_of_sight(game_map, player.x, player.y):
                 return ("shoot", player)
             return None
-
-        if self.behavior == "boss":
-            # Boss: always alert, uses ranged attack at distance, melee when adjacent
-            self.alert = True
-            self.boss_turn_counter += 1
-
-            # --- Enrage check: below 30% HP ---
-            if not self.enraged and self.hp <= self.max_hp * 0.3:
-                self.enraged = True
-                self.attack = int(self.base_attack * 1.5)
-                self.ranged_attack = int(self.base_ranged_attack * 1.5)
-                return ("boss_enrage", None)
-
-            # --- Shield phase: raise shield every 12 turns for 3 turns ---
-            if self.shield_turns > 0:
-                self.shield_turns -= 1
-            if self.boss_turn_counter % 12 == 0:
-                self.shield_turns = 3
-                return ("boss_shield", None)
-
-            # --- Nano-repair: heal 10 HP every 5 turns ---
-            if self.boss_turn_counter % 5 == 0 and self.hp < self.max_hp:
-                heal_amt = min(10, self.max_hp - self.hp)
-                self.hp += heal_amt
-                return ("boss_heal", heal_amt)
-
-            # --- Summon reinforcements every 8 turns ---
-            if self.boss_turn_counter % 8 == 0:
-                return ("boss_summon", None)
-
-            # --- Combat ---
-            if dist == 1:
-                # Melee slam — high damage
-                dmg = max(1, self.attack + random.randint(-2, 4))
-                actual = player.take_damage(dmg)
-                return ("attack", actual)
-            elif dist <= self.ranged_range and self._has_line_of_sight(game_map, player.x, player.y):
-                # Ranged energy blast
-                return ("boss_ranged", player)
-            else:
-                # Chase the player
-                dx, dy = self._chase(player)
-                nx, ny = self.x + dx, self.y + dy
-                if (0 <= ny < len(game_map) and 0 <= nx < len(game_map[0]) and
-                        game_map[ny][nx] not in BLOCKING_TILES and
-                        not self._enemy_at(nx, ny, enemies)):
-                    self.x = nx
-                    self.y = ny
-                return None
 
         if self.behavior == "aggressive" or (self.alert and dist <= 8):
             # Chase the player directly
@@ -637,60 +549,6 @@ class Item:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# Companion system
-# ═══════════════════════════════════════════════════════════════════════════════
-
-LILY_DIALOGUE = [
-    "Lily: 'Watch your back. Voss's ICE is everywhere.'",
-    "Lily: 'I can feel the neural grid humming... we're getting close.'",
-    "Lily: 'These corpo drones are running old firmware. Easy pickings.'",
-    "Lily: 'Voss thought they could bury what they did to me. Wrong.'",
-    "Lily: 'Stay sharp. The deeper we go, the nastier the ICE gets.'",
-]
-
-
-class Companion:
-    """A companion NPC that follows the player."""
-
-    def __init__(self, name, x, y, glyph, color):
-        self.name = name
-        self.x = x
-        self.y = y
-        self.glyph = glyph
-        self.color = color
-        self.dialogue_index = 0
-
-    def follow(self, player, game_map, enemies):
-        """Move one step toward the player using simple chase logic."""
-        dist = abs(self.x - player.x) + abs(self.y - player.y)
-        if dist <= 1:
-            return  # Already adjacent
-        dx = 0 if player.x == self.x else (1 if player.x > self.x else -1)
-        dy = 0 if player.y == self.y else (1 if player.y > self.y else -1)
-        # Prefer axis with greater distance
-        if abs(player.x - self.x) >= abs(player.y - self.y):
-            moves = [(dx, 0), (0, dy)]
-        else:
-            moves = [(0, dy), (dx, 0)]
-        for mdx, mdy in moves:
-            if mdx == 0 and mdy == 0:
-                continue
-            nx, ny = self.x + mdx, self.y + mdy
-            if (0 <= ny < len(game_map) and 0 <= nx < len(game_map[0]) and
-                    game_map[ny][nx] not in BLOCKING_TILES and
-                    not any(e.alive and e.x == nx and e.y == ny for e in enemies)):
-                self.x = nx
-                self.y = ny
-                return
-
-    def get_dialogue(self):
-        """Return the next dialogue line from this companion."""
-        line = LILY_DIALOGUE[self.dialogue_index % len(LILY_DIALOGUE)]
-        self.dialogue_index += 1
-        return line
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
 # Procedural Level Generation
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -750,21 +608,12 @@ def _can_reach(game_map, start, goal):
 def generate_level(level_num):
     """Generate a procedural level with rooms, corridors, doors, and entities.
 
-    Returns (game_map, rooms, player_start, stairs_pos, enemies, items, terminals,
-             lily_spawn, puzzle_gate_pos).
+    Returns (game_map, rooms, player_start, stairs_pos, enemies, items, terminals).
     """
     game_map = [[TILE_WALL for _ in range(MAP_W)] for _ in range(MAP_H)]
     rooms = []
 
     num_rooms = min(MAX_ROOMS, 5 + level_num)
-
-    # On the final floor, reserve space for a large boss arena as the last room
-    boss_arena = None
-    if level_num >= MAX_LEVELS:
-        arena_w, arena_h = 16, 12
-        arena_x = MAP_W - arena_w - 2
-        arena_y = (MAP_H - arena_h) // 2
-        boss_arena = Room(arena_x, arena_y, arena_w, arena_h)
 
     attempts = 0
     while len(rooms) < num_rooms and attempts < 200:
@@ -774,30 +623,11 @@ def generate_level(level_num):
         x = random.randint(1, MAP_W - w - 1)
         y = random.randint(1, MAP_H - h - 1)
         new_room = Room(x, y, w, h)
-        # Don't overlap with boss arena reservation
-        if boss_arena is not None and new_room.intersects(boss_arena):
-            continue
         if any(new_room.intersects(r) for r in rooms):
             continue
         # Carve room
         place_room(game_map, new_room)
         rooms.append(new_room)
-
-    # Place the boss arena as the last room on the final floor
-    if boss_arena is not None:
-        place_room(game_map, boss_arena)
-        rooms.append(boss_arena)
-        # Add cover objects inside the arena for tactical play
-        cx, cy = boss_arena.center
-        cover_offsets = [
-            (-4, -3), (4, -3), (-4, 3), (4, 3),  # corners
-            (0, -3), (0, 3),                        # top/bottom center
-        ]
-        for ox, oy in cover_offsets:
-            px, py = cx + ox, cy + oy
-            if (boss_arena.x + 1 <= px <= boss_arena.x + boss_arena.w - 2 and
-                    boss_arena.y + 1 <= py <= boss_arena.y + boss_arena.h - 2):
-                game_map[py][px] = TILE_COVER
 
     # Connect rooms with corridors
     for i in range(1, len(rooms)):
@@ -846,34 +676,7 @@ def generate_level(level_num):
     # Place items — ensure keycards are reachable without locked doors
     items = place_items(game_map, rooms, level_num, player_start)
 
-    # Spawn Lily NPC on floor 4 (Synth Den Tunnels)
-    lily_spawn = None
-    if level_num == 4 and len(rooms) >= 3:
-        lily_room = rooms[len(rooms) // 2]  # Mid-level room
-        lx, ly = lily_room.center
-        # Offset slightly from center so she doesn't overlap other entities
-        for ddx, ddy in [(1, 0), (-1, 0), (0, 1), (0, -1), (0, 0)]:
-            nx, ny = lx + ddx, ly + ddy
-            if (0 <= ny < MAP_H and 0 <= nx < MAP_W and
-                    game_map[ny][nx] in (TILE_FLOOR, TILE_CORRIDOR)):
-                lily_spawn = (nx, ny)
-                break
-
-    # Place puzzle gate on floor 7 (Voss Tower - Server Core) blocking stairs
-    puzzle_gate_pos = None
-    if level_num == 7:
-        sx, sy = stairs_pos
-        # Place gate adjacent to stairs — find a walkable tile next to stairs
-        for ddx, ddy in [(0, -1), (0, 1), (-1, 0), (1, 0)]:
-            bx, by = sx + ddx, sy + ddy
-            if (0 <= by < MAP_H and 0 <= bx < MAP_W and
-                    game_map[by][bx] in (TILE_FLOOR, TILE_CORRIDOR, TILE_DOOR_OPEN)):
-                game_map[by][bx] = TILE_PUZZLE_GATE
-                puzzle_gate_pos = (bx, by)
-                break
-
-    return (game_map, rooms, player_start, stairs_pos, enemies, items, terminals,
-            lily_spawn, puzzle_gate_pos)
+    return game_map, rooms, player_start, stairs_pos, enemies, items, terminals
 
 
 def place_room(game_map, room):
@@ -979,22 +782,8 @@ def place_enemies(game_map, rooms, level_num, player_start):
     """Scatter enemies across rooms, scaling with level_num."""
     enemies = []
     enemy_count = 3 + level_num * 2
-    # Weight enemy types by zone/level (exclude boss from random spawns)
-    available = [k for k in ENEMY_TYPES.keys() if not ENEMY_TYPES[k].get("is_boss")]
-
-    # On the final floor, spawn the boss in the last room (near stairs)
-    if level_num >= MAX_LEVELS and len(rooms) >= 2:
-        boss_room = rooms[-1]
-        bx, by = boss_room.center
-        # Offset boss slightly from stairs so they don't overlap
-        for ddx, ddy in [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1)]:
-            nx, ny = bx + ddx, by + ddy
-            if (0 <= ny < MAP_H and 0 <= nx < MAP_W and
-                    game_map[ny][nx] in (TILE_FLOOR, TILE_CORRIDOR)):
-                bx, by = nx, ny
-                break
-        enemies.append(Enemy("Voss", bx, by, level_num))
-
+    # Weight enemy types by zone/level
+    available = list(ENEMY_TYPES.keys())
     for room in rooms[1:]:
         if len(enemies) >= enemy_count:
             break
@@ -1235,7 +1024,6 @@ def init_colors():
     curses.init_pair(C_FOG, curses.COLOR_WHITE, -1)
     curses.init_pair(C_TITLE, curses.COLOR_MAGENTA, -1)
     curses.init_pair(C_SHOP_BG, curses.COLOR_YELLOW, -1)
-    curses.init_pair(C_BOSS, curses.COLOR_MAGENTA, -1)
 
 
 def safe_addstr(win, y, x, text, attr=0):
@@ -1281,22 +1069,15 @@ def _tile_char_and_attr(game_map, mx, my):
             return ch, curses.color_pair(C_YELLOW)
         elif tile == TILE_DOOR_LOCKED:
             return ch, curses.color_pair(C_RED)
-        elif tile == TILE_ICE_BARRIER:
-            return ch, curses.color_pair(C_MAGENTA) | curses.A_BOLD
-        elif tile == TILE_PUZZLE_GATE:
-            return ch, curses.color_pair(C_CYAN) | curses.A_BOLD
         elif tile == TILE_SHOP_TILE:
             return ch, curses.color_pair(C_YELLOW) | curses.A_BOLD
-        elif tile == TILE_COVER:
-            return ch, curses.color_pair(C_GRAY) | curses.A_BOLD
         else:
             return ch, curses.color_pair(C_FLOOR)
     return " ", curses.color_pair(C_FLOOR)
 
 
 def draw_map(win, game_map, visible, explored, player, enemies, items,
-             cam_x, cam_y, view_w, view_h, map_y_off, map_x_off,
-             companion=None, lily_npc=None):
+             cam_x, cam_y, view_w, view_h, map_y_off, map_x_off):
     """Render the visible portion of the game map."""
     for sy in range(view_h):
         my = cam_y + sy
@@ -1317,31 +1098,13 @@ def draw_map(win, game_map, visible, explored, player, enemies, items,
                     safe_addstr(win, screen_y, screen_x, GLYPH_PLAYER,
                                 curses.color_pair(C_PLAYER) | curses.A_BOLD)
                     drawn = True
-                # Companion (recruited Lily)
-                if not drawn and companion is not None:
-                    if companion.x == mx and companion.y == my:
-                        safe_addstr(win, screen_y, screen_x, companion.glyph,
-                                    curses.color_pair(companion.color) | curses.A_BOLD)
-                        drawn = True
-                # Lily NPC (not yet recruited)
-                if not drawn and lily_npc is not None:
-                    if lily_npc[0] == mx and lily_npc[1] == my:
-                        safe_addstr(win, screen_y, screen_x, GLYPH_LILY,
-                                    curses.color_pair(C_CYAN) | curses.A_BOLD)
-                        drawn = True
                 # Enemies
                 if not drawn:
                     for e in enemies:
                         if e.alive and e.x == mx and e.y == my:
                             glyph = e.state_glyph
-                            if e.is_boss and e.enraged:
-                                e_color = C_RED
-                            elif e.is_boss:
-                                e_color = C_BOSS
-                            else:
-                                e_color = C_ENEMY
                             safe_addstr(win, screen_y, screen_x, glyph,
-                                        curses.color_pair(e_color) | curses.A_BOLD)
+                                        curses.color_pair(C_ENEMY) | curses.A_BOLD)
                             # Fix wide glyph color bleed: redraw next cell
                             # with the correct background tile
                             if screen_x + 1 < view_w + map_x_off:
@@ -1384,21 +1147,12 @@ def draw_map(win, game_map, visible, explored, player, enemies, items,
                     elif tile == TILE_DOOR_LOCKED:
                         safe_addstr(win, screen_y, screen_x, ch,
                                     curses.color_pair(C_RED))
-                    elif tile == TILE_ICE_BARRIER:
-                        safe_addstr(win, screen_y, screen_x, ch,
-                                    curses.color_pair(C_MAGENTA) | curses.A_BOLD)
-                    elif tile == TILE_PUZZLE_GATE:
-                        safe_addstr(win, screen_y, screen_x, ch,
-                                    curses.color_pair(C_CYAN) | curses.A_BOLD)
                     elif tile == TILE_DOOR_OPEN:
                         safe_addstr(win, screen_y, screen_x, ch,
                                     curses.color_pair(C_FLOOR))
                     elif tile == TILE_SHOP_TILE:
                         safe_addstr(win, screen_y, screen_x, ch,
                                     curses.color_pair(C_YELLOW) | curses.A_BOLD)
-                    elif tile == TILE_COVER:
-                        safe_addstr(win, screen_y, screen_x, ch,
-                                    curses.color_pair(C_GRAY) | curses.A_BOLD)
                     else:
                         safe_addstr(win, screen_y, screen_x, ch,
                                     curses.color_pair(C_FLOOR))
@@ -1446,12 +1200,10 @@ def draw_minimap(win, game_map, explored, player, y_off, x_off, mw=15, mh=10):
                 safe_addstr(win, screen_y, screen_x, " ")
 
 
-def draw_status_panel(win, player, level_num, y_off, x_off, panel_w=20,
-                      companion=None):
+def draw_status_panel(win, player, level_num, y_off, x_off, panel_w=20):
     """Draw the status/HUD panel on the right side."""
     theme = LEVEL_THEMES[level_num - 1] if level_num <= len(LEVEL_THEMES) else LEVEL_THEMES[-1]
-    box_h = 15 if companion else 14
-    draw_box(win, y_off, x_off, box_h, panel_w, "STATUS", C_CYAN)
+    draw_box(win, y_off, x_off, 14, panel_w, "STATUS", C_CYAN)
 
     row = y_off + 1
     # HP bar
@@ -1496,41 +1248,6 @@ def draw_status_panel(win, player, level_num, y_off, x_off, panel_w=20,
     if player.stim_turns > 0:
         safe_addstr(win, row, x_off + 1, f"{GLYPH_BOLT} Stim: {player.stim_turns}t",
                     curses.color_pair(C_MAGENTA) | curses.A_BOLD)
-        row += 1
-    if companion:
-        safe_addstr(win, row, x_off + 1, f"{GLYPH_LILY} Lily",
-                    curses.color_pair(C_CYAN) | curses.A_BOLD)
-
-
-def draw_boss_hp_bar(win, enemies, y_off, x_off, bar_w):
-    """Draw the boss HP bar if a living boss exists on the level."""
-    boss = None
-    for e in enemies:
-        if e.is_boss and e.alive:
-            boss = e
-            break
-    if boss is None:
-        return
-    hp_pct = boss.hp / max(1, boss.max_hp)
-    pct_int = int(hp_pct * 100)
-    hp_color = C_RED if hp_pct <= 0.3 else (C_YELLOW if hp_pct <= 0.6 else C_MAGENTA)
-    # Boss name with status indicators
-    status = ""
-    if boss.enraged:
-        status += " [ENRAGED]"
-    if boss.shield_turns > 0:
-        status += f" [SHIELD {boss.shield_turns}t]"
-    name_color = C_RED if boss.enraged else C_BOSS
-    safe_addstr(win, y_off, x_off,
-                f"{GLYPH_BOSS} {boss.name}{status}",
-                curses.color_pair(name_color) | curses.A_BOLD)
-    # HP bar
-    inner_w = bar_w - 2
-    filled = int(hp_pct * inner_w)
-    bar = "█" * filled + "░" * (inner_w - filled)
-    safe_addstr(win, y_off + 1, x_off,
-                f"[{bar}] {pct_int}%  ({boss.hp}/{boss.max_hp})",
-                curses.color_pair(hp_color) | curses.A_BOLD)
 
 
 def draw_message_log(win, messages, y_off, x_off, log_w, log_h=4):
@@ -1609,164 +1326,6 @@ def select_class(stdscr):
             return classes[selected]
         elif key in (ord('q'), ord('Q')):
             return None
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Puzzle Gate Screen (Neural Cipher)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-HEX_CHARS = "0123456789ABCDEF"
-CIPHER_LEN = 4
-
-
-def puzzle_gate_screen(stdscr):
-    """Interactive neural cipher puzzle. Player cycles hex digits to match a
-    target code. Returns True if solved, False if aborted."""
-    target = [random.choice(HEX_CHARS) for _ in range(CIPHER_LEN)]
-    guess = [0] * CIPHER_LEN  # indices into HEX_CHARS
-    selected = 0  # which digit position is selected
-    attempts = 0
-    max_attempts = 6
-    feedback_lines = []
-
-    while True:
-        stdscr.clear()
-        h, w = stdscr.getmaxyx()
-        cx = max(0, w // 2 - 25)
-
-        safe_addstr(stdscr, 1, cx,
-                    "╔══ NEURAL CIPHER — ICE BREAKER ══╗",
-                    curses.color_pair(C_CYAN) | curses.A_BOLD)
-        safe_addstr(stdscr, 2, cx,
-                    "  Crack the 4-digit hex cipher to",
-                    curses.color_pair(C_WHITE))
-        safe_addstr(stdscr, 3, cx,
-                    "  bypass the server core firewall.",
-                    curses.color_pair(C_WHITE))
-        safe_addstr(stdscr, 4, cx,
-                    BOX_H * 36,
-                    curses.color_pair(C_CYAN))
-
-        # Current guess display
-        guess_str = ""
-        for i in range(CIPHER_LEN):
-            ch = HEX_CHARS[guess[i]]
-            if i == selected:
-                guess_str += f"[{ch}]"
-            else:
-                guess_str += f" {ch} "
-        safe_addstr(stdscr, 6, cx + 2,
-                    f"  CIPHER: {guess_str}",
-                    curses.color_pair(C_GREEN) | curses.A_BOLD)
-        safe_addstr(stdscr, 7, cx + 2,
-                    f"  Attempts: {attempts}/{max_attempts}",
-                    curses.color_pair(C_YELLOW))
-
-        # Feedback from previous attempts
-        for i, line in enumerate(feedback_lines[-5:]):
-            safe_addstr(stdscr, 9 + i, cx + 2, line,
-                        curses.color_pair(C_WHITE))
-
-        # Controls
-        ctrl_y = 15
-        safe_addstr(stdscr, ctrl_y, cx,
-                    "  LEFT/RIGHT = select digit",
-                    curses.color_pair(C_GRAY))
-        safe_addstr(stdscr, ctrl_y + 1, cx,
-                    "  UP/DOWN    = cycle hex value",
-                    curses.color_pair(C_GRAY))
-        safe_addstr(stdscr, ctrl_y + 2, cx,
-                    "  ENTER      = submit guess",
-                    curses.color_pair(C_GRAY))
-        safe_addstr(stdscr, ctrl_y + 3, cx,
-                    "  Q/ESC      = abort (step away)",
-                    curses.color_pair(C_GRAY))
-
-        stdscr.refresh()
-        key = stdscr.getch()
-
-        if key in (ord('q'), ord('Q'), 27):
-            return False
-        elif key in (curses.KEY_LEFT, ord('a'), ord('A')):
-            selected = (selected - 1) % CIPHER_LEN
-        elif key in (curses.KEY_RIGHT, ord('d'), ord('D')):
-            selected = (selected + 1) % CIPHER_LEN
-        elif key in (curses.KEY_UP, ord('w'), ord('W')):
-            guess[selected] = (guess[selected] + 1) % len(HEX_CHARS)
-        elif key in (curses.KEY_DOWN, ord('s'), ord('S')):
-            guess[selected] = (guess[selected] - 1) % len(HEX_CHARS)
-        elif key in (10, 13, curses.KEY_ENTER):
-            attempts += 1
-            guess_chars = [HEX_CHARS[g] for g in guess]
-            # Build feedback: correct position, correct char wrong pos, miss
-            result = []
-            target_remaining = list(target)
-            guess_remaining = list(guess_chars)
-            # First pass: exact matches
-            exact = [False] * CIPHER_LEN
-            for i in range(CIPHER_LEN):
-                if guess_chars[i] == target[i]:
-                    exact[i] = True
-                    target_remaining[i] = None
-                    guess_remaining[i] = None
-            # Second pass: wrong position
-            displaced = [False] * CIPHER_LEN
-            for i in range(CIPHER_LEN):
-                if exact[i]:
-                    continue
-                if guess_remaining[i] is not None and guess_remaining[i] in target_remaining:
-                    idx = target_remaining.index(guess_remaining[i])
-                    target_remaining[idx] = None
-                    displaced[i] = True
-
-            feedback = ""
-            for i in range(CIPHER_LEN):
-                if exact[i]:
-                    feedback += f"[{guess_chars[i]}]"  # correct
-                elif displaced[i]:
-                    feedback += f"({guess_chars[i]})"  # wrong position
-                else:
-                    feedback += f" {guess_chars[i]} "   # miss
-            exact_count = sum(exact)
-            displaced_count = sum(displaced)
-            hint = f"  {feedback}  [{exact_count} exact, {displaced_count} displaced]"
-            feedback_lines.append(hint)
-
-            if all(exact):
-                # Solved!
-                stdscr.clear()
-                safe_addstr(stdscr, h // 2 - 1, cx,
-                            "  ╔══ CIPHER CRACKED ══╗",
-                            curses.color_pair(C_GREEN) | curses.A_BOLD)
-                safe_addstr(stdscr, h // 2, cx,
-                            f"  Neural ICE breached in {attempts} attempts!",
-                            curses.color_pair(C_GREEN))
-                safe_addstr(stdscr, h // 2 + 1, cx,
-                            "  Press any key to continue...",
-                            curses.color_pair(C_YELLOW))
-                stdscr.refresh()
-                stdscr.getch()
-                return True
-
-            if attempts >= max_attempts:
-                # Failed — reveal the code
-                target_str = "".join(target)
-                stdscr.clear()
-                safe_addstr(stdscr, h // 2 - 1, cx,
-                            "  ╔══ CIPHER LOCKOUT ══╗",
-                            curses.color_pair(C_RED) | curses.A_BOLD)
-                safe_addstr(stdscr, h // 2, cx,
-                            f"  Lockout! Code was: {target_str}",
-                            curses.color_pair(C_RED))
-                safe_addstr(stdscr, h // 2 + 1, cx,
-                            "  The cipher resets. Try again later...",
-                            curses.color_pair(C_YELLOW))
-                safe_addstr(stdscr, h // 2 + 2, cx,
-                            "  Press any key to continue...",
-                            curses.color_pair(C_YELLOW))
-                stdscr.refresh()
-                stdscr.getch()
-                return False
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1904,7 +1463,7 @@ def game_over_screen(stdscr, player, level_num, won=False):
 
     if won:
         title = "╔══ MISSION COMPLETE ══╗"
-        subtitle = "Voss is dead. The spire falls silent. Neo-Shibuya is free."
+        subtitle = "You escaped the megacity!"
         color = C_GREEN
     else:
         title = "╔══ GAME OVER ══╗"
@@ -2005,12 +1564,9 @@ def main(stdscr):
     player = Player(char_class)
     level_num = 1
     messages = [f"Welcome to Neo-Shibuya, {char_class}.", "Find the stairs to descend deeper."]
-    companion = None  # Lily companion once recruited
-    lily_npc = None   # (x, y) position of Lily NPC before recruitment
 
     # Generate first level
-    (game_map, rooms, start, stairs, enemies, items, terminals,
-     lily_spawn, puzzle_gate_pos) = generate_level(level_num)
+    game_map, rooms, start, stairs, enemies, items, terminals = generate_level(level_num)
     player.x, player.y = start
     explored = set()
 
@@ -2040,8 +1596,7 @@ def main(stdscr):
         map_y_off = 1
         map_x_off = 1
         draw_map(stdscr, game_map, visible, explored, player, enemies, items,
-                 cam_x, cam_y, view_w, view_h, map_y_off, map_x_off,
-                 companion=companion, lily_npc=lily_npc)
+                 cam_x, cam_y, view_w, view_h, map_y_off, map_x_off)
 
         # Bottom border of map
         bot_border = BOX_BL + BOX_H * view_w + BOX_BR
@@ -2050,19 +1605,14 @@ def main(stdscr):
 
         # Status panel (right side)
         panel_x = view_w + 3
-        draw_status_panel(stdscr, player, level_num, 0, panel_x,
-                          panel_w=min(20, w - panel_x - 1), companion=companion)
+        draw_status_panel(stdscr, player, level_num, 0, panel_x, panel_w=min(20, w - panel_x - 1))
 
         # Minimap
         mini_y = 15
         draw_minimap(stdscr, game_map, explored, player, mini_y, panel_x)
 
-        # Boss HP bar (above message log when a boss is present)
-        draw_boss_hp_bar(stdscr, enemies, map_y_off + view_h + 1, 1, view_w)
-
-        # Message log (below map, shifted down if boss bar is shown)
-        has_boss = any(e.is_boss and e.alive for e in enemies)
-        log_y = map_y_off + view_h + 1 + (3 if has_boss else 0)
+        # Message log (below map)
+        log_y = map_y_off + view_h + 1
         draw_message_log(stdscr, messages, log_y, 0, view_w + 2, min(4, h - log_y - 3))
 
         # Help line
@@ -2138,14 +1688,7 @@ def main(stdscr):
                         player.enemies_killed += 1
                         player.credits += target.credits
                         player.total_credits += target.credits
-                        if target.is_boss:
-                            messages.append("Voss collapses. The spire shudders as the Overseer's grip fades.")
-                            if companion is not None:
-                                messages.append("Lily: 'It's over... the megacity is free. Let's get out of here.'")
-                            else:
-                                messages.append("The neural grid goes silent. The way to the stairs is open.")
-                        else:
-                            messages.append(f"{target.name} destroyed! +{target.credits} credits")
+                        messages.append(f"{target.name} destroyed! +{target.credits} credits")
                 else:
                     messages.append("No target in range!")
 
@@ -2170,49 +1713,12 @@ def main(stdscr):
                 if it.x == player.x and it.y == player.y:
                     _pickup_item(player, it, items, messages)
                     pickup = True
-            # Recruit Lily NPC if adjacent
-            if not pickup and lily_npc is not None and companion is None:
-                if (abs(player.x - lily_npc[0]) <= 1 and
-                        abs(player.y - lily_npc[1]) <= 1):
-                    companion = Companion("Lily", lily_npc[0], lily_npc[1],
-                                          GLYPH_LILY, C_CYAN)
-                    messages.append("Lily: 'You're going after Voss? "
-                                    "I'm in. I have a score to settle.'")
-                    lily_npc = None
-                    pickup = True
-            # Open adjacent doors / interact with puzzle gate
+            # Open adjacent doors
             if not pickup:
                 for ddx, ddy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                     tx, ty = player.x + ddx, player.y + ddy
                     if 0 <= ty < MAP_H and 0 <= tx < MAP_W:
-                        if game_map[ty][tx] == TILE_PUZZLE_GATE:
-                            if companion is not None:
-                                game_map[ty][tx] = TILE_DOOR_OPEN
-                                messages.append(
-                                    "Lily jacks in... 'I'm through. "
-                                    "The server core is open.'")
-                            elif player.hack_skill >= 60:
-                                game_map[ty][tx] = TILE_DOOR_OPEN
-                                messages.append(
-                                    "You brute-force the neural ICE. "
-                                    "The cipher gate shatters.")
-                            else:
-                                messages.append(
-                                    "NEURAL CIPHER GATE — Initiating "
-                                    "ICE breaker sequence...")
-                                solved = puzzle_gate_screen(stdscr)
-                                if solved:
-                                    game_map[ty][tx] = TILE_DOOR_OPEN
-                                    messages.append(
-                                        "Cipher cracked! The gate "
-                                        "dissolves in a shower of sparks.")
-                                else:
-                                    messages.append(
-                                        "Cipher lockout. The gate resets. "
-                                        "Try again or find another way.")
-                            pickup = True
-                            break
-                        elif game_map[ty][tx] == TILE_DOOR:
+                        if game_map[ty][tx] == TILE_DOOR:
                             game_map[ty][tx] = TILE_DOOR_OPEN
                             messages.append("Opened door.")
                             pickup = True
@@ -2247,14 +1753,7 @@ def main(stdscr):
                         player.enemies_killed += 1
                         player.credits += target_enemy.credits
                         player.total_credits += target_enemy.credits
-                        if target_enemy.is_boss:
-                            messages.append("Voss collapses. The spire shudders as the Overseer's grip fades.")
-                            if companion is not None:
-                                messages.append("Lily: 'It's over... the megacity is free. Let's get out of here.'")
-                            else:
-                                messages.append("The neural grid goes silent. The way to the stairs is open.")
-                        else:
-                            messages.append(f"{target_enemy.name} destroyed! +{target_enemy.credits} credits")
+                        messages.append(f"{target_enemy.name} destroyed! +{target_enemy.credits} credits")
 
                 elif tile == TILE_DOOR:
                     # Bump to open unlocked doors — door disappears
@@ -2274,26 +1773,6 @@ def main(stdscr):
                     else:
                         messages.append("Door locked! Need a keycard or hack.")
 
-                elif tile == TILE_PUZZLE_GATE:
-                    if companion is not None:
-                        game_map[ny][nx] = TILE_DOOR_OPEN
-                        player.x = nx
-                        player.y = ny
-                        messages.append(
-                            "Lily jacks in... 'I'm through. "
-                            "The server core is open.'")
-                    elif player.hack_skill >= 60:
-                        game_map[ny][nx] = TILE_DOOR_OPEN
-                        player.x = nx
-                        player.y = ny
-                        messages.append(
-                            "You brute-force the neural ICE. "
-                            "The cipher gate shatters.")
-                    else:
-                        messages.append(
-                            "NEURAL CIPHER GATE — Press 'e' to "
-                            "initiate ICE breaker sequence.")
-
                 elif tile in (TILE_FLOOR, TILE_CORRIDOR, TILE_DOOR_OPEN,
                               TILE_STAIRS, TILE_TERMINAL, TILE_SHOP_TILE):
                     player.x = nx
@@ -2307,40 +1786,22 @@ def main(stdscr):
 
                     # Check stairs
                     if tile == TILE_STAIRS:
+                        player.levels_cleared += 1
                         if level_num >= MAX_LEVELS:
-                            # Boss must be dead to win
-                            boss_alive = any(e.is_boss and e.alive for e in enemies)
-                            if boss_alive:
-                                messages.append("The stairs crackle with energy. Voss still controls the spire.")
-                                messages.append("Defeat Voss before you can escape!")
-                                # Push player back off the stairs
-                                player.x -= dx
-                                player.y -= dy
-                                continue
                             # Victory!
-                            player.levels_cleared += 1
                             game_over_screen(stdscr, player, level_num, won=True)
                             game_running = False
                             continue
                         else:
-                            player.levels_cleared += 1
                             # Shop between levels
                             shop_screen(stdscr, player, level_num)
                             level_num += 1
-                            (game_map, rooms, start, stairs, enemies, items,
-                             terminals, lily_spawn, puzzle_gate_pos) = generate_level(level_num)
+                            game_map, rooms, start, stairs, enemies, items, terminals = generate_level(level_num)
                             player.x, player.y = start
                             explored = set()
-                            # Carry companion to new level
-                            if companion is not None:
-                                companion.x, companion.y = start
-                            # Set lily_npc if this is her spawn floor and not yet recruited
-                            lily_npc = lily_spawn if companion is None else None
                             messages.append(f"Descended to Level {level_num}...")
                             theme = LEVEL_THEMES[level_num - 1] if level_num <= len(LEVEL_THEMES) else LEVEL_THEMES[-1]
                             messages.append(f"Entering: {theme['level_name']}")
-                            if lily_npc is not None:
-                                messages.append("You spot a figure near a terminal...")
                             continue
 
                 # Wall or other blocking tile — can't move
@@ -2358,48 +1819,6 @@ def main(stdscr):
                         dmg = max(1, e.attack + random.randint(-2, 2))
                         actual = player.take_damage(dmg)
                         messages.append(f"{e.name} shoots you for {actual} damage!")
-                    elif result[0] == "boss_ranged":
-                        dmg = max(1, e.ranged_attack + random.randint(-3, 3))
-                        actual = player.take_damage(dmg)
-                        messages.append(f"{e.name} fires an energy blast for {actual} damage!")
-                    elif result[0] == "boss_enrage":
-                        messages.append(f"{e.name} enters a RAGE! Damage increased!")
-                    elif result[0] == "boss_shield":
-                        messages.append(f"{e.name} raises a nano-shield! Damage reduced for 3 turns.")
-                    elif result[0] == "boss_heal":
-                        messages.append(f"{e.name} nano-repair: +{result[1]} HP")
-                    elif result[0] == "boss_summon":
-                        # Spawn 1-2 guard drones near the boss (max 5 alive at once)
-                        active_drones = sum(1 for oe in enemies
-                                            if oe.alive and not oe.is_boss
-                                            and oe.name == "Security Drone")
-                        max_drones = 5
-                        if active_drones >= max_drones:
-                            messages.append(f"{e.name} tries to summon drones, but the arena is full!")
-                        else:
-                            num_spawns = min(random.randint(1, 2), max_drones - active_drones)
-                            spawned = 0
-                            for ddx, ddy in [(-2, 0), (2, 0), (0, -2), (0, 2),
-                                             (-1, -1), (1, 1), (-1, 1), (1, -1)]:
-                                if spawned >= num_spawns:
-                                    break
-                                sx, sy = e.x + ddx, e.y + ddy
-                                if (0 <= sy < MAP_H and 0 <= sx < MAP_W and
-                                        game_map[sy][sx] in (TILE_FLOOR, TILE_CORRIDOR) and
-                                        not any(oe.alive and oe.x == sx and oe.y == sy for oe in enemies)):
-                                    drone = Enemy("Security Drone", sx, sy, level_num)
-                                    drone.alert = True
-                                    enemies.append(drone)
-                                    spawned += 1
-                            if spawned > 0:
-                                messages.append(f"{e.name} summons {spawned} guard drone{'s' if spawned > 1 else ''}!")
-
-        # Companion follows player
-        if companion is not None:
-            companion.follow(player, game_map, enemies)
-            # Occasional dialogue
-            if player.turns_taken % 25 == 0 and player.turns_taken > 0:
-                messages.append(companion.get_dialogue())
 
         # Chrome Medic passive heal
         if player.char_class == CLASS_MEDIC and player.heal_power > 0:

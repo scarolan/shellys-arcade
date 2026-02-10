@@ -178,33 +178,8 @@ Global player_sats = 50;
     rtrue;
 ];
 
-[ NPC_Talk_Voss;
-    print "Voss sneers. ~We have nothing to discuss.~^";
-];
-
-[ NPC_Ask_Voss topic;
-    if (topic == 'lily' or 'daughter' or 'missing' or 'chen' or 'girl') {
-        print "Voss's expression doesn't change. ~Lily Chen? She was a contractor. Her employment was terminated weeks ago. What she does on her own time is none of our concern -- or yours, detective.~^";
-        rtrue;
-    }
-    if (topic == 'neural' or 'experiment' or 'interface' or 'rig') {
-        print "Voss turns from the window, his smile razor-thin. ~Our neural interface research is perfectly legal and fully sanctioned. Any rumors to the contrary are the fantasies of conspiracy theorists and disgruntled former employees. I'd be careful repeating such allegations.~^";
-        rtrue;
-    }
-    if (topic == 'zheng' or 'harmon' or 'corp' or 'corporation') {
-        print "Voss spreads his hands magnanimously. ~Zheng-Harmon is building the future. Neural integration, synthetic consciousness, human evolution itself. Some people can't handle progress. Are you one of those people, detective?~^";
-        rtrue;
-    }
-    if (topic == 'police' or 'tanaka' or 'cops' or 'precinct') {
-        print "Voss chuckles. ~The police? They understand the natural order of things. This city runs on corporate investment, detective. Without us, there is no police force. Everyone knows their place -- except, it seems, you.~^";
-        rtrue;
-    }
-    if (topic == 'help') {
-        print "Voss smirks. ~Help? There's no help for you here. Try typing 'help' on its own -- if you can manage that, detective.~^";
-        rtrue;
-    }
-    print "Voss smirks, his eyes like polished stones. ~You're in over your head, detective. I'd suggest you leave while you still can.~^";
-    rtrue;
+[ NPC_Talk_RooftopVoss;
+    print "Voss snarls over the howling wind. ~There is nothing left to say, detective!~^";
 ];
 
 [ NPC_Ask_RooftopVoss topic;
@@ -293,13 +268,7 @@ Object lobby "Zheng-Harmon Lobby"
     has light;
 
 Object executive "Executive Floor"
-    with description [;
-             print "A corner office dripping with corporate wealth -- genuine hardwood desk, real leather chairs, and floor-to-ceiling views of the sprawling city below. Rain streaks the panoramic window, distorting the neon skyline into an impressionist nightmare. A crystal decanter of actual whiskey sits on a side table, worth more than your yearly rent.";
-             if (voss_dead == false) {
-                 print " Director Voss stands at the window with his back to you, hands clasped behind him.";
-             }
-             print "^^You can go down to the lobby or east to the server room.^";
-         ],
+    with description "A corner office dripping with corporate wealth -- genuine hardwood desk, real leather chairs, and floor-to-ceiling views of the sprawling city below. Rain streaks the panoramic window, distorting the neon skyline into an impressionist nightmare. A crystal decanter of actual whiskey sits on a side table, worth more than your yearly rent.^^You can go down to the lobby or east to the server room.",
          d_to lobby,
          e_to server,
     has light;
@@ -488,35 +457,6 @@ Object zephyr "Zephyr" den
          ],
     has animate proper;
 
-Object voss "Director Voss" executive
-    with name 'voss' 'director',
-         description "A tall, impeccably dressed man with cold eyes and a smile that doesn't reach them. His suit probably costs more than your apartment.",
-         life [;
-           Ask:
-             NPC_Ask_Voss(second);
-             rtrue;
-           Tell:
-             print "Voss laughs coldly.^";
-             rtrue;
-           Attack:
-             if (pistol in player) {
-                 if (voss_dead == false) {
-                     voss_dead = true;
-                     score = score + 20;
-                 }
-                 remove voss;
-                 print "You raise your pistol. Voss turns, eyes widening. The shot echoes across the rooftop.^";
-                 print "Voss crumples to the ground. It's over.^";
-                 if (lily_freed) {
-                     print "^^Congratulations! You've saved Lily Chen and brought down Director Voss. The rain washes the city clean tonight. You won.^";
-                     deadflag = 2;
-                 }
-                 rtrue;
-             }
-             print "You need a weapon first.^";
-             rtrue;
-         ],
-    has animate proper;
 
 Object tanaka "Detective Tanaka" precinct
     with name 'tanaka' 'detective' 'cop',
@@ -711,7 +651,7 @@ Object rooftop_voss "Director Voss" rooftop
     if (noun == zephyr)           { NPC_Talk_Zephyr(); rtrue; }
     if (noun == tanaka)           { NPC_Talk_Tanaka(); rtrue; }
     if (noun == guard)            { NPC_Talk_Guard(); rtrue; }
-    if (noun == voss || noun == rooftop_voss) { NPC_Talk_Voss(); rtrue; }
+    if (noun == rooftop_voss) { NPC_Talk_RooftopVoss(); rtrue; }
     if (noun has animate) {
         print (The) noun, " doesn't seem interested in talking.^";
         rtrue;
@@ -725,13 +665,12 @@ Object rooftop_voss "Director Voss" rooftop
         print "You don't have a weapon.^";
         rtrue;
     }
-    if (noun == voss || noun == rooftop_voss) {
+    if (noun == rooftop_voss) {
         if (voss_dead == false) {
             voss_dead = true;
             score = score + 20;
         }
-        if (noun == rooftop_voss) remove rooftop_voss;
-        else remove voss;
+        remove rooftop_voss;
         print "You raise your pistol. Voss turns, eyes widening. The shot echoes.^";
         print "Voss crumples to the ground. It's over.^";
         if (lily_freed) {
