@@ -287,7 +287,13 @@ Object lobby "Zheng-Harmon Lobby"
     has light;
 
 Object executive "Executive Floor"
-    with description "A corner office dripping with corporate wealth -- genuine hardwood desk, real leather chairs, and floor-to-ceiling views of the sprawling city below. Rain streaks the panoramic window, distorting the neon skyline into an impressionist nightmare. A crystal decanter of actual whiskey sits on a side table, worth more than your yearly rent. Director Voss stands at the window with his back to you, hands clasped behind him.^^You can go down to the lobby or east to the server room.",
+    with description [;
+             print "A corner office dripping with corporate wealth -- genuine hardwood desk, real leather chairs, and floor-to-ceiling views of the sprawling city below. Rain streaks the panoramic window, distorting the neon skyline into an impressionist nightmare. A crystal decanter of actual whiskey sits on a side table, worth more than your yearly rent.";
+             if (voss_dead == false) {
+                 print " Director Voss stands at the window with his back to you, hands clasped behind him.";
+             }
+             print "^^You can go down to the lobby or east to the server room.^";
+         ],
          d_to lobby,
          e_to server,
     has light;
