@@ -245,7 +245,7 @@ run_test "Lily does not follow player to rooftop while Voss is alive" \
     "Voss and Lily|Lily and.*Voss" "true"
 
 run_test "Lily follows player to rooftop after Voss is dead" \
-    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nup\nshoot voss\ndown\nup\nlook\nquit\ny" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nup\nshoot voss\nlook\nshoot voss\ndown\nup\nlook\nquit\ny" \
     "Lily Chen"
 
 # --- LILY CONVERSATION ---
@@ -433,9 +433,107 @@ run_test "Street: examine drone does not show 'no such thing'" \
 # --- GAME COMPLETION ---
 echo ""
 echo "--- Game Completion ---"
-run_test "Full game is winnable" \
-    "take datapad\nopen desk\ntake all\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nup\nshoot voss\nquit\ny" \
-    "free|saved|rescue|congratulations|end|won|victory"
+run_test "Full game is winnable (best ending - Lily lives)" \
+    "take datapad\nopen desk\ntake all\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nup\nshoot voss\nlook\nshoot voss\nquit\ny" \
+    "congratulations|justice won|you won"
+
+# --- BOSS FIGHT: MULTI-BEAT MECHANICS ---
+echo ""
+echo "--- Boss Fight: Multi-Beat Mechanics ---"
+
+# Base path to reach rooftop with Lily freed
+BOSS_BASE_LILY="take datapad\nopen desk\ntake all\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nup"
+
+# Base path to reach rooftop WITHOUT freeing Lily
+BOSS_BASE_NO_LILY="take datapad\nopen desk\ntake all\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nup"
+
+run_test "First shot does not kill Voss (multi-beat fight)" \
+    "${BOSS_BASE_LILY}\nshoot voss\nlook\nquit\ny" \
+    "Voss is backing toward the helicopter"
+
+run_test "First shot wounds player (Voss fires back)" \
+    "${BOSS_BASE_LILY}\nshoot voss\nquit\ny" \
+    "white-hot pain|shoulder"
+
+run_test "Helicopter/helipad is mentioned on rooftop" \
+    "${BOSS_BASE_LILY}\nlook\nquit\ny" \
+    "helicopter|helipad"
+
+run_test "Can examine helicopter on rooftop" \
+    "${BOSS_BASE_LILY}\nexamine helicopter\nquit\ny" \
+    "corporate helicopter|escape route"
+
+run_test "Can examine helipad on rooftop" \
+    "${BOSS_BASE_LILY}\nexamine helipad\nquit\ny" \
+    "painted circle|helicopter"
+
+# --- BOSS FIGHT: ENDING A (BEST - LILY LIVES) ---
+echo ""
+echo "--- Boss Fight: Ending A (Best - Lily Lives) ---"
+
+run_test "Ending A: Lily distracts Voss after waiting" \
+    "${BOSS_BASE_LILY}\nshoot voss\nlook\nquit\ny" \
+    "Lily steps forward|Director Voss|I remember ALL of it"
+
+run_test "Ending A: Clean kill when Lily distracts" \
+    "${BOSS_BASE_LILY}\nshoot voss\nlook\nshoot voss\nquit\ny" \
+    "clear shot|congratulations|justice won|you won"
+
+run_test "Ending A: Score is 120 (max)" \
+    "${BOSS_BASE_LILY}\nshoot voss\nlook\nshoot voss\nquit\ny" \
+    "120 out of a possible 120"
+
+# --- BOSS FIGHT: ENDING B (BITTERSWEET - LILY SACRIFICED) ---
+echo ""
+echo "--- Boss Fight: Ending B (Bittersweet - Lily Sacrificed) ---"
+
+run_test "Ending B: Shooting immediately with Lily causes sacrifice" \
+    "${BOSS_BASE_LILY}\nshoot voss\nshoot voss\nquit\ny" \
+    "thrown herself forward|bullet catches her"
+
+run_test "Ending B: Voss dies in sacrifice ending" \
+    "${BOSS_BASE_LILY}\nshoot voss\nshoot voss\nquit\ny" \
+    "Voss square in the throat|puppet with cut strings"
+
+run_test "Ending B: Lily dies in sacrifice ending" \
+    "${BOSS_BASE_LILY}\nshoot voss\nshoot voss\nquit\ny" \
+    "Tell my father|cost was too high|Lily Chen is dead"
+
+run_test "Ending B: Score is 110 (not max)" \
+    "${BOSS_BASE_LILY}\nshoot voss\nshoot voss\nquit\ny" \
+    "110 out of a possible 120"
+
+# --- BOSS FIGHT: ENDING C (VOSS ESCAPES) ---
+echo ""
+echo "--- Boss Fight: Ending C (Voss Escapes) ---"
+
+run_test "Ending C (no Lily): Voss escapes after delay" \
+    "${BOSS_BASE_NO_LILY}\nshoot voss\nlook\nlook\nlook\nquit\ny" \
+    "helicopter lifts off|disappears into the storm|partial victory"
+
+run_test "Ending C (with Lily): Voss escapes after delay at phase 2" \
+    "${BOSS_BASE_LILY}\nshoot voss\nlook\nlook\nlook\nlook\nquit\ny" \
+    "shoves Lily aside|sprints for the helicopter|evidence"
+
+run_test "Ending C: Voss escape ending still triggers victory (deadflag 2)" \
+    "${BOSS_BASE_NO_LILY}\nshoot voss\nlook\nlook\nlook\nquit\ny" \
+    "85 out of a possible 120"
+
+# --- BOSS FIGHT: KILL WITHOUT LILY ---
+echo ""
+echo "--- Boss Fight: Kill Without Lily ---"
+
+run_test "Can kill Voss without Lily (second shot in phase 1)" \
+    "${BOSS_BASE_NO_LILY}\nshoot voss\nshoot voss\nquit\ny" \
+    "shot takes Voss in the chest|crumples to the ground"
+
+run_test "Killing Voss without Lily then freeing Lily wins the game" \
+    "${BOSS_BASE_NO_LILY}\nshoot voss\nshoot voss\ndown\nfree lily\nquit\ny" \
+    "congratulations|rescued Lily|Voss is dead|victory"
+
+run_test "Kill without Lily path achieves max score" \
+    "${BOSS_BASE_NO_LILY}\nshoot voss\nshoot voss\ndown\nfree lily\nquit\ny" \
+    "120 out of a possible 120"
 
 # --- SUMMARY ---
 echo ""

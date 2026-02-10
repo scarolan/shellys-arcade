@@ -24,6 +24,10 @@ Global ice_bypassed = false;
 Global ice_analyzed = false;
 Global ice_exploit_ready = false;
 Global jacked_in = false;
+Global voss_phase = 0;
+Global voss_escaped = false;
+Global lily_sacrificed = false;
+Global voss_turn_count = 0;
 
 ! --- NPC Conversation Helper ---
 ! Consistent pattern: each NPC has a talk routine and an ask routine.
@@ -32,6 +36,10 @@ Global jacked_in = false;
 ! This keeps NPC dialogue centralized and extensible.
 
 [ NPC_Talk_Kai;
+    if (lily_sacrificed) {
+        print "Kai Chen stares at you with hollow eyes. The silence stretches between you like a chasm. ~She's gone,~ he says at last, his voice barely a whisper. ~My Lily is gone.~ He turns away, shoulders shaking. There are no words for this.^";
+        rtrue;
+    }
     if (voss_dead && lily_freed) {
         print "Kai Chen's eyes are red but his face is calm -- the calm of a man who has weathered the worst and come through the other side. ~It is over. Lily is home. I cannot repay what you have done, Vex. You gave me back my daughter and brought down the monster who took her. Whatever you need -- ever -- you come to me.~^";
         rtrue;
@@ -200,6 +208,14 @@ Global jacked_in = false;
 ];
 
 [ NPC_Talk_RooftopVoss;
+    if (voss_phase == 1) {
+        print "Voss laughs through bloodied teeth, backing toward the helicopter. ~You think one bullet will stop me? I have powerful friends, detective. People who make me look like a saint!~^";
+        rtrue;
+    }
+    if (voss_phase == 2) {
+        print "Voss is focused on Lily, barely registering your presence. ~Shut up! You were wiped! The procedure was flawless!~ His voice cracks with disbelief.^";
+        rtrue;
+    }
     print "Voss snarls over the howling wind. ~There is nothing left to say, detective!~^";
 ];
 
@@ -234,6 +250,10 @@ Global jacked_in = false;
         print "Lily takes a deep breath, steadier now. ~It's really over, isn't it? Voss is gone. I keep expecting to wake up back in that chair, wires in my skull. But this is real.~ She looks out at the city. ~Thank you, Vex. For everything.~^";
         rtrue;
     }
+    if (voss_escaped) {
+        print "Lily wraps her arms around herself against the wind. ~He got away. Voss got away.~ She swallows hard. ~But we have the evidence, Vex. Everything they did -- the experiments, the subjects -- it's all in those logs. He can run, but he can't hide from the truth.~^";
+        rtrue;
+    }
     print "Lily stays close, her voice low and urgent. ~Voss -- Director Voss -- he's the one who did this to me. He ran the whole program. The neural experiments, the test subjects... I wasn't the first. I was just the one who survived the longest.~ She shudders. ~He's still out there, Vex. He won't stop until someone stops him.~^";
 ];
 
@@ -245,6 +265,10 @@ Global jacked_in = false;
     if (topic == 'voss' or 'director') {
         if (voss_dead) {
             print "Lily closes her eyes for a moment. ~He's gone. I should feel something -- relief, maybe. But mostly I just feel tired. He treated us like lab equipment, Vex. Disposable components in his grand experiment. At least he can't hurt anyone else now.~^";
+            rtrue;
+        }
+        if (voss_escaped) {
+            print "Lily's jaw tightens. ~He ran. Like a coward. But we have the logs, Vex -- everything he did, every test subject, every death. He can hide in his helicopter, but he can't outrun the data.~^";
             rtrue;
         }
         print "Lily's face hardens. ~Director Voss is a monster. He recruited me for what he called a 'groundbreaking neural interface project.' When I found out he was experimenting on unwilling subjects, I tried to leave. That's when they grabbed me.~ Her hands tremble. ~He'll be on the rooftop helipad -- that's his escape route. He always has an exit plan.~^";
@@ -431,11 +455,35 @@ Object clinic "Abandoned Clinic"
 Object rooftop "Rooftop"
     with description [;
              if (voss_dead) {
-                 print "Wind howls across the rooftop, rain stinging your face like tiny needles. The city spreads below in every direction, a vast sea of neon and shadow stretching to the horizon. Lightning flickers in the distance over the industrial megastructures. The rooftop is empty now, just rain and wind and the fading echo of a gunshot. It's over.^^You can go down to return to the clinic.^";
+                 if (lily_sacrificed) {
+                     print "Wind howls across the rooftop, rain stinging your face like tiny needles. The city spreads below in every direction, a vast sea of neon and shadow stretching to the horizon. Lightning flickers in the distance over the industrial megastructures. Voss lies crumpled on the rain-slicked concrete. Near the helipad, Lily's body rests where she fell -- the woman who gave everything to stop a monster. The rain mixes with tears you didn't know you were shedding.^^You can go down to return to the clinic.^";
+                     rtrue;
+                 }
+                 print "Wind howls across the rooftop, rain stinging your face like tiny needles. The city spreads below in every direction, a vast sea of neon and shadow stretching to the horizon. Lightning flickers in the distance over the industrial megastructures. The rooftop is empty now, just rain and wind and the fading echo of a gunshot. A helicopter sits idle on the helipad, its rotors still. It's over.^^You can go down to return to the clinic.^";
                  rtrue;
              }
-             print "Wind howls across the rooftop, rain stinging your face like tiny needles. The city spreads below in every direction, a vast sea of neon and shadow stretching to the horizon. Lightning flickers in the distance over the industrial megastructures. Voss stands near the edge, silenced pistol in hand, his coat whipping in the gale. This is where it ends -- one way or another.^^You can go down to return to the clinic.^";
-             rtrue;
+             if (voss_escaped) {
+                 print "Wind howls across the empty rooftop. The helicopter is gone -- Voss escaped into the storm. The helipad sits vacant, rain pooling on its painted markings. You were too slow.^^You can go down to return to the clinic.^";
+                 rtrue;
+             }
+             if (voss_phase == 0) {
+                 print "Wind howls across the rooftop, rain stinging your face like tiny needles. The city spreads below in every direction, a vast sea of neon and shadow stretching to the horizon. Lightning flickers in the distance over the industrial megastructures. A helicopter sits on a helipad at the far end of the roof, its rotors dark. Voss stands near the edge, silenced pistol in hand, his coat whipping in the gale. This is where it ends -- one way or another.^^You can go down to return to the clinic.^";
+                 rtrue;
+             }
+             if (voss_phase == 1) {
+                 print "Pain lances through your shoulder where Voss's bullet hit. Blood mixes with rainwater on the concrete. Voss is backing toward the helicopter on the helipad, keeping his pistol trained on you. ";
+                 if (lily_freed) {
+                     print "You hear footsteps on the stairs behind you -- Lily is coming.";
+                 } else {
+                     print "You need to finish this before he reaches that helicopter.";
+                 }
+                 print "^^You can go down to return to the clinic.^";
+                 rtrue;
+             }
+             if (voss_phase == 2) {
+                 print "Lily stands between you and Voss, shouting at him, distracting him. His pistol wavers between the two of you. The helicopter's rotors are starting to spin. This is your chance -- take the shot!^^You can go down to return to the clinic.^";
+                 rtrue;
+             }
          ],
          d_to clinic,
     has light;
@@ -613,6 +661,34 @@ Object rooftop_city "city skyline" rooftop
 Object rooftop_wind "wind" rooftop
     with name 'wind' 'rain' 'lightning',
          description "The wind howls across the rooftop, driving rain sideways into your face. Lightning flickers in the distance over the industrial megastructures, briefly illuminating the cloud layer from within.",
+    has scenery;
+
+Object rooftop_helicopter "helicopter" rooftop
+    with name 'helicopter' 'chopper' 'heli',
+         description [;
+             if (voss_escaped) {
+                 print "The helicopter is gone -- vanished into the storm with Voss aboard.^";
+                 rtrue;
+             }
+             if (voss_dead) {
+                 print "The helicopter sits idle on the helipad, rotors still. Without Voss, it's going nowhere.^";
+                 rtrue;
+             }
+             print "A sleek corporate helicopter sits on the helipad, dark and silent. Voss's escape route -- if he reaches it.^";
+             rtrue;
+         ],
+    has scenery;
+
+Object rooftop_helipad "helipad" rooftop
+    with name 'helipad' 'pad' 'landing',
+         description [;
+             if (voss_escaped) {
+                 print "The helipad is empty, rain pooling on the painted H marking. The helicopter lifted off moments ago.^";
+                 rtrue;
+             }
+             print "A painted circle with a large H on the far end of the rooftop. A corporate helicopter sits on it, ready for a quick extraction.^";
+             rtrue;
+         ],
     has scenery;
 
 ! --- Scenery: Precinct ---
@@ -931,7 +1007,8 @@ Object lily "Lily Chen" clinic
          ],
          daemon [;
              if (lily_freed) {
-                 if (location == rooftop && ~~voss_dead) return;
+                 if (location == rooftop && voss_phase == 0) return;
+                 if (lily_sacrificed) return;
                  move self to location;
              }
          ],
@@ -970,28 +1047,119 @@ Object logs "experiment logs"
 ! --- Voss on rooftop (separate instance for final encounter) ---
 Object rooftop_voss "Director Voss" rooftop
     with name 'voss' 'director',
-         description "Voss stands near the edge, silenced pistol raised. His eyes are wild.",
+         description [;
+             if (voss_phase == 0)
+                 "Voss stands near the edge, silenced pistol raised. His eyes are wild.";
+             if (voss_phase == 1)
+                 "Voss is backing toward the helicopter, pistol trained on you. Blood runs from a gash on his temple where your first shot grazed him.";
+             "Voss is distracted by Lily, his aim wavering. Now is your chance.";
+         ],
          life [;
            Attack:
-             if (pistol in player) {
-                 if (voss_dead == false) {
-                     voss_dead = true;
-                     score = score + 20;
-                 }
-                 remove rooftop_voss;
-                 print "You raise your pistol. Voss turns, eyes widening. The shot echoes across the rooftop.^";
-                 print "Voss crumples to the ground. It's over.^";
+             if (pistol notin player) {
+                 print "You need a weapon first.^";
+                 rtrue;
+             }
+             ! Phase 0: First shot - Voss fires back
+             if (voss_phase == 0) {
+                 voss_phase = 1;
+                 voss_turn_count = 0;
+                 StartDaemon(rooftop_voss);
+                 print "You raise your pistol and fire. The shot grazes Voss's temple -- blood sprays across his face. But he's fast. His silenced pistol coughs twice and white-hot pain explodes in your left shoulder.^^";
+                 print "You stagger, clutching the wound. Voss wipes blood from his eyes, snarling. ~You should have stayed out of this, detective!~ He starts backing toward the helicopter on the helipad, keeping his gun trained on you.^";
                  if (lily_freed) {
-                     print "^^Congratulations! You've saved Lily Chen and brought down Director Voss. The rain washes the city clean tonight. You won.^";
-                     deadflag = 2;
+                     print "^Behind you, footsteps pound up the stairwell. Lily bursts onto the rooftop. ~Vex! I'm coming!~^";
                  }
                  rtrue;
              }
-             print "You need a weapon first.^";
+             ! Phase 1 without Lily: Player takes a risky second shot
+             if (voss_phase == 1 && lily_freed == false) {
+                 voss_dead = true;
+                 score = score + 20;
+                 StopDaemon(rooftop_voss);
+                 remove rooftop_voss;
+                 print "You grit your teeth against the pain and raise your pistol with your good arm. Voss sees you aim and fires -- the bullet whips past your ear. You squeeze the trigger.^^";
+                 print "The shot takes Voss in the chest. He stumbles backward, hits the rooftop railing, and crumples to the ground. His pistol clatters away into the rain.^^";
+                 print "You stand over him as the light fades from his eyes. ~It's over, Voss.~^^";
+                 print "He tries to speak, blood bubbling on his lips, but no words come. The rain washes it all away.^";
+                 rtrue;
+             }
+             ! Phase 1 with Lily: Lily just arrived - shooting now means she's in the crossfire
+             if (voss_phase == 1 && lily_freed) {
+                 voss_dead = true;
+                 lily_sacrificed = true;
+                 score = score + 10;
+                 StopDaemon(rooftop_voss);
+                 remove rooftop_voss;
+                 print "You raise your pistol and fire. Voss fires at the same instant -- but Lily has thrown herself forward, trying to tackle him. His bullet catches her in the chest instead of you.^^";
+                 print "Your shot hits Voss square in the throat. He drops like a puppet with cut strings. But Lily --^^";
+                 print "She lies on the rain-slicked concrete, eyes wide, a red bloom spreading across her shirt. ~V-Vex...~ she whispers. ~Did we... get him?~^^";
+                 print "~We got him,~ you say, kneeling beside her, pressing your hands to the wound. But you already know. You've seen enough death to recognize it.^^";
+                 print "~Tell my father...~ She doesn't finish. The rain keeps falling.^^";
+                 print "You brought down Director Voss. But the cost... the cost was too high. Lily Chen is dead, and no amount of justice will bring her back.^";
+                 deadflag = 2;
+                 rtrue;
+             }
+             ! Phase 2: Lily is distracting Voss - clean shot
+             if (voss_phase == 2) {
+                 voss_dead = true;
+                 score = score + 20;
+                 StopDaemon(rooftop_voss);
+                 remove rooftop_voss;
+                 print "With Lily distracting Voss, you have a clear shot. You steady your wounded arm, take aim, and squeeze the trigger.^^";
+                 print "The bullet takes Voss in the chest. His eyes go wide with shock. The silenced pistol tumbles from his fingers and he collapses onto the wet concrete, the helicopter's rotors still spinning uselessly behind him.^^";
+                 print "Lily rushes to your side. ~Is it over?~^^";
+                 print "~It's over,~ you say. The rain keeps falling, but for the first time in weeks, it feels clean.^^";
+                 print "Congratulations! You've saved Lily Chen and brought down Director Voss. The city won't change overnight, but tonight, justice won. You won.^";
+                 deadflag = 2;
+                 rtrue;
+             }
              rtrue;
            Ask:
              NPC_Ask_RooftopVoss(second);
              rtrue;
+         ],
+         daemon [;
+             if (location ~= rooftop) return;
+             if (voss_dead || voss_escaped) {
+                 StopDaemon(self);
+                 return;
+             }
+             voss_turn_count++;
+             ! Phase 1 with Lily: after 1 turn, Lily steps forward to distract (phase 2)
+             if (voss_phase == 1 && lily_freed && voss_turn_count >= 2) {
+                 voss_phase = 2;
+                 voss_turn_count = 0;
+                 print "^Lily steps forward, putting herself between you and Voss. ~Director Voss!~ she shouts over the wind. ~I know what you did! The experiments, the test subjects -- I remember ALL of it!~^^";
+                 print "Voss's pistol wavers, his attention split. ~You -- you were supposed to be wiped! How do you remember?!~^^";
+                 print "This is your chance. Take the shot while he's distracted!^";
+                 return;
+             }
+             ! Phase 1 without Lily: after 3 turns, Voss escapes
+             if (voss_phase == 1 && lily_freed == false && voss_turn_count >= 3) {
+                 voss_escaped = true;
+                 StopDaemon(self);
+                 remove rooftop_voss;
+                 score = score + 5;
+                 print "^Voss reaches the helicopter. The rotors scream to life, whipping rain sideways across the rooftop. He hauls himself into the cockpit, blood streaming from the gash on his temple.^^";
+                 print "~This isn't over, detective!~ he screams over the engine. The helicopter lifts off, swaying in the gale, and disappears into the storm.^^";
+                 print "You stand on the empty rooftop, wounded and alone. Voss is gone. You found the evidence, exposed the experiments -- but the man responsible is still out there, somewhere above the clouds. A partial victory, at best.^";
+                 deadflag = 2;
+                 rtrue;
+             }
+             ! Phase 2: after 2 turns without shooting, Voss escapes (Lily safe)
+             if (voss_phase == 2 && voss_turn_count >= 2) {
+                 voss_escaped = true;
+                 StopDaemon(self);
+                 remove rooftop_voss;
+                 score = score + 5;
+                 print "^Voss shoves Lily aside and sprints for the helicopter. You try to aim but the pain in your shoulder is blinding. The rotors scream to life.^^";
+                 print "~Next time, detective!~ Voss screams from the cockpit. The helicopter lifts off into the storm and vanishes.^^";
+                 print "Lily grabs your arm. ~He's gone,~ she says, rain streaming down her face. ~But we have the evidence. We have everything we need to bring Zheng-Harmon down.~^^";
+                 print "She's right. Voss escaped, but Lily is alive and the truth is out. It's not the ending you wanted, but it's an ending. Sometimes that has to be enough.^";
+                 deadflag = 2;
+                 rtrue;
+             }
          ],
     has animate proper;
 
@@ -1143,17 +1311,8 @@ Object rooftop_voss "Director Voss" rooftop
         rtrue;
     }
     if (noun == rooftop_voss) {
-        if (voss_dead == false) {
-            voss_dead = true;
-            score = score + 20;
-        }
-        remove rooftop_voss;
-        print "You raise your pistol. Voss turns, eyes widening. The shot echoes.^";
-        print "Voss crumples to the ground. It's over.^";
-        if (lily_freed) {
-            print "^^Congratulations! You've saved Lily Chen and brought down Director Voss. The rain washes the city clean tonight. You won.^";
-            deadflag = 2;
-        }
+        ! Delegate to the Attack life handler on rooftop_voss
+        <Attack rooftop_voss>;
         rtrue;
     }
     print "You're not going to shoot that.^";
@@ -1175,6 +1334,10 @@ Object rooftop_voss "Director Voss" rooftop
             print "~You're safe now,~ you say. ~I'm getting you out of here.~^";
             if (voss_dead) {
                 print "^^Congratulations! You've rescued Lily and Voss is dead. Victory is yours.^";
+                deadflag = 2;
+            }
+            if (voss_escaped) {
+                print "^^Voss escaped into the storm, but Lily is safe. You have the evidence to bring Zheng-Harmon down. A partial victory.^";
                 deadflag = 2;
             }
             rtrue;
