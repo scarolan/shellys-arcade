@@ -786,7 +786,7 @@ Object ice_wall "ICE wall" cyber_lobby
     has scenery;
 
 Object data_streams "data streams" cyber_lobby
-    with name 'streams' 'rivers' 'code',
+    with name 'data' 'streams' 'rivers' 'code',
          description [;
              if (ice_exploit_ready) {
                  print "Rivers of luminous code flow beneath you. You've already extracted an exploit sequence from the stream -- your neural implant is primed and ready to deploy it against the ICE wall.^";
