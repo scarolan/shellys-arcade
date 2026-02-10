@@ -172,6 +172,10 @@ Global turns_since_left = 0;
         print "Zephyr snorts. ~You need a tutorial? Type 'help' on a blank line. I'm a hacker, not a helpdesk.~^";
         rtrue;
     }
+    if (zephyr_helped) {
+        print "Zephyr waves a hand without looking up from the screen. ~I already cracked your data. Go use it.~^";
+        rtrue;
+    }
     print "Zephyr taps the desk impatiently. ~Bring me something to decrypt and we'll talk. I don't do freebies.~^";
     rtrue;
 ];
