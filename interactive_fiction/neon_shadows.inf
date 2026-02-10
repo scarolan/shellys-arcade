@@ -343,7 +343,14 @@ Object clinic "Abandoned Clinic"
     has light;
 
 Object rooftop "Rooftop"
-    with description "Wind howls across the rooftop, rain stinging your face like tiny needles. The city spreads below in every direction, a vast sea of neon and shadow stretching to the horizon. Lightning flickers in the distance over the industrial megastructures. Voss stands near the edge, silenced pistol in hand, his coat whipping in the gale. This is where it ends -- one way or another.^^You can go down to return to the clinic.",
+    with description [;
+             if (voss_dead) {
+                 print "Wind howls across the rooftop, rain stinging your face like tiny needles. The city spreads below in every direction, a vast sea of neon and shadow stretching to the horizon. Lightning flickers in the distance over the industrial megastructures. The rooftop is empty now, just rain and wind and the fading echo of a gunshot. It's over.^^You can go down to return to the clinic.^";
+                 rtrue;
+             }
+             print "Wind howls across the rooftop, rain stinging your face like tiny needles. The city spreads below in every direction, a vast sea of neon and shadow stretching to the horizon. Lightning flickers in the distance over the industrial megastructures. Voss stands near the edge, silenced pistol in hand, his coat whipping in the gale. This is where it ends -- one way or another.^^You can go down to return to the clinic.^";
+             rtrue;
+         ],
          d_to clinic,
     has light;
 
