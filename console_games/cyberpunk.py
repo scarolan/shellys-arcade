@@ -133,12 +133,12 @@ OPAQUE_TILES = {TILE_WALL, TILE_DOOR, TILE_DOOR_LOCKED}
 # ═══════════════════════════════════════════════════════════════════════════════
 
 LEVEL_THEMES = [
-    {"level_name": "Neon Street District", "zone": "street"},
+    {"level_name": "Chiba City Limits", "zone": "street"},
     {"level_name": "Kabuki Market Underground", "zone": "underground"},
     {"level_name": "Koroshi Tower - Lower Floors", "zone": "corporate"},
-    {"level_name": "Sprawl Underworks", "zone": "underground"},
+    {"level_name": "Freeside Underworks", "zone": "underground"},
     {"level_name": "Koroshi Tower - Executive Suite", "zone": "corporate"},
-    {"level_name": "Chrome Alley - Gang Territory", "zone": "street"},
+    {"level_name": "Neo-Tokyo Bōsōzoku Turf", "zone": "street"},
     {"level_name": "Koroshi Tower - Server Core", "zone": "corporate"},
     {"level_name": "Neural Nexus - Deep Underground", "zone": "underground"},
     {"level_name": "Tessier-Ashpool Spire - Apex", "zone": "corporate"},
@@ -222,6 +222,10 @@ RAVEN_DIALOGUE = [
     "Raven stares past you. 'Knew a mnemonic courier once. Carried half a gig in his skull. Corp flatlined him for it.'",
     "Raven wipes the bar slowly. 'Old fixer called the Finn used to say — data wants to be free. So do runners.'",
     "Raven pours two fingers of synth-whiskey. 'Some replicant down in Kabuki swears he saw tears in the rain last night. Poetic for a skin-job.'",
+    "Raven chuckles. 'Met a freelance hacker once — called himself a protagonist. Delivered pizza before he started slicing through the Metaverse.'",
+    "Raven lowers his voice. 'They say under Neo-Tokyo there's a kid who woke something up. Military project. Whole district went dark overnight.'",
+    "Raven taps the bar twice. 'Your ghost — the part of you that's really you — don't ever let them separate it from your shell. That's how Section 9 loses operatives.'",
+    "Raven glances at a faded photo on the wall. 'Armitage. That was a name people used to whisper. Ran a crew into Straylight once. None of them came back the same.'",
 ]
 
 
@@ -238,12 +242,12 @@ ENEMY_TYPES = {
     "Gang Member": {
         "glyph": GLYPH_GANG, "hp": 30, "attack": 10, "defense": 1,
         "behavior": "aggressive", "xp": 12, "credits": 20,
-        "desc": "Street thug. Charges at you on sight.",
+        "desc": "Bōsōzoku street thug. Charges at you on sight.",
     },
     "Corporate Guard": {
         "glyph": GLYPH_GUARD, "hp": 45, "attack": 12, "defense": 5,
         "behavior": "methodical", "xp": 18, "credits": 30,
-        "desc": "Corpo enforcer. Methodical, uses cover.",
+        "desc": "Turing Police enforcer. Methodical, uses cover.",
     },
     "Turret": {
         "glyph": GLYPH_TURRET, "hp": 35, "attack": 16, "defense": 8,
@@ -253,7 +257,7 @@ ENEMY_TYPES = {
     "Netrunner ICE": {
         "glyph": GLYPH_NETRUNNER, "hp": 20, "attack": 6, "defense": 1,
         "behavior": "wander", "xp": 8, "credits": 10,
-        "desc": "Puppet-master ICE. Wanders erratically, hijacks neural links.",
+        "desc": "Laughing Man ICE. Wanders erratically, hijacks neural links.",
     },
 }
 
@@ -1775,6 +1779,7 @@ def show_jack_in(stdscr, char_class):
         ("  Biometric signature verified.", C_WHITE),
         (f"  Operator class: {char_class}", C_YELLOW),
         ("  Establishing uplink to Neo-Shibuya net...", C_CYAN),
+        ("  Gargoyle relays locked. Bandwidth is nominal.", C_WHITE),
         ("  ██████████████████████████ 100%", C_GREEN),
         ("  The sky is the color of a dead channel...", C_MAGENTA),
         (f"  {GLYPH_JACK_IN}  CONNECTION ESTABLISHED", C_GREEN),
