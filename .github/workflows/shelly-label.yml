@@ -18,7 +18,7 @@ jobs:
                 projectV2(number: 3) {
                   items(first: 50) {
                     nodes {
-                      fieldValueByName(name: "Pipeline") {
+                      fieldValueByName(name: "Status") {
                         ... on ProjectV2ItemFieldSingleSelectValue {
                           name
                         }
@@ -41,7 +41,7 @@ jobs:
             const items = result.user.projectV2.items.nodes;
 
             for (const item of items) {
-              const pipeline = item.fieldValueByName?.name;
+              const status = item.fieldValueByName?.name;
               const issue = item.content;
               if (!issue || !issue.number) continue;
               if (issue.state !== "OPEN") continue;
@@ -50,7 +50,7 @@ jobs:
               const repo = issue.repository.name;
               const hasLabel = issue.labels.nodes.some(l => l.name === "shelly");
 
-              if (pipeline === "Ready for Shelly" && !hasLabel) {
+              if (status === "Ready for Shelly" && !hasLabel) {
                 await github.rest.issues.addLabels({
                   owner, repo,
                   issue_number: issue.number,
@@ -59,7 +59,7 @@ jobs:
                 console.log("Labeled " + repo + "#" + issue.number);
               }
 
-              if ((pipeline === "Backlog" || pipeline === "Done") && hasLabel) {
+              if (status === "Done" && hasLabel) {
                 try {
                   await github.rest.issues.removeLabel({
                     owner, repo,
