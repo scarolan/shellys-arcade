@@ -649,6 +649,179 @@ run_test "Cannot leave rooftop during Voss fight" \
     "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nup\nshoot voss\ndown\nquit\ny" \
     "not going anywhere|fires a shot"
 
+# --- ADDITIONAL SCENERY: ALLEY ---
+echo ""
+echo "--- Additional Scenery: Alley ---"
+
+run_test "Alley: examine cat returns description" \
+    "down\neast\nexamine cat\nquit\ny" \
+    "scraggly grey cat|yellow eyes"
+
+run_test "Alley: examine box returns description" \
+    "down\neast\nexamine box\nquit\ny" \
+    "soggy cardboard box|food wrappers"
+
+run_test "Alley: examine signage returns description" \
+    "down\neast\nexamine signage\nquit\ny" \
+    "Mandarin signage|augmentation clinics|AKIRA LIVES"
+
+run_test "Alley: examine fire escape returns description" \
+    "down\neast\nexamine fire escape\nquit\ny" \
+    "rusty fire escape|metal groaning"
+
+# --- ADDITIONAL SCENERY: INDUSTRIAL DISTRICT ---
+echo ""
+echo "--- Additional Scenery: Industrial District ---"
+
+run_test "Industrial: examine dumpster returns description" \
+    "down\ndown\nexamine dumpster\nquit\ny" \
+    "rusted-out industrial dumpster|chemical waste"
+
+run_test "Industrial: examine sign returns description" \
+    "down\ndown\nexamine sign\nquit\ny" \
+    "NeoMed Solutions|went under years ago"
+
+run_test "Industrial: examine door returns description" \
+    "down\ndown\nexamine door\nquit\ny" \
+    "keypad requires a 4-digit code"
+
+# --- ADDITIONAL SCENERY: BAR ---
+echo ""
+echo "--- Additional Scenery: Bar ---"
+
+run_test "Bar: examine neon tubes returns description" \
+    "down\nnorth\nexamine neon tubes\nquit\ny" \
+    "neon tubes|unsteady glow|buzzing"
+
+run_test "Bar: examine stools returns description" \
+    "down\nnorth\nexamine stools\nquit\ny" \
+    "bar stools|cracked vinyl|bolted to the floor"
+
+# --- ADDITIONAL SCENERY: PRECINCT ---
+echo ""
+echo "--- Additional Scenery: Precinct ---"
+
+run_test "Precinct: examine bulletin board returns description" \
+    "down\nwest\nexamine bulletin board\nquit\ny" \
+    "bulletin board|wanted posters|missing persons"
+
+# --- ADDITIONAL SCENERY: DEN ---
+echo ""
+echo "--- Additional Scenery: Den ---"
+
+run_test "Den: examine keyboard returns description" \
+    "take datapad\ndown\nnorth\npay raven\nsouth\neast\nsouth\nexamine keyboard\nquit\ny" \
+    "holographic keyboard|blue keys"
+
+# --- ADDITIONAL SCENERY: ROOFTOP ---
+echo ""
+echo "--- Additional Scenery: Rooftop ---"
+
+run_test "Rooftop: examine skyline returns description" \
+    "${BOSS_BASE_LILY}\nexamine skyline\nquit\ny" \
+    "rain|neon|lightning"
+
+run_test "Rooftop: examine wind returns description" \
+    "${BOSS_BASE_LILY}\nexamine wind\nquit\ny" \
+    "howls|rain"
+
+# --- HELP SYSTEM ---
+echo ""
+echo "--- Help System ---"
+
+run_test "Help command shows PI field manual" \
+    "help\nquit\ny" \
+    "KIRA VEX.*PI FIELD MANUAL|NAVIGATION PROTOCOLS|INVESTIGATION OPS"
+
+run_test "Help command lists special actions" \
+    "help\nquit\ny" \
+    "shoot.*Last resort|jack in.*neural jack|scan.*cyberspace"
+
+# --- CYBERSPACE RE-ENTRY ---
+echo ""
+echo "--- Cyberspace Re-entry ---"
+
+run_test "Cannot jack in after data extraction" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\njack in\nquit\ny" \
+    "already extracted"
+
+run_test "Disconnect outside cyberspace gives clean message" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\ndisconnect\nquit\ny" \
+    "not jacked into anything"
+
+# --- GUARD NPC ---
+echo ""
+echo "--- Guard NPC ---"
+
+run_test "Show keycard to guard grants access" \
+    "take datapad\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nshow keycard to guard\nquit\ny" \
+    "examines your keycard|steps aside"
+
+run_test "Guard dismisses questions" \
+    "down\nsouth\nask guard about voss\nquit\ny" \
+    "Move along"
+
+# --- BOLT ROBOT CONVERSATION ---
+echo ""
+echo "--- Bolt Robot Conversation ---"
+
+run_test "Ask Bolt about raven gives snarky response" \
+    "take datapad\ndown\nnorth\npay raven\nsouth\neast\nsouth\nask robot about raven\nquit\ny" \
+    "firmware update|attitude problem"
+
+run_test "Ask Bolt about zheng gives snarky response" \
+    "take datapad\ndown\nnorth\npay raven\nsouth\neast\nsouth\nask robot about zheng\nquit\ny" \
+    "megacorp|disposable hardware"
+
+run_test "Ask Bolt about itself gives snarky response" \
+    "take datapad\ndown\nnorth\npay raven\nsouth\neast\nsouth\nask robot about bolt\nquit\ny" \
+    "Model ZB-7|cable management|withering commentary"
+
+# --- DRINK VERB ---
+echo ""
+echo "--- Drink Verb ---"
+
+# Note: These test the CURRENT behavior. Issue #68 tracks adding thematic responses.
+run_test "Drink whiskey bottle gives library default (pending issue #68)" \
+    "take bottle\ndrink bottle\nquit\ny" \
+    "nothing suitable to drink"
+
+# --- RAVEN GIVE BUG (Issue #70) ---
+echo ""
+echo "--- Raven Give Bug ---"
+
+# Note: This documents the current BUGGY behavior. Issue #70 tracks the fix.
+# After fix, giving non-datapad items to Raven should NOT trigger payment.
+run_test "Give bottle to Raven triggers payment (known bug #70)" \
+    "take datapad\ntake bottle\ndown\nnorth\ngive bottle to raven\nquit\ny" \
+    "satoshis transfer"
+
+run_test "Give pistol to Raven triggers payment (known bug #70)" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\ngive pistol to raven\nquit\ny" \
+    "satoshis transfer"
+
+# --- MISSING SCENERY: KNOWN BUGS ---
+echo ""
+echo "--- Missing Scenery: Known Bugs ---"
+
+# These document missing scenery objects (issues #65, #66, #71, #72).
+# After fixes, these tests should be inverted (the "no such thing" should disappear).
+run_test "Street: examine sign shows cant see (known bug #71)" \
+    "down\nexamine sign\nquit\ny" \
+    "can't see any such thing"
+
+run_test "Alley: examine laundry shows cant see (known bug #65)" \
+    "down\neast\nexamine laundry\nquit\ny" \
+    "can't see any such thing"
+
+run_test "Precinct: examine lights shows cant see (known bug #66)" \
+    "down\nwest\nexamine lights\nquit\ny" \
+    "can't see any such thing"
+
+run_test "Server: examine fans shows cant see (known bug #72)" \
+    "take datapad\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\nexamine fans\nquit\ny" \
+    "can't see any such thing"
+
 # --- SUMMARY ---
 echo ""
 echo "========================="
