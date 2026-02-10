@@ -157,6 +157,22 @@ run_test "Ask Tanaka about lily after rescue shows new dialogue" \
     "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nsouth\nup\nwest\nask tanaka about lily\nquit\ny" \
     "found the Chen girl|pushed harder"
 
+# --- POST-RESCUE RIG DESCRIPTION ---
+echo ""
+echo "--- Post-Rescue Rig Description ---"
+
+run_test "Rig description after freeing Lily does not mention Lily is connected" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nexamine rig\nquit\ny" \
+    "Lily is connected" "true"
+
+run_test "Rig description after freeing Lily shows disconnected state" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nexamine rig\nquit\ny" \
+    "dead and silent|disconnected cables"
+
+run_test "Clinic room description after freeing Lily shows empty chair" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nlook\nquit\ny" \
+    "reclined chair is empty"
+
 # --- GAME COMPLETION ---
 echo ""
 echo "--- Game Completion ---"

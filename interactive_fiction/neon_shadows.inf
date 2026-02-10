@@ -330,7 +330,14 @@ Object precinct "Police Precinct"
     has light;
 
 Object clinic "Abandoned Clinic"
-    with description "The abandoned clinic is dark and silent, reeking of antiseptic and decay. Broken medical equipment litters the floor -- overturned gurneys, shattered vials, coils of surgical tubing. In the center of the room, a neural interface rig pulses with sickly green light, its cables snaking into the walls like parasitic roots. Lily Chen lies unconscious on a reclined chair, connected to the machine by a web of electrodes. Her face is pale, her breathing shallow.^^You can go south to the industrial district or up to the rooftop.",
+    with description [;
+             if (lily_freed) {
+                 print "The abandoned clinic is dark and silent, reeking of antiseptic and decay. Broken medical equipment litters the floor -- overturned gurneys, shattered vials, coils of surgical tubing. In the center of the room, the neural interface rig sits dark and dead, its disconnected cables dangling like severed nerves. The reclined chair is empty.^^You can go south to the industrial district or up to the rooftop.^";
+                 rtrue;
+             }
+             print "The abandoned clinic is dark and silent, reeking of antiseptic and decay. Broken medical equipment litters the floor -- overturned gurneys, shattered vials, coils of surgical tubing. In the center of the room, a neural interface rig pulses with sickly green light, its cables snaking into the walls like parasitic roots. Lily Chen lies unconscious on a reclined chair, connected to the machine by a web of electrodes. Her face is pale, her breathing shallow.^^You can go south to the industrial district or up to the rooftop.^";
+             rtrue;
+         ],
          s_to industrial,
          u_to rooftop,
     has light;
@@ -410,7 +417,14 @@ Object bulletin "bulletin board" precinct
 ! --- Scenery: Clinic ---
 Object rig "neural interface rig" clinic
     with name 'rig' 'neural' 'interface' 'machine' 'cables' 'electrodes',
-         description "A nightmarish tangle of cables, electrodes, and pulsing green circuitry. The rig hums with a low, sickly vibration. Lily is connected to it by a web of wires snaking into her temples.",
+         description [;
+             if (lily_freed) {
+                 print "The neural interface rig sits dead and silent. Disconnected cables dangle from the headrest, their electrode tips dark. The green circuitry has gone black, the sickly hum replaced by nothing but the drip of condensation somewhere in the walls.^";
+                 rtrue;
+             }
+             print "A nightmarish tangle of cables, electrodes, and pulsing green circuitry. The rig hums with a low, sickly vibration. Lily is connected to it by a web of wires snaking into her temples.^";
+             rtrue;
+         ],
     has scenery;
 
 ! --- Scenery: Server Room ---
