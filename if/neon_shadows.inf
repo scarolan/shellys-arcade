@@ -791,7 +791,7 @@ Verb 'free' 'rescue'
 Extend 'save' first
     * noun                                      -> Free;
 
-Extend 'pay' last
+Extend 'pay' first
     * creature                                  -> Pay;
 
 Verb 'use'
