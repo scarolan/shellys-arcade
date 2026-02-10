@@ -20,6 +20,7 @@ import math
 import random
 import sys
 import copy
+import time
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Nerd Font Glyphs (single-width Private Use Area codepoints)
@@ -1708,7 +1709,11 @@ def game_over_screen(stdscr, player, level_num, won=False):
                 f"  {GLYPH_STAR} Score: {score} {GLYPH_STAR}",
                 curses.color_pair(C_YELLOW) | curses.A_BOLD)
 
-    safe_addstr(stdscr, 9 + len(stats) + 3, cx,
+    # Jack-out sequence
+    jack_row = 9 + len(stats) + 3
+    jack_rows = show_jack_out(stdscr, jack_row, cx, won=won)
+
+    safe_addstr(stdscr, jack_row + jack_rows + 1, cx,
                 "  Press any key to quit...",
                 curses.color_pair(C_GRAY))
 
@@ -1752,6 +1757,68 @@ def _pickup_item(player, item, items, messages):
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# Jack-In / Jack-Out Sequences
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def show_jack_in(stdscr, char_class):
+    """Display immersive jack-in sequence after class selection."""
+    stdscr.clear()
+    h, w = stdscr.getmaxyx()
+    cx = max(0, w // 2 - 25)
+
+    lines = [
+        (f"  {GLYPH_JACK_IN}  Neural implant activating...", C_CYAN),
+        ("  Synaptic bridge: ONLINE", C_GREEN),
+        ("  Biometric signature verified.", C_WHITE),
+        (f"  Operator class: {char_class}", C_YELLOW),
+        ("  Establishing uplink to Neo-Shibuya net...", C_CYAN),
+        ("  ██████████████████████████ 100%", C_GREEN),
+        ("  Reality dissolves into cascading neon...", C_MAGENTA),
+        (f"  {GLYPH_JACK_IN}  CONNECTION ESTABLISHED", C_GREEN),
+    ]
+
+    for i, (text, color) in enumerate(lines):
+        safe_addstr(stdscr, 4 + i * 2, cx, text,
+                    curses.color_pair(color) | curses.A_BOLD)
+        stdscr.refresh()
+        time.sleep(0.45)
+
+    safe_addstr(stdscr, 4 + len(lines) * 2 + 1, cx,
+                "  Press any key to enter the megacity...",
+                curses.color_pair(C_GRAY))
+    stdscr.refresh()
+    stdscr.getch()
+
+
+def show_jack_out(stdscr, row, cx, won=False):
+    """Display jack-out flavor text on game-over/victory screen.
+
+    Returns the number of rows consumed so callers can offset below.
+    """
+    if won:
+        lines = [
+            (f"  {GLYPH_JACK_IN}  Initiating disconnect...", C_CYAN),
+            ("  Neural link severed cleanly.", C_GREEN),
+            ("  You pull the jack from your temple.", C_WHITE),
+            ("  The neon fades. Reality floods back.", C_MAGENTA),
+            (f"  {GLYPH_JACK_IN}  JACKED OUT — MISSION COMPLETE", C_GREEN),
+        ]
+    else:
+        lines = [
+            (f"  {GLYPH_JACK_IN}  WARNING: Biometrics critical", C_RED),
+            ("  Neural link destabilizing...", C_YELLOW),
+            ("  Emergency disconnect triggered.", C_RED),
+            ("  The neon bleeds to static.", C_MAGENTA),
+            (f"  {GLYPH_JACK_IN}  SIGNAL LOST", C_RED),
+        ]
+
+    for i, (text, color) in enumerate(lines):
+        safe_addstr(stdscr, row + i, cx, text,
+                    curses.color_pair(color) | curses.A_BOLD)
+    return len(lines)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # Main Game Loop
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -1767,9 +1834,12 @@ def main(stdscr):
     if char_class is None:
         return
 
+    # Jack-in sequence
+    show_jack_in(stdscr, char_class)
+
     player = Player(char_class)
     level_num = 1
-    messages = [f"Welcome to Neo-Shibuya, {char_class}.", "Find the stairs to descend deeper."]
+    messages = ["Jacked in. Find the stairs to descend deeper."]
 
     # Generate first level
     game_map, rooms, start, stairs, enemies, items, terminals, raven_pos = generate_level(level_num)
