@@ -52,6 +52,7 @@ GLYPH_STAR = "\uf005"          # star
 GLYPH_EYE = "\uf06e"           # eye
 GLYPH_BOMB = "\uf1e2"          # bomb
 GLYPH_STIM = "\uf0e7"          # bolt (reuse for stim)
+GLYPH_JACK_IN = "\U000f0322"   # nf-md-laptop (cyberspace jack-in)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Box-drawing characters
@@ -104,6 +105,7 @@ TILE_CORRIDOR = 5
 TILE_TERMINAL = 6
 TILE_SHOP_TILE = 7
 TILE_DOOR_OPEN = 8
+TILE_JACK_IN = 9
 
 TILE_CHARS = {
     TILE_WALL: "█",
