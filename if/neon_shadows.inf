@@ -664,7 +664,7 @@ Object rooftop_voss "Director Voss" rooftop
     print "[INTERPERSONAL INTERFACE]^";
     print "  talk to X ........ Start a conversation. Keep it casual.^";
     print "  ask X about Y .... Dig for specifics. Names, corps, events.^";
-    print "  give X to Y ...... Grease palms. Information has a price.^";
+    print "  give/hand X to Y .. Grease palms. Information has a price.^";
     print "  pay X ............ Digital transfer. Use your datapad.^";
     print "  show X to Y ...... Flash credentials or evidence.^^";
 
@@ -804,6 +804,12 @@ Extend 'save' first
 
 Extend 'pay' first
     * creature                                  -> Pay;
+
+Extend 'give' first
+    * held 'to' creature                        -> Give;
+
+Verb 'hand'
+    * held 'to' creature                        -> Give;
 
 Verb 'use'
     * noun                                      -> UseCard;
