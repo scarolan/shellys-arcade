@@ -818,9 +818,9 @@ run_test "Precinct: examine lights shows cant see (known bug #66)" \
     "down\nwest\nexamine lights\nquit\ny" \
     "can't see any such thing"
 
-run_test "Server: examine fans shows cant see (known bug #72)" \
+run_test "Server: examine fans shows description" \
     "take datapad\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\nexamine fans\nquit\ny" \
-    "can't see any such thing"
+    "cooling fans"
 
 # --- SUMMARY ---
 echo ""

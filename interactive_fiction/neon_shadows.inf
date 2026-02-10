@@ -841,6 +841,11 @@ Object server_racks "server racks" server
          description "Rows of humming server racks stretch from floor to ceiling, each one packed with blinking hardware. The combined heat output is considerable despite the industrial cooling. Somewhere in these machines, Zheng-Harmon's darkest secrets are stored.",
     has scenery pluralname;
 
+Object server_fans "cooling fans" server
+    with name 'fans' 'fan' 'cooling' 'drone',
+         description "Industrial cooling fans embedded in the ceiling and walls churn relentlessly, fighting to keep the server racks from overheating. Their combined drone fills the room with a constant mechanical hum that vibrates in your teeth.",
+    has scenery pluralname;
+
 Object server_leds "LEDs" server
     with name 'leds' 'led' 'lights',
          description "Red LEDs blink in rhythmic patterns along each server rack, like the heartbeats of sleeping machines. Occasionally one flickers amber -- a drive working overtime, or maybe a warning nobody will ever read.",
