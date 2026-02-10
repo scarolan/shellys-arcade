@@ -90,7 +90,7 @@ Global voss_turn_count = 0;
 
 [ NPC_Talk_Raven;
     if (raven_paid && lily_freed) {
-        print "Raven pours you a drink without being asked. ~Heard you stirred up trouble at Zheng-Harmon. Good. This city could use more people like you, Vex.~^";
+        print "Raven pours you a drink without being asked -- Deckard's Reserve, the good stuff. ~Heard you stirred up trouble at Zheng-Harmon. Good. This city could use more people like you, Vex.~^";
         rtrue;
     }
     if (raven_paid) {
@@ -159,7 +159,7 @@ Global voss_turn_count = 0;
         rtrue;
     }
     if (topic == 'neural' or 'experiment' or 'interface' or 'rig') {
-        print "Zephyr's eyes light up with a mix of fascination and horror. ~Neural interface tech is the next frontier -- direct brain-to-machine connection. The legit research is years away from human trials. But if Zheng-Harmon is running unauthorized experiments... that's nightmare territory. Brain damage, personality erasure, death. You name it.~^";
+        print "Zephyr's eyes light up with a mix of fascination and horror. ~Neural interface tech is the next frontier -- direct brain-to-machine connection. The legit research is years away from human trials. But if Zheng-Harmon is running unauthorized experiments... that's nightmare territory. Brain damage, personality erasure, death. You name it. The old-timers call it the puppet master protocol -- someone else pulling your strings and you don't even know it.~^";
         rtrue;
     }
     if (topic == 'help') {
@@ -192,7 +192,7 @@ Global voss_turn_count = 0;
         rtrue;
     }
     if (topic == 'police' or 'precinct' or 'law') {
-        print "Tanaka lets out a long sigh. ~This precinct is running on fumes. Half our force got laid off, the other half is counting the days to retirement. We don't have the resources to go after the big fish. We barely have the resources to keep the lights on.~^";
+        print "Tanaka lets out a long sigh. ~This precinct is running on fumes. Half our force got laid off, the other half is counting the days to retirement. We don't have the resources to go after the big fish. We barely have the resources to keep the lights on. I had a case last week -- some replicant knockoff going haywire in the Sprawl. Took three guys to bring it down. That's what passes for policing these days.~^";
         rtrue;
     }
     if (topic == 'raven' or 'bar' or 'zephyr' or 'hacker') {
@@ -321,7 +321,7 @@ Object office "Your Office"
     has light;
 
 Object street "Rain-Soaked Street"
-    with description "Neo-Angeles rain lashes the street, turning the neon lights into bleeding watercolors on the wet duraplast. Water pools in the cracks between slabs, reflecting holographic advertisements that flicker and die. A heavy drone buzzes overhead, its spotlight sweeping the alleys, and the distant wail of a siren echoes off the megastructures. Street vendors have long since packed up for the night, leaving only the smell of synthetic noodles and exhaust.^^You can go north to the Neon Lotus Bar, south to the Zheng-Harmon lobby, east to Chinatown Alley, west to the police precinct, up to your office, or down to the industrial district.",
+    with description "Neo-Angeles rain lashes the street, turning the neon lights into bleeding watercolors on the wet duraplast. Water pools in the cracks between slabs, reflecting holographic advertisements that flicker and die. A heavy drone buzzes overhead, its spotlight sweeping the alleys, and the distant wail of a siren echoes off the megastructures. Street vendors have long since packed up for the night, leaving only the smell of synthetic noodles and exhaust. A flickering sign across the street reads ~Hiro's Noodles~ in garish pink kanji.^^You can go north to the Neon Lotus Bar, south to the Zheng-Harmon lobby, east to Chinatown Alley, west to the police precinct, up to your office, or down to the industrial district.",
          n_to bar,
          s_to lobby,
          e_to alley,
@@ -331,7 +331,7 @@ Object street "Rain-Soaked Street"
     has light;
 
 Object bar "Neon Lotus Bar"
-    with description "The bar stinks of cheap synth-ethanol and desperation. Neon tubes flicker over a long counter where Raven polishes glasses with a stained rag. The walls are lined with cracked holographic ads for products that no longer exist. A jazz synth croons from a busted speaker in the corner, and a few hollow-eyed regulars nurse their drinks in silence. This is the kind of place where secrets are currency and nobody asks your real name.^^You can go south or down to return to the street.",
+    with description "The bar stinks of cheap synth-ethanol and desperation. Neon tubes flicker over a long counter where Raven polishes glasses with a stained rag. The walls are lined with cracked holographic ads for products that no longer exist -- one shows a grinning woman holding a bottle of Wintermute Premium Gin. A jazz synth croons from a busted speaker in the corner, and a few hollow-eyed regulars nurse their drinks in silence. This is the kind of place where secrets are currency and nobody asks your real name.^^You can go south or down to return to the street.",
          s_to street,
          d_to street,
     has light;
@@ -516,12 +516,12 @@ Object cabinets "filing cabinets" office
 ! --- Scenery: Rain-Soaked Street ---
 Object street_neon "neon lights" street
     with name 'neon' 'lights' 'signs' 'advertisements' 'holographic',
-         description "Holographic advertisements flicker and die above the wet duraplast, their neon glow bleeding into the rain like watercolors on a dark canvas. Most of them advertise products from corporations that went bust years ago.",
+         description "Holographic advertisements flicker and die above the wet duraplast, their neon glow bleeding into the rain like watercolors on a dark canvas. Most of them advertise products from corporations that went bust years ago -- Tyrell Genetics, Armitage Solutions, Screaming Fist Energy Drinks.",
     has scenery pluralname;
 
 Object street_drone "drone" street
     with name 'drone',
-         description "A heavy surveillance drone buzzes overhead, its spotlight sweeping the alleys in lazy arcs. Corporate security -- or maybe police. Hard to tell the difference in Neo-Angeles.",
+         description "A heavy surveillance drone buzzes overhead, its spotlight sweeping the alleys in lazy arcs. Corporate security -- or maybe police. Hard to tell the difference in Neo-Angeles. The chassis reads ~BATTY-K~ in small stenciled letters.",
     has scenery;
 
 Object street_rain "rain" street
@@ -542,7 +542,7 @@ Object bar_neon "neon tubes" bar
 
 Object bar_speaker "speaker" bar
     with name 'speaker' 'music' 'jazz' 'synth',
-         description "A busted speaker in the corner croons out jazz synth -- mournful saxophone layered over electronic beats. The sound quality is terrible, but it fits the mood.",
+         description "A busted speaker in the corner croons out jazz synth -- mournful saxophone layered over electronic beats. The track listing on the cracked display reads ~Puppet Master Blues~. The sound quality is terrible, but it fits the mood.",
     has scenery;
 
 Object bar_regulars "regulars" bar
@@ -579,12 +579,12 @@ Object alley_cat "feral cat" alley
 
 Object alley_wok "wok stall" alley
     with name 'wok' 'stall' 'noodles',
-         description "An automated wok stall that never closes, frying synthetic noodles around the clock. The smell is equal parts appetizing and suspicious. A faded menu offers ~Combo A~ through ~Combo F~ -- no descriptions, no questions.",
+         description "An automated wok stall that never closes, frying synthetic noodles around the clock. The name ~Hiro's Noodles~ is painted across the awning in flaking pink letters. The smell is equal parts appetizing and suspicious. A faded menu offers ~Combo A~ through ~Combo F~ -- no descriptions, no questions.",
     has scenery;
 
 Object alley_signage "Mandarin signage" alley
     with name 'signage' 'signs' 'mandarin',
-         description "Flickering Mandarin signage casts long, shifting shadows across the cracked alley walls. Most of it advertises cheap augmentation clinics and money transfer services.",
+         description "Flickering Mandarin signage casts long, shifting shadows across the cracked alley walls. Most of it advertises cheap augmentation clinics and money transfer services. One sign for ~Masamune Neural Firmware~ has been half-covered by a sticker reading ~AKIRA LIVES~.",
     has scenery;
 
 Object alley_fire_escape "fire escape" alley
@@ -621,7 +621,7 @@ Object decanter "crystal decanter" executive
 
 Object exec_desk "hardwood desk" executive
     with name 'desk' 'hardwood',
-         description "A genuine hardwood desk -- real wood, not the synthetic stuff. The surface is polished to a mirror shine. Whatever Voss does up here, it pays well.",
+         description "A genuine hardwood desk -- real wood, not the synthetic stuff. The surface is polished to a mirror shine. A small crystal paperweight etched with the Tessier-Ashpool corporate crest serves as a conversation piece. Whatever Voss does up here, it pays well.",
     has scenery;
 
 Object exec_chairs "leather chairs" executive
@@ -655,7 +655,7 @@ Object rooftop_edge "edge" rooftop
 
 Object rooftop_city "city skyline" rooftop
     with name 'city' 'skyline' 'buildings' 'megastructures',
-         description "The city spreads below in every direction -- a vast sea of neon and shadow stretching to the horizon. Megastructures pierce the cloud layer like steel fingers reaching for something they'll never grasp.",
+         description "The city spreads below in every direction -- a vast sea of neon and shadow stretching to the horizon. Megastructures pierce the cloud layer like steel fingers reaching for something they'll never grasp. Rain cascades off the rooftop edge, each droplet catching the neon glow for an instant before vanishing -- like tears in rain.",
     has scenery;
 
 Object rooftop_wind "wind" rooftop
@@ -766,7 +766,7 @@ Object data_console "data console" server
 ! --- Scenery: Cyberspace ---
 Object cyber_structures "crystalline structures" cyber_lobby
     with name 'crystalline' 'structures' 'towers' 'crystal',
-         description "Towering crystalline structures rise around you -- the server's architecture rendered as geometry in cyberspace. Each facet contains flickering data: file directories, access logs, encrypted vaults. The structures pulse with cold neon light.",
+         description "Towering crystalline structures rise around you -- the server's architecture rendered as geometry in cyberspace. Each facet contains flickering data: file directories, access logs, encrypted vaults. The structures pulse with cold neon light. A stray process labeled ~WINTERMUTE~ drifts between the towers like a ghost, its purpose long forgotten.",
     has scenery pluralname;
 
 Object ice_wall "ICE wall" cyber_lobby
@@ -844,7 +844,7 @@ Object data_node "data node" cyber_vault
 ! --- Scenery: Industrial District ---
 Object industrial_factories "factories" industrial
     with name 'factories' 'factory' 'buildings',
-         description "Dark factories loom against the neon sky like the bones of dead giants. Their windows are dark, their smokestacks cold. Whatever they once manufactured, the machines fell silent years ago.",
+         description "Dark factories loom against the neon sky like the bones of dead giants. Their windows are dark, their smokestacks cold. Whatever they once manufactured, the machines fell silent years ago. You can just make out ~KANEDA HEAVY INDUSTRIES~ stenciled on the nearest loading bay.",
     has scenery pluralname;
 
 Object industrial_conveyors "conveyor belts" industrial
@@ -889,7 +889,7 @@ Object pistol "pistol" desk
 
 Object whiskey "bottle of synth-whiskey" office
     with name 'bottle' 'whiskey' 'synth-whiskey',
-         description "Half-empty bottle of expensive synth-whiskey. The label is faded.";
+         description "Half-empty bottle of expensive synth-whiskey. The label reads ~Deckard's Reserve~ in peeling gold foil.";
 
 ! --- NPCs (refactored to use centralized conversation handlers) ---
 Object kai "Kai Chen" office
