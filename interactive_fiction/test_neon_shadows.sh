@@ -179,6 +179,18 @@ run_test "Clinic room description after freeing Lily shows empty chair" \
     "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nlook\nquit\ny" \
     "reclined chair is empty"
 
+# --- LILY ROOFTOP BEHAVIOR ---
+echo ""
+echo "--- Lily Rooftop Behavior ---"
+
+run_test "Lily does not follow player to rooftop while Voss is alive" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nup\nlook\nquit\ny" \
+    "Voss and Lily|Lily and.*Voss" "true"
+
+run_test "Lily follows player to rooftop after Voss is dead" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\nfree lily\nup\nshoot voss\ndown\nup\nlook\nquit\ny" \
+    "Lily Chen"
+
 # --- GAME COMPLETION ---
 echo ""
 echo "--- Game Completion ---"

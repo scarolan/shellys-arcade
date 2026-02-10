@@ -640,6 +640,7 @@ Object lily "Lily Chen" clinic
          ],
          daemon [;
              if (lily_freed) {
+                 if (location == rooftop && ~~voss_dead) return;
                  move self to location;
              }
          ],
