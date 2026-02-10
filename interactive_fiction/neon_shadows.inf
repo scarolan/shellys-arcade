@@ -274,7 +274,16 @@ Global jacked_in = false;
 
 ! --- Rooms ---
 Object office "Your Office"
-    with description "Crammed into a space no bigger than a closet, your office smells of stale synth-whiskey and ozone. A single window overlooks the rain-slicked street below, neon signs painting shifting colors on the glass. Filing cabinets line one wall, their drawers jammed with cold cases nobody wants solved. Lily's encrypted datapad sits on the cluttered desk beside a half-empty bottle.^^You can go down to the street from here.",
+    with description [;
+            print "Crammed into a space no bigger than a closet, your office smells of stale synth-whiskey and ozone. A single window overlooks the rain-slicked street below, neon signs painting shifting colors on the glass. Filing cabinets line one wall, their drawers jammed with cold cases nobody wants solved. ";
+            if (datapad in self) {
+                print "Lily's encrypted datapad sits on the cluttered desk beside a half-empty bottle.";
+            } else {
+                print "Your cluttered desk holds nothing but a half-empty bottle.";
+            }
+            print "^^You can go down to the street from here.^";
+            rtrue;
+        ],
          d_to street,
          before [;
            Go:
