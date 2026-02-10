@@ -245,7 +245,7 @@ Global jacked_in = false;
             print "Lily closes her eyes for a moment. ~He's gone. I should feel something -- relief, maybe. But mostly I just feel tired. He treated us like lab equipment, Vex. Disposable components in his grand experiment. At least he can't hurt anyone else now.~^";
             rtrue;
         }
-        print "Lily's face hardens. ~Director Voss is a monster. He recruited me for what he called a ~groundbreaking neural interface project.~ When I found out he was experimenting on unwilling subjects, I tried to leave. That's when they grabbed me.~ Her hands tremble. ~He'll be on the rooftop helipad -- that's his escape route. He always has an exit plan.~^";
+        print "Lily's face hardens. ~Director Voss is a monster. He recruited me for what he called a 'groundbreaking neural interface project.' When I found out he was experimenting on unwilling subjects, I tried to leave. That's when they grabbed me.~ Her hands tremble. ~He'll be on the rooftop helipad -- that's his escape route. He always has an exit plan.~^";
         rtrue;
     }
     if (topic == 'father' or 'kai' or 'dad' or 'family') {
