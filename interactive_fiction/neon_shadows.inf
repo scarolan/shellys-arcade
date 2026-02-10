@@ -801,6 +801,27 @@ Object data_streams "data streams" cyber_lobby
          ],
     has scenery pluralname;
 
+Object vault_entrance "data vault" cyber_lobby
+    with name 'vault' 'data',
+         description [;
+             if (ice_bypassed) {
+                 print "The shattered remnants of the ICE wall flicker around the entrance to the data vault. The path north is wide open.^";
+                 rtrue;
+             }
+             print "The data vault lies beyond the ICE wall to the north, inaccessible until the military-grade firewall is breached.^";
+             rtrue;
+         ],
+         before [;
+           Enter:
+             if (ice_bypassed) {
+                 PlayerTo(cyber_vault);
+                 rtrue;
+             }
+             print "A wall of shimmering red ICE blocks your path. Military-grade intrusion countermeasures -- one wrong move and it could fry your neural implant. You need to hack through it first.^";
+             rtrue;
+         ],
+    has scenery;
+
 Object vault_columns "data columns" cyber_vault
     with name 'columns' 'column' 'pillars' 'pillar',
          description "Columns of encrypted data rise like pillars into an infinite digital sky, each one containing terabytes of corporate information. The encryption patterns shimmer and shift, but with the ICE down, the data is exposed.",

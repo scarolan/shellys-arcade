@@ -166,6 +166,15 @@ run_test "Disconnect returns to server room" "take datapad\nopen desk\ntake pist
 run_test "Server room shows ICE breached after hack and disconnect" \
     "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\ndisconnect\nlook\nquit\ny" \
     "breached the ICE.*jack in to access the data vault"
+run_test "Enter vault reaches data vault after hacking ICE" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nenter vault\nlook\nquit\ny" \
+    "data vault|cathedral|data node"
+run_test "Enter data vault reaches data vault after hacking ICE" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nenter data vault\nlook\nquit\ny" \
+    "data vault|cathedral|data node"
+run_test "Enter vault blocked when ICE is still active" \
+    "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nenter vault\nquit\ny" \
+    "ICE blocks|intrusion countermeasures|hack"
 run_test "Disconnect lily gives clean redirect" \
     "take datapad\nopen desk\ntake pistol\ndown\nnorth\npay raven\nsouth\neast\nsouth\ngive datapad to zephyr\nnorth\nwest\nsouth\nuse keycard\nup\nuse keycard\neast\njack in\nscan ice\nscan streams\nhack\nnorth\ntake node\nwest\ndown\nnorth\ndown\nnorth\ndisconnect lily\nquit\ny" \
     "free lily"
