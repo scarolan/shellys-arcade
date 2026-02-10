@@ -1,59 +1,73 @@
-name: Auto-label for Shelly
+name: Kanban → Shelly Label Sync
 
 on:
-  projects_v2_item:
-    types: [edited]
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
 
 jobs:
-  label-for-shelly:
+  sync-labels:
     runs-on: ubuntu-latest
-    if: github.event.changes.field_value.field_name == 'Pipeline'
     steps:
       - uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.PROJECT_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const newValue = context.payload.changes.field_value.to?.name;
-            const item = context.payload.projects_v2_item;
-            const contentId = item.content_node_id;
-            const contentType = item.content_type;
-
-            if (contentType \!== "Issue") return;
-
-            // Get issue details from node ID
-            const { node } = await github.graphql(`
-              query($id: ID\!) {
-                node(id: $id) {
-                  ... on Issue {
-                    number
-                    repository { owner { login } name }
-                    labels(first: 10) { nodes { name } }
+            // Project number 3, owner scarolan
+            const query = `query {
+              user(login: "scarolan") {
+                projectV2(number: 3) {
+                  items(first: 50) {
+                    nodes {
+                      fieldValueByName(name: "Pipeline") {
+                        ... on ProjectV2ItemFieldSingleSelectValue {
+                          name
+                        }
+                      }
+                      content {
+                        ... on Issue {
+                          number
+                          state
+                          repository { name owner { login } }
+                          labels(first: 10) { nodes { name } }
+                        }
+                      }
+                    }
                   }
                 }
               }
-            `, { id: contentId });
+            }`;
 
-            const owner = node.repository.owner.login;
-            const repo = node.repository.name;
-            const issueNumber = node.number;
-            const hasLabel = node.labels.nodes.some(l => l.name === "shelly");
+            const result = await github.graphql(query);
+            const items = result.user.projectV2.items.nodes;
 
-            if (newValue === "Ready for Shelly" && \!hasLabel) {
-              await github.rest.issues.addLabels({
-                owner, repo,
-                issue_number: issueNumber,
-                labels: ["shelly"]
-              });
-              console.log(`Added shelly label to ${repo}#${issueNumber}`);
-            }
+            for (const item of items) {
+              const pipeline = item.fieldValueByName?.name;
+              const issue = item.content;
+              if (\!issue || \!issue.number) continue;
+              if (issue.state \!== "OPEN") continue;
 
-            if (newValue === "Done" || newValue === "Backlog") {
-              if (hasLabel) {
-                await github.rest.issues.removeLabel({
+              const owner = issue.repository.owner.login;
+              const repo = issue.repository.name;
+              const hasLabel = issue.labels.nodes.some(l => l.name === "shelly");
+
+              if (pipeline === "Ready for Shelly" && \!hasLabel) {
+                await github.rest.issues.addLabels({
                   owner, repo,
-                  issue_number: issueNumber,
-                  name: "shelly"
+                  issue_number: issue.number,
+                  labels: ["shelly"]
                 });
-                console.log(`Removed shelly label from ${repo}#${issueNumber}`);
+                console.log(`Labeled ${repo}#${issue.number}`);
+              }
+
+              if ((pipeline === "Backlog" || pipeline === "Done") && hasLabel) {
+                try {
+                  await github.rest.issues.removeLabel({
+                    owner, repo,
+                    issue_number: issue.number,
+                    name: "shelly"
+                  });
+                  console.log(`Unlabeled ${repo}#${issue.number}`);
+                } catch(e) {}
               }
             }
