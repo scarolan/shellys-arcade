@@ -494,8 +494,10 @@ Object voss "Director Voss" executive
              rtrue;
            Attack:
              if (pistol in player) {
-                 voss_dead = true;
-                 score = score + 20;
+                 if (voss_dead == false) {
+                     voss_dead = true;
+                     score = score + 20;
+                 }
                  remove voss;
                  print "You raise your pistol. Voss turns, eyes widening. The shot echoes across the rooftop.^";
                  print "Voss crumples to the ground. It's over.^";
@@ -593,8 +595,10 @@ Object rooftop_voss "Director Voss" rooftop
          life [;
            Attack:
              if (pistol in player) {
-                 voss_dead = true;
-                 score = score + 20;
+                 if (voss_dead == false) {
+                     voss_dead = true;
+                     score = score + 20;
+                 }
                  remove rooftop_voss;
                  print "You raise your pistol. Voss turns, eyes widening. The shot echoes across the rooftop.^";
                  print "Voss crumples to the ground. It's over.^";
@@ -716,8 +720,10 @@ Object rooftop_voss "Director Voss" rooftop
         rtrue;
     }
     if (noun == voss || noun == rooftop_voss) {
-        voss_dead = true;
-        score = score + 20;
+        if (voss_dead == false) {
+            voss_dead = true;
+            score = score + 20;
+        }
         if (noun == rooftop_voss) remove rooftop_voss;
         else remove voss;
         print "You raise your pistol. Voss turns, eyes widening. The shot echoes.^";
