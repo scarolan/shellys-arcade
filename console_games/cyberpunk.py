@@ -2272,6 +2272,14 @@ def main(stdscr):
 
                     # Check stairs
                     if tile == TILE_STAIRS:
+                        # Confirm before descending
+                        prompt = "Descend to the next level? (y/n)"
+                        safe_addstr(stdscr, h - 2, 1, prompt, curses.color_pair(C_YELLOW) | curses.A_BOLD)
+                        stdscr.refresh()
+                        confirm = stdscr.getch()
+                        if confirm not in (ord('y'), ord('Y')):
+                            messages.append("You stay on this level.")
+                            continue
                         player.levels_cleared += 1
                         if level_num >= MAX_LEVELS:
                             # Victory!
