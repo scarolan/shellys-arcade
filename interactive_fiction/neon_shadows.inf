@@ -948,6 +948,10 @@ Object rooftop_voss "Director Voss" rooftop
 
 ! --- Disconnect action ---
 [ DisconnectSub;
+    if (noun) {
+        print "To disconnect Lily from the neural rig, try ~free lily~.^";
+        rtrue;
+    }
     if (location ~= cyber_lobby && location ~= cyber_vault) {
         print "You're not jacked into anything.^";
         rtrue;
@@ -997,4 +1001,5 @@ Verb 'zhk'
     * noun                                      -> HackICE;
 
 Verb 'zdc'
-    *                                           -> Disconnect;
+    *                                           -> Disconnect
+    * noun                                      -> Disconnect;
