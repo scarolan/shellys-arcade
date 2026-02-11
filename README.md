@@ -1,8 +1,8 @@
 # Shelly's Arcade
 
-**A retro terminal game arcade — 13 games, zero dependencies, pure curses.**
+**A retro terminal game arcade — 12 games, zero dependencies, pure curses.**
 
-Shelly's Arcade is a collection of terminal-based games built entirely in Python with `curses`. No pip installs, no frameworks — just launch and play. The collection also includes one interactive fiction title written in Inform 6.
+Shelly's Arcade is a collection of terminal-based games built entirely in Python with `curses`. No pip installs, no frameworks — just launch and play.
 
 ## Screenshots
 
@@ -30,11 +30,6 @@ Shelly's Arcade is a collection of terminal-based games built entirely in Python
     <td align="center"><img src="screenshots/wordle.png" alt="Wordle" width="280"><br><b>Wordle</b></td>
     <td align="center"><img src="screenshots/hangman.png" alt="Hangman" width="280"><br><b>Hangman</b></td>
     <td align="center"><img src="screenshots/2048.png" alt="2048" width="280"><br><b>2048</b></td>
-  </tr>
-  <tr>
-    <td align="center"><img src="screenshots/neon_shadows.png" alt="Neon Shadows" width="280"><br><b>Neon Shadows (IF)</b></td>
-    <td></td>
-    <td></td>
   </tr>
 </table>
 
@@ -72,12 +67,6 @@ Shelly's Arcade is a collection of terminal-based games built entirely in Python
 |------|---------|-------------|
 | Cyberpunk Megacity | `python3 console_games/cyberpunk/cyberpunk.py` | Neon-drenched terminal roguelite |
 
-### Interactive Fiction
-
-| Game | Command | Description |
-|------|---------|-------------|
-| Neon Shadows | `frotz interactive_fiction/neon_shadows.z5` | Cyberpunk detective noir — investigate a missing person in Neo-Angeles |
-
 ## Quick Start
 
 Launch the arcade menu to browse and play all games:
@@ -88,27 +77,16 @@ python3 console_games/arcade.py
 
 Or run any game directly using the commands in the table above.
 
-For the interactive fiction title, you'll need `frotz` (a Z-machine interpreter):
-
-```bash
-frotz interactive_fiction/neon_shadows.z5
-```
-
 ## Requirements
 
 - **Python 3.12+** with curses support (included on most Linux/macOS systems)
 - **Terminal emulator** with color support (256-color recommended)
 - **Nerd Font** (optional) — several games use Nerd Font glyphs for enhanced visuals
-- **frotz** (optional) — required only for Neon Shadows interactive fiction
 
 ## Running Tests
 
 ```bash
-# All Python game tests
 python3 -m pytest console_games/ -v
-
-# Interactive fiction tests (requires frotz and inform6)
-cd interactive_fiction && bash test_neon_shadows.sh
 ```
 
 ## Project Structure
@@ -121,10 +99,6 @@ shellys-arcade/
     test_snake.py          # Matching test file for each game
     cyberpunk/             # Cyberpunk roguelite (multi-file)
     ...
-  interactive_fiction/
-    neon_shadows.inf       # Inform 6 source
-    neon_shadows.z5        # Compiled Z-machine story
-    test_neon_shadows.sh   # Bash test harness
   screenshots/             # Game screenshots for README
 ```
 

@@ -1,21 +1,15 @@
 # Shelly's Arcade
 
-A collection of terminal games and interactive fiction.
+A collection of terminal games built in Python with curses.
 
 ## Repo layout
 
 - `console_games/` — Python terminal games (curses-based), each a single `.py` file with a matching `test_*.py`
-- `interactive_fiction/` — Inform 6 interactive fiction games
-  - `neon_shadows.inf` — Neon Shadows: A Cyberpunk Detective Noir (source)
-  - `neon_shadows.z5` — compiled Z-machine story file
-  - `test_neon_shadows.sh` — bash test harness using dfrotz
-  - `CLAUDE.md` — game-specific docs for Neon Shadows
 
 ## Tech stack
 
 - **Python games:** Python 3.12, curses, no external dependencies. Each game is a single self-contained `.py` file.
-- **Interactive fiction:** Inform 6 compiler (`inform6`), Z-machine interpreter (`dfrotz`). Inform 6 library at `/usr/local/share/inform6/lib/`.
-- **Tests:** Python games use `pytest`. IF games use a bash harness that pipes commands into dfrotz and greps output.
+- **Tests:** Python games use `pytest`.
 
 ## Running tests
 
@@ -25,16 +19,6 @@ python3 -m pytest console_games/ -v
 
 # Single Python game
 python3 -m pytest console_games/cyberpunk/test_cyberpunk.py -v
-
-# Neon Shadows IF tests (compiles then runs dfrotz scenarios)
-cd interactive_fiction && bash test_neon_shadows.sh
-```
-
-## Compiling Inform 6 games
-
-```bash
-cd interactive_fiction
-inform6 +/usr/local/share/inform6/lib/ neon_shadows.inf neon_shadows.z5
 ```
 
 ## Conventions
@@ -61,7 +45,6 @@ This repo is serviced by **Shelly**, an autonomous agent dispatcher running on `
 ### Filing issues for Shelly
 
 - Use the `bug` and `shelly` labels, or drag to "Ready for Shelly" on the project board
-- Prefix IF issues with "Neon Shadows (IF):" to avoid confusion with the cyberpunk roguelite
 - Include reproduction steps and expected behavior
 - Suggested fixes help Shelly implement faster
 - One focused issue per bug — avoid multi-bug issues
