@@ -76,7 +76,7 @@ Shelly's Arcade is a collection of terminal-based games built entirely in Python
 
 | Game | Command | Description |
 |------|---------|-------------|
-| Neon Shadows | `dfrotz interactive_fiction/neon_shadows.z5` | Cyberpunk detective noir — investigate a missing person in Neo-Angeles |
+| Neon Shadows | `frotz interactive_fiction/neon_shadows.z5` | Cyberpunk detective noir — investigate a missing person in Neo-Angeles |
 
 ## Quick Start
 
@@ -88,10 +88,10 @@ python3 console_games/arcade.py
 
 Or run any game directly using the commands in the table above.
 
-For the interactive fiction title, you'll need `dfrotz` (a Z-machine interpreter):
+For the interactive fiction title, you'll need `frotz` (a Z-machine interpreter):
 
 ```bash
-dfrotz interactive_fiction/neon_shadows.z5
+frotz interactive_fiction/neon_shadows.z5
 ```
 
 ## Requirements
@@ -99,7 +99,7 @@ dfrotz interactive_fiction/neon_shadows.z5
 - **Python 3.12+** with curses support (included on most Linux/macOS systems)
 - **Terminal emulator** with color support (256-color recommended)
 - **Nerd Font** (optional) — several games use Nerd Font glyphs for enhanced visuals
-- **dfrotz** (optional) — required only for Neon Shadows interactive fiction
+- **frotz** (optional) — required only for Neon Shadows interactive fiction
 
 ## Running Tests
 
@@ -107,7 +107,7 @@ dfrotz interactive_fiction/neon_shadows.z5
 # All Python game tests
 python3 -m pytest console_games/ -v
 
-# Interactive fiction tests (requires dfrotz and inform6)
+# Interactive fiction tests (requires frotz and inform6)
 cd interactive_fiction && bash test_neon_shadows.sh
 ```
 
