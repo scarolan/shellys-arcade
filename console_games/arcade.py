@@ -61,24 +61,35 @@ def discover_games():
     """Find all .py game scripts in the scripts directory."""
     games = []
     for fname in os.listdir(SCRIPTS_DIR):
-        if not fname.endswith(".py"):
-            continue
-        if fname in EXCLUDED or fname.startswith("test_"):
+        if fname in EXCLUDED or fname.startswith("test_") or fname.startswith("__"):
             continue
         filepath = os.path.join(SCRIPTS_DIR, fname)
-        if not os.path.isfile(filepath):
-            continue
-        size = os.path.getsize(filepath)
-        description = extract_description(filepath)
-        # Derive a display name from the filename
-        name = fname.replace(".py", "").replace("_", " ").replace("-", " ").title()
-        games.append({
-            "name": name,
-            "file": fname,
-            "path": filepath,
-            "description": description,
-            "size": size,
-        })
+        # Top-level .py files
+        if fname.endswith(".py") and os.path.isfile(filepath):
+            size = os.path.getsize(filepath)
+            description = extract_description(filepath)
+            name = fname.replace(".py", "").replace("_", " ").replace("-", " ").title()
+            games.append({
+                "name": name,
+                "file": fname,
+                "path": filepath,
+                "description": description,
+                "size": size,
+            })
+        # Subdirectories: look for <dirname>/<dirname>.py
+        elif os.path.isdir(filepath):
+            main_script = os.path.join(filepath, fname + ".py")
+            if os.path.isfile(main_script):
+                size = os.path.getsize(main_script)
+                description = extract_description(main_script)
+                name = fname.replace("_", " ").replace("-", " ").title()
+                games.append({
+                    "name": name,
+                    "file": os.path.join(fname, fname + ".py"),
+                    "path": main_script,
+                    "description": description,
+                    "size": size,
+                })
     games.sort(key=lambda g: g["name"].lower())
     return games
 
@@ -196,7 +207,7 @@ def draw_game_list(win, games, selected, scroll_offset, list_y, max_y, max_x):
 
     # How many items can we display
     available_rows = max_y - list_y - 3  # leave room for footer
-    visible_count = max(1, available_rows // 2)  # 2 rows per game entry
+    visible_count = max(1, available_rows)  # 1 row per game entry
 
     # Draw column header
     hdr_y = list_y
@@ -226,7 +237,7 @@ def draw_game_list(win, games, selected, scroll_offset, list_y, max_y, max_x):
             break
 
         game = games[idx]
-        row_y = list_y + 2 + (i * 2)
+        row_y = list_y + 2 + i
         if row_y >= max_y - 2:
             break
 
@@ -258,15 +269,6 @@ def draw_game_list(win, games, selected, scroll_offset, list_y, max_y, max_x):
             win.addnstr(row_y, x, line, max_x - x, attr)
         except curses.error:
             pass
-
-        # Draw the filename below in a dimmer color (only if room)
-        if row_y + 1 < max_y - 2:
-            file_info = f"       └─ {game['file']}"
-            file_attr = curses.color_pair(6) if is_selected else (curses.color_pair(2) | curses.A_DIM)
-            try:
-                win.addnstr(row_y + 1, x, file_info, max_x - x, file_attr)
-            except curses.error:
-                pass
 
     return visible_count
 
@@ -301,7 +303,7 @@ def draw_scroll_indicator(win, games, scroll_offset, visible_count, list_y, max_
         except curses.error:
             pass
     if scroll_offset + visible_count < len(games):
-        bottom_y = min(list_y + 2 + visible_count * 2 - 1, max_y - 3)
+        bottom_y = min(list_y + 2 + visible_count - 1, max_y - 3)
         try:
             win.addnstr(bottom_y, indicator_x, "▼", 2,
                         curses.color_pair(3) | curses.A_BOLD)
@@ -363,7 +365,7 @@ def main(stdscr):
 
         # Calculate visible count for scroll
         available_rows = max_y - list_y - 3
-        visible_count = max(1, available_rows // 2)
+        visible_count = max(1, available_rows)
 
         # Keep selection in view
         if selected < scroll_offset:
