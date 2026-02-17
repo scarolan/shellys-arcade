@@ -28,6 +28,12 @@ python3 -m pytest console_games/cyberpunk/test_cyberpunk.py -v
 - Tests must pass before committing. Shelly's pipeline will reject failing tests.
 - The `shelly` label on GitHub issues triggers automated processing (see below).
 
+## Operations
+
+- **GitHub repo:** `scarolan/shellys-arcade`
+- **GitHub Project board:** #3 (`gh project item-add 3 --owner scarolan --url <issue-url>`)
+- **Filing issues:** Use `bug` or `enhancement` label only — do NOT add `shelly` label via CLI. Always add CLI-created issues to the project board (auto-add only works for UI-created issues).
+
 ## Shelly automation pipeline
 
 This repo is serviced by **Shelly**, an autonomous agent dispatcher running on `shelly-vm`. When issues are labeled `shelly`, they flow through an automated pipeline:
