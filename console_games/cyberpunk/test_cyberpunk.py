@@ -856,5 +856,64 @@ class TestGameProgression(unittest.TestCase):
                                 f"Only {len(found)} cyberpunk theme words: {found}")
 
 
+# =============================================================================
+# 15. KEYCARD REACHABILITY TESTS (Issue #75)
+# =============================================================================
+
+class TestKeycardReachability(unittest.TestCase):
+    """Issue #75: keycards must always spawn, at least one reachable."""
+
+    def _import_module(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("cyberpunk_mod", CYBERPUNK_PATH)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return mod
+
+    def setUp(self):
+        self.cp = self._import_module()
+
+    def test_reachable_tiles_blocked_by_locked_door(self):
+        cp = self.cp
+        W, F, L = cp.TILE_WALL, cp.TILE_FLOOR, cp.TILE_DOOR_LOCKED
+        game_map = [
+            [W, W, W, W, W],
+            [W, F, L, F, W],
+            [W, W, W, W, W],
+        ]
+        reachable = cp._reachable_tiles(game_map, (1, 1))
+        self.assertIn((1, 1), reachable)
+        self.assertNotIn((3, 1), reachable, "locked door must block BFS")
+
+    def test_can_reach_still_works(self):
+        cp = self.cp
+        W, F = cp.TILE_WALL, cp.TILE_FLOOR
+        game_map = [
+            [W, W, W, W],
+            [W, F, F, W],
+            [W, W, W, W],
+        ]
+        self.assertTrue(cp._can_reach(game_map, (1, 1), (2, 1)))
+        self.assertFalse(cp._can_reach(game_map, (1, 1), (0, 0)))
+
+    def test_keycard_count_and_reachability(self):
+        """Property test: many generated levels always satisfy the invariant."""
+        import random as rng
+        cp = self.cp
+        for level_num in (3, 4, 5):
+            for seed in range(10):
+                rng.seed(seed * 100 + level_num)
+                (game_map, rooms, player_start, stairs_pos,
+                 enemies, items, terminals, raven_pos) = cp.generate_level(level_num)
+                keycards = [it for it in items if it.item_type == "keycard"]
+                self.assertEqual(
+                    len(keycards), min(level_num, 3),
+                    f"level {level_num} seed {seed}: wrong keycard count")
+                reachable = cp._reachable_tiles(game_map, player_start)
+                self.assertTrue(
+                    any((kc.x, kc.y) in reachable for kc in keycards),
+                    f"level {level_num} seed {seed}: no reachable keycard")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

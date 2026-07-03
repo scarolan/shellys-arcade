@@ -784,32 +784,36 @@ class Room:
                 self.y <= other.y + other.h and self.y + self.h >= other.y)
 
 
+def _reachable_tiles(game_map, start):
+    """BFS flood fill from start through non-blocking tiles.
+
+    Returns the set of reachable (x, y) coordinates, including start.
+    Walls, closed doors, and locked doors block movement.
+    """
+    from collections import deque
+    sx, sy = start
+    visited = {(sx, sy)}
+    queue = deque([(sx, sy)])
+    while queue:
+        x, y = queue.popleft()
+        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            nx, ny = x + dx, y + dy
+            if (nx, ny) in visited:
+                continue
+            if 0 <= ny < len(game_map) and 0 <= nx < len(game_map[0]):
+                if game_map[ny][nx] not in BLOCKING_TILES:
+                    visited.add((nx, ny))
+                    queue.append((nx, ny))
+    return visited
+
+
 def _can_reach(game_map, start, goal):
     """BFS flood fill to check if goal is reachable from start.
 
     Only walks through non-blocking tiles (walls, closed doors, and
     locked doors block movement).
     """
-    from collections import deque
-    sx, sy = start
-    gx, gy = goal
-    visited = set()
-    visited.add((sx, sy))
-    queue = deque([(sx, sy)])
-    while queue:
-        x, y = queue.popleft()
-        if x == gx and y == gy:
-            return True
-        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-            nx, ny = x + dx, y + dy
-            if (nx, ny) in visited:
-                continue
-            if 0 <= ny < len(game_map) and 0 <= nx < len(game_map[0]):
-                tile = game_map[ny][nx]
-                if tile not in BLOCKING_TILES:
-                    visited.add((nx, ny))
-                    queue.append((nx, ny))
-    return False
+    return tuple(goal) in _reachable_tiles(game_map, start)
 
 
 def generate_level(level_num):
@@ -1022,14 +1026,16 @@ def place_enemies(game_map, rooms, level_num, player_start):
 def place_items(game_map, rooms, level_num, player_start):
     """Scatter items across rooms."""
     items = []
-    # Drop keycards if there are locked doors
+    # Drop keycards if there are locked doors — retry until a valid tile is found
     keycard_count = min(level_num, 3)
     for _ in range(keycard_count):
-        room = random.choice(rooms[1:]) if len(rooms) > 1 else rooms[0]
-        ix = random.randint(room.x + 1, room.x + room.w - 2)
-        iy = random.randint(room.y + 1, room.y + room.h - 2)
-        if game_map[iy][ix] in (TILE_FLOOR, TILE_CORRIDOR):
-            items.append(Item("Keycard", ix, iy, "keycard"))
+        for _attempt in range(100):
+            room = random.choice(rooms[1:]) if len(rooms) > 1 else rooms[0]
+            ix = random.randint(room.x + 1, room.x + room.w - 2)
+            iy = random.randint(room.y + 1, room.y + room.h - 2)
+            if game_map[iy][ix] in (TILE_FLOOR, TILE_CORRIDOR):
+                items.append(Item("Keycard", ix, iy, "keycard"))
+                break
 
     # Medkits
     for _ in range(2 + level_num // 2):
@@ -1066,6 +1072,21 @@ def place_items(game_map, rooms, level_num, player_start):
                 items.append(Item("Pistol", ix, iy, "weapon", damage=10, weapon_type="ranged", range=6))
             else:
                 items.append(Item("SMG", ix, iy, "weapon", damage=15, weapon_type="ranged", range=5))
+
+    # Ensure at least one keycard is reachable without passing a locked door,
+    # so the player can always unlock at least one door (issue #75).
+    keycards = [it for it in items if it.item_type == "keycard"]
+    if keycards:
+        reachable = _reachable_tiles(game_map, player_start)
+        if not any((kc.x, kc.y) in reachable for kc in keycards):
+            candidates = [
+                (x, y) for (x, y) in reachable
+                if game_map[y][x] in (TILE_FLOOR, TILE_CORRIDOR)
+                and (x, y) != tuple(player_start)
+            ]
+            if candidates:
+                nx, ny = random.choice(candidates)
+                keycards[0].x, keycards[0].y = nx, ny
 
     return items
 
