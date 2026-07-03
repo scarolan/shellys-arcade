@@ -10,7 +10,7 @@ Controls:
   h                  — Hack adjacent terminal
   e                  — Interact / pick up / open door
   i                  — Inventory
-  a                  — Toggle auto-pickup (default: ON)
+  p                  — Toggle auto-pickup (default: ON)
   q                  — Quit
 """
 
@@ -2115,7 +2115,7 @@ def main(stdscr):
         # Help line
         help_y = h - 1
         ap_str = "ON" if player.auto_pickup else "OFF"
-        help_text = f" Move:←↑↓→  Space:Wait  f:Fire  h:Hack  e:Interact  i:Inv  m:Medkit  a:Auto({ap_str})  q:Quit "
+        help_text = f" Move:←↑↓→  Space:Wait  f:Fire  h:Hack  e:Interact  i:Inv  m:Medkit  p:Auto({ap_str})  q:Quit "
         safe_addstr(stdscr, help_y, 0, help_text[:w - 1], curses.color_pair(C_GRAY))
 
         stdscr.refresh()
@@ -2157,7 +2157,7 @@ def main(stdscr):
             else:
                 messages.append("No Stim Packs in inventory!")
             continue
-        elif key in (ord('a'),):
+        elif key in (ord('p'), ord('P')):
             player.auto_pickup = not player.auto_pickup
             state = "ON" if player.auto_pickup else "OFF"
             messages.append(f"Auto-pickup: {state}")

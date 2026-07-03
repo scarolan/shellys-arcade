@@ -915,5 +915,34 @@ class TestKeycardReachability(unittest.TestCase):
                     f"level {level_num} seed {seed}: no reachable keycard")
 
 
+class TestAutoPickupKeyBinding(unittest.TestCase):
+    """Issue #73: auto-pickup toggle must not be shadowed by WASD movement."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.source = load_source()
+
+    def test_toggle_bound_to_p(self):
+        """The auto-pickup toggle branch must test ord('p')."""
+        self.assertIn("ord('p')", self.source,
+                      "auto-pickup toggle should be bound to 'p'")
+
+    def test_no_bare_a_branch(self):
+        """The old unreachable elif key in (ord('a'),) branch must be gone."""
+        self.assertNotIn("(ord('a'),)", self.source,
+                         "unreachable ord('a') toggle branch still present")
+
+    def test_wasd_left_still_bound(self):
+        """'a' must still be part of the move-left binding."""
+        self.assertIn("curses.KEY_LEFT, ord('a'), ord('A')", self.source)
+
+    def test_docstring_documents_p(self):
+        """Module docstring must document 'p' as the auto-pickup key."""
+        import re
+        docstring = self.source.split('"""')[1]
+        self.assertRegex(docstring, r"p\s+—\s+Toggle auto-pickup",
+                         "docstring should document p as auto-pickup toggle")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
