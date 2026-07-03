@@ -11,6 +11,9 @@ Controls:
   e                  — Interact / pick up / open door
   i                  — Inventory
   p                  — Toggle auto-pickup (default: ON)
+  m                  — Use Medkit
+  t                  — Use Stim Pack
+  g                  — Throw EMP Grenade (damages/disables nearby enemies)
   q                  — Quit
 """
 
@@ -524,6 +527,15 @@ class Player:
                 return True
         return False
 
+    def use_emp(self):
+        """Consume one EMP Grenade from inventory. Returns True if one was used."""
+        for i, item in enumerate(self.inventory):
+            if item.get("name") == "EMP Grenade":
+                self.inventory.pop(i)
+                self.items_used += 1
+                return True
+        return False
+
     def tick_stim(self):
         """Decrease stim duration each turn."""
         if self.stim_turns > 0:
@@ -719,6 +731,28 @@ class Enemy:
                 err += ddx
                 y0 += sy
         return False
+
+
+def emp_blast(px, py, enemies, radius=5, damage=None):
+    """Apply an EMP burst centered on (px, py).
+
+    Damages every living enemy within Chebyshev distance radius,
+    bypassing defense (EMP ignores armor). Mechanical enemies
+    (Security Drone, Turret) in the radius are also disabled.
+    Returns the number of enemies hit.
+    """
+    if damage is None:
+        damage = CONSUMABLES["EMP Grenade"]["emp_damage"]
+    hit = 0
+    for enemy in enemies:
+        if not enemy.alive:
+            continue
+        if max(abs(enemy.x - px), abs(enemy.y - py)) <= radius:
+            enemy.hp -= damage
+            if enemy.name in ("Security Drone", "Turret"):
+                enemy.disabled = True
+            hit += 1
+    return hit
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -2161,6 +2195,13 @@ def main(stdscr):
             player.auto_pickup = not player.auto_pickup
             state = "ON" if player.auto_pickup else "OFF"
             messages.append(f"Auto-pickup: {state}")
+            continue
+        elif key in (ord('g'), ord('G')):
+            if player.use_emp():
+                hits = emp_blast(player.x, player.y, enemies)
+                messages.append(f"EMP burst! {hits} enemies hit.")
+            else:
+                messages.append("No EMP Grenades in inventory!")
             continue
         elif key == ord(' '):
             action = "wait"

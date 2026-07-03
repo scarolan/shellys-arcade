@@ -944,5 +944,57 @@ class TestAutoPickupKeyBinding(unittest.TestCase):
                          "docstring should document p as auto-pickup toggle")
 
 
+
+class TestEMPGrenade(unittest.TestCase):
+    """Issue #74: EMP Grenades must be usable."""
+
+    def _import_module(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("cyberpunk_mod", CYBERPUNK_PATH)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return mod
+
+    def setUp(self):
+        self.cp = self._import_module()
+
+    def _grenade(self):
+        return {"name": "EMP Grenade", **self.cp.CONSUMABLES["EMP Grenade"]}
+
+    def test_use_emp_consumes_grenade(self):
+        p = self.cp.Player("Street Samurai")
+        p.inventory.append(self._grenade())
+        self.assertTrue(p.use_emp())
+        self.assertEqual(len(p.inventory), 0)
+
+    def test_use_emp_without_grenade(self):
+        p = self.cp.Player("Street Samurai")
+        self.assertFalse(p.use_emp())
+
+    def test_emp_blast_damages_in_radius_only(self):
+        near = self.cp.Enemy("Gang Member", 3, 3)
+        far = self.cp.Enemy("Gang Member", 30, 30)
+        near_hp, far_hp = near.hp, far.hp
+        hits = self.cp.emp_blast(0, 0, [near, far])
+        self.assertEqual(hits, 1)
+        self.assertEqual(near.hp, near_hp - 40)
+        self.assertEqual(far.hp, far_hp)
+
+    def test_emp_blast_disables_mechanical(self):
+        drone = self.cp.Enemy("Security Drone", 2, 2)
+        ganger = self.cp.Enemy("Gang Member", 2, 3)
+        self.cp.emp_blast(0, 0, [drone, ganger])
+        self.assertTrue(drone.disabled)
+        self.assertFalse(ganger.disabled)
+
+    def test_emp_blast_skips_dead(self):
+        e = self.cp.Enemy("Gang Member", 1, 1)
+        e.hp = 0
+        hits = self.cp.emp_blast(0, 0, [e])
+        self.assertEqual(hits, 0)
+
+    def test_g_key_bound(self):
+        self.assertIn("ord('g')", load_source())
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
